@@ -21,9 +21,9 @@ export default function Home() {
           <div className="flex-1 flex gap-2 justify-end">
             <ModeToggle />
             <Button
-              onClick={() =>
-                router.push('https://github.com/resper1965/ndoc')
-              }
+              onClick={() => {
+                window.open('https://github.com/resper1965/ndoc', '_blank');
+              }}
             >
               <Github className="h-[1.2rem] w-[1.2rem] transition-all" />
             </Button>
@@ -85,9 +85,9 @@ export default function Home() {
               className="px-6 py-3 gap-2"
               variant={'outline'}
               size={'md'}
-              onClick={() =>
-                router.push('https://github.com/resper1965/ndoc')
-              }
+              onClick={() => {
+                window.open('https://github.com/resper1965/ndoc', '_blank');
+              }}
             >
               <Github size={20} />
               GitHub

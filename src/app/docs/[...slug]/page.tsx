@@ -6,6 +6,8 @@ import Toc from '@/components/toc';
 
 type tParams = Promise<{ slug: string[] }>;
 
+export const dynamicParams = false;
+
 export const generateStaticParams = async () => {
   return allDocs
     .filter((doc) => doc._raw.flattenedPath !== 'index') // Exclude index, handled by /docs/page.tsx
@@ -18,9 +20,13 @@ export const generateStaticParams = async () => {
 };
 
 export const generateMetadata = async ({ params }: { params: tParams }) => {
-  // Join the slug array back into a path string, or use 'index' for empty slug
+  // Join the slug array back into a path string
   const awaitedParams = await params;
-  const path = awaitedParams.slug.length === 0 ? 'index' : awaitedParams.slug.join('/');
+  // This route should never receive an empty slug (handled by /docs/page.tsx)
+  if (awaitedParams.slug.length === 0) {
+    throw new Error('Empty slug should be handled by /docs/page.tsx');
+  }
+  const path = awaitedParams.slug.join('/');
   const doc = allDocs.find((doc) => doc._raw.flattenedPath === path);
 
   if (!doc) throw new Error(`Doc not found for slug: ${path}`);
@@ -36,6 +42,11 @@ export const generateMetadata = async ({ params }: { params: tParams }) => {
 
 const DocsPage = async ({ params }: { params: tParams }) => {
   const awaitedParams = await params;
+  // This route should never receive an empty slug (handled by /docs/page.tsx)
+  if (awaitedParams.slug.length === 0) {
+    notFound();
+    return null;
+  }
   // Join the slug array back into a path string
   const path = awaitedParams.slug.join('/');
   const doc = allDocs.find((doc) => doc._raw.flattenedPath === path);

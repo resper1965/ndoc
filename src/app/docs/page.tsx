@@ -4,6 +4,8 @@ import { Mdx } from '@/components/mdx-components';
 import Breadcrumb from '@/components/bread-crumb';
 import Toc from '@/components/toc';
 
+export const dynamicParams = false;
+
 export default function DocsIndexPage() {
   // Find index document
   const doc = allDocs.find((doc) => doc._raw.flattenedPath === 'index');

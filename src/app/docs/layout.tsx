@@ -23,7 +23,6 @@ import {
   NestedLink,
 } from '@/components/sidebar';
 import { Github } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 
 import Header from '@/components/header';
 import { ModeToggle } from '@/components/mode-toggle';
@@ -35,8 +34,6 @@ export default function DocsLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // Destructure sidebarNav from configDocs
-  const router = useRouter();
   const isMobile = useIsMobile();
   return (
     <SidebarLayout>
@@ -116,9 +113,9 @@ export default function DocsLayout({
               <SearchDialog searchData={allDocs} />
               <ModeToggle />
               <Button
-                onClick={() =>
-                  router.push('https://github.com/resper1965/ndoc')
-                }
+                onClick={() => {
+                  window.open('https://github.com/resper1965/ndoc', '_blank');
+                }}
               >
                 <Github className="h-[1.2rem] w-[1.2rem] transition-all" />
               </Button>
