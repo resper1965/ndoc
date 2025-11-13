@@ -111,28 +111,15 @@ const SearchDialog = forwardRef<SearchDialogHandle, SearchDialogProps>(
         <DialogTrigger className='hidden sm:block'>
           <SearchButton
             size="sm"
-            placeholder="Search documentation.."
+            placeholder="Buscar documentação.."
           />
         </DialogTrigger>
         <DialogContent className="fixed h-auto sm:max-w-xl bg-muted p-2 top-40">
-        {/* Close Button */}
-        {/* <DialogCloseTrigger asChild>
-          <button
-            className="cursor-pointer border border-border text-lg absolute -top-2 -right-2 bg-muted text-black dark:text-white rounded-full w-5 h-5 flex items-center justify-center shadow"
-            aria-label="Close"
-          >
-            &times;
-          </button>
-        </DialogCloseTrigger> */}
-          {/* <DialogHeader>
-            <DialogTitle>Search Documentation</DialogTitle>
-            <DialogDescription>Type below to search your docs.</DialogDescription>
-          </DialogHeader> */}
           <div className="relative">
             <Input
               type="text"
               className="w-full bg-transparent focus:outline-none rounded-none border-t-0 border-x-0 border-border pl-10 pr-4 py-2"
-              placeholder="Search the docs..."
+              placeholder="Buscar na documentação..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
@@ -157,7 +144,7 @@ const SearchDialog = forwardRef<SearchDialogHandle, SearchDialogProps>(
                           <Text /> <div>{highlightText(doc.title, query)}</div>
                         </div>
                         <div className="text-sm">
-                          {getSnippet(doc.body.raw || 'No description', query)}
+                          {getSnippet(doc.body.raw || 'Sem descrição', query)}
                         </div>
                       </div>
                     </Link>
@@ -166,7 +153,7 @@ const SearchDialog = forwardRef<SearchDialogHandle, SearchDialogProps>(
               </ul>
             ) : (
               <p className="text-sm text-center">
-                {query.length > 0 ? 'No results found.' : 'Type to search'}
+                {query.length > 0 ? 'Nenhum resultado encontrado.' : 'Digite para buscar'}
               </p>
             )}
           </div>

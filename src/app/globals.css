@@ -37,6 +37,10 @@ html {
   --color-accent: hsl(var(--accent));
   --color-accent-foreground: hsl(var(--accent-foreground));
 
+  /* Ness Brand Colors */
+  --color-ness-blue: hsl(var(--ness-blue));
+  --color-ness-blue-foreground: hsl(var(--ness-blue-foreground));
+
   /* Component Colors */
   --color-card: hsl(var(--card));
   --color-card-foreground: hsl(var(--card-foreground));
@@ -77,29 +81,33 @@ html {
   }
 
   :root {
-    /* Base Theme - Light Mode */
+    /* Base Theme - Light Mode (Slate) */
     --background: 0 0% 100%;
-    --foreground: 0 0% 9%;
+    --foreground: 222.2 84% 4.9%;
 
     /* Borders */
-    --border: 0 0% 85%;
-    --border-header: 0 0% 85%;
+    --border: 214.3 31.8% 91.4%;
+    --border-header: 214.3 31.8% 91.4%;
 
-    /* UI Colors */
+    /* UI Colors - Slate Theme */
     --primary: 222.2 47.4% 11.2%;
     --primary-foreground: 210 40% 98%;
-    --secondary: 215 14% 34%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 215.4 35.87% 87.65%;
+    --accent: 210 40% 96.1%;
     --accent-foreground: 222.2 47.4% 11.2%;
+
+    /* Ness Brand Color - #00ade8 */
+    --ness-blue: 195 100% 45.5%;
+    --ness-blue-foreground: 0 0% 100%;
 
     /* Component Colors */
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
+    --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 9%;
+    --popover-foreground: 222.2 84% 4.9%;
 
     /* Status Colors */
     --destructive: 0 84.2% 60.2%;
@@ -107,49 +115,50 @@ html {
     --success: 142 71% 45%;
     --success-foreground: 210 40% 98%;
     --warning: 38 92% 50%;
-    --warning-foreground: 0 0% 9%;
+    --warning-foreground: 222.2 47.4% 11.2%;
 
     /* Other UI Elements */
-    --input: 220 13% 91%;
-    --ring: 222.2 47.4% 11.2%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
 
     /* Border Radius */
     --radius: 0.5rem;
 
-    /* Sidebar Elements (using secondary as base) */
+    /* Sidebar Elements */
     --sidebar: 210 40% 96.1%;
-    /* Same as secondary */
     --sidebar-foreground: 215.4 16.3% 46.9%;
-    /* Same as muted-foreground */
-    --sidebar-active: 215 14% 34%;
-    /* Light gray for active state */
+    --sidebar-active: 210 40% 90%;
     --sidebar-active-foreground: 222.2 47.4% 11.2%;
   }
 
   .dark {
-    /* Base Theme - Dark Mode */
-    --background: 0 0% 4%;
-    --foreground: 0 0% 93%;
+    /* Base Theme - Dark Mode (Slate) */
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
 
     /* Borders */
-    --border: 240 3.7% 25.9%;
-    --border-header: 240 3.7% 15.9%;
+    --border: 217.2 32.6% 17.5%;
+    --border-header: 217.2 32.6% 17.5%;
 
-    /* UI Colors */
+    /* UI Colors - Slate Theme */
     --primary: 210 40% 98%;
     --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 220 13% 31%;
+    --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
-    --accent: 215 23.96% 33.07%;
+    --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
 
+    /* Ness Brand Color - #00ade8 */
+    --ness-blue: 195 100% 45.5%;
+    --ness-blue-foreground: 0 0% 100%;
+
     /* Component Colors */
-    --card: 0 0% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 6%;
-    --popover-foreground: 0 0% 93%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
 
     /* Status Colors */
     --destructive: 0 62.8% 50.6%;
@@ -157,19 +166,16 @@ html {
     --success: 142 69% 40%;
     --success-foreground: 210 40% 98%;
     --warning: 38 92% 45%;
-    --warning-foreground: 0 0% 9%;
+    --warning-foreground: 222.2 47.4% 11.2%;
 
     /* Other UI Elements */
-    --input: 240 3.7% 15.9%;
-    --ring: 210 40% 98%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
 
-    /* Sidebar Elements (using muted as base) */
+    /* Sidebar Elements */
     --sidebar: 217.2 32.6% 17.5%;
-    /* Same as muted/secondary in dark mode */
     --sidebar-foreground: 215 20.2% 65.1%;
-    /* Same as muted-foreground */
-    --sidebar-active: 220 13% 31%;
-    /* Darker gray for active state */
+    --sidebar-active: 217.2 32.6% 25%;
     --sidebar-active-foreground: 210 40% 98%;
   }
 

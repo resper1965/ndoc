@@ -1,48 +1,41 @@
-<a href="https://pinexio.vercel.app/">
-<p align="center">
-  <img src="./public/logos/pinedocs.png"  align="center" alt="fox logo" width="200px">
-  <h1 align="center"> PINEXIO </h1>
-  <p align="center">
-   Pinexio is a modern, customizable documentation template built for Next.js 15, Tailwind CSS 4, and MDX. It makes creating, managing, and presenting your project documentation effortless.
-  </p>
-</p>
-</a>
+# Ness - Plataforma de Documentação
 
-## Why Pinexio?
+Uma plataforma moderna e personalizável de documentação construída com Next.js 15, Tailwind CSS 4 e MDX. Torna a criação, gerenciamento e apresentação da documentação do seu projeto sem esforço.
 
-- **Customizable UI** 🌈: Tailor the design to your needs with light/dark themes and minimal UI libraries.
-- **MDX Support** 📚: Write rich, interactive documentation with JSX components.
-- **Automatic Content Indexing** 🔍: Thanks to Contentlayer, MDX pages are automatically indexed and searchable.
-- **Zero Setup Hassle** 🚀: Add an MDX file to `/docs`, and it’s instantly live.
+## Por que Ness?
 
-## Key Technologies
+- **UI Personalizável** 🌈: Adapte o design às suas necessidades com temas claro/escuro e bibliotecas UI minimalistas.
+- **Suporte MDX** 📚: Escreva documentação rica e interativa com componentes JSX.
+- **Indexação Automática de Conteúdo** 🔍: Graças ao Contentlayer, páginas MDX são automaticamente indexadas e pesquisáveis.
+- **Sem Complicação de Configuração** 🚀: Adicione um arquivo MDX em `/docs`, e ele fica instantaneamente disponível.
+- **Autenticação OAuth** 🔐: Sistema completo de autenticação para controle de acesso.
+- **Painel Administrativo** 👥: Gerencie usuários e faça ingestão de documentos facilmente.
 
-- **Next.js 15** for SEO-friendly, performant documentation.
-- **Tailwind CSS 4** for responsive design.
-- **MDX** to blend documentation with React components.
-- **Contentlayer** for seamless content management.
+## Tecnologias Principais
 
-## Get Started
+- **Next.js 15** para documentação performática e otimizada para SEO.
+- **Tailwind CSS 4** para design responsivo.
+- **MDX** para combinar documentação com componentes React.
+- **Contentlayer** para gerenciamento de conteúdo sem complicações.
+- **NextAuth.js** para autenticação OAuth.
 
-1. Clone the repo.
-2. Add your documentation as MDX files in the `/docs` folder.
-3. Start building!
+## Como Começar
 
-## Links
+1. Clone o repositório.
+2. Instale as dependências: `npm install`
+3. Configure as variáveis de ambiente para OAuth.
+4. Adicione sua documentação como arquivos MDX na pasta `/docs`.
+5. Inicie o servidor de desenvolvimento: `npm run dev`
 
-- [View Demo](https://pinexio.vercel.app)
-- [GitHub Repo](https://github.com/sanjayc208/pinexio)
+## Funcionalidades
+
+- ✅ Temas claro/escuro
+- ✅ Sidebar navegável com busca
+- ✅ Autenticação OAuth
+- ✅ Painel administrativo
+- ✅ Ingestão de documentos
+- ✅ Totalmente traduzido para português brasileiro
 
 ---
 
-## 🚀 Deploy to Vercel in Seconds
-
-Want to get your Next.js app live with zero hassle? Vercel, built by the creators of Next.js, makes deployment a breeze!
-
-Check out the [Next.js deployment guide](https://nextjs.org/docs/deployment) for all the details and tips on how to deploy like a pro.
-
-Ready to go live? Click the button below and deploy your app in just a few clicks! 🔥
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/sanjayc208/pinexio)
-
-_Pinexio is open-source and free to use. Happy documenting!_ 🚀
+_Ness é de código aberto e gratuito para uso. Boa documentação!_ 🚀

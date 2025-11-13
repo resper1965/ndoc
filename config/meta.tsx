@@ -1,50 +1,48 @@
 export const meta = {
-  metadataBase: new URL('https://pinexio.vercel.app'),
-  title: 'Pinexio - Documentation template',
+  metadataBase: new URL('https://ness.dev'),
+  title: 'Ness - Documentação',
   description:
-    'A customizable Open Source documentation template built with Next.js',
-  authors: [{ name: 'Sanjay Rajeev' }],
+    'Uma plataforma de documentação personalizável construída com Next.js',
+  authors: [{ name: 'Ness' }],
   keywords: [
-    'Pinexio',
-    'documentation template',
+    'Ness',
+    'documentação',
     'template',
     'Next.js',
     'React',
     'JavaScript',
   ],
-  publisher: 'Sanjay Rajeev',
-  creator: 'Sanjay Rajeev',
+  publisher: 'Ness',
+  creator: 'Ness',
   openGraph: {
     type: 'website',
-    title: 'Pinexio - Documentation Template',
+    title: 'Ness - Plataforma de Documentação',
     description:
-      'A customizable open-source documentation template built with Next.js.',
+      'Uma plataforma de documentação personalizável construída com Next.js.',
     images: [
       {
         url: '/og_image.png',
         width: 1200,
         height: 630,
-        alt: 'Pinexio Documentation Template',
+        alt: 'Ness Plataforma de Documentação',
       },
     ],
   },
   twitter: {
-    card: 'summary_large_image', // Type of Twitter card
-    title: 'Pinexio - Documentation Template', // Twitter card title
+    card: 'summary_large_image',
+    title: 'Ness - Plataforma de Documentação',
     description:
-      'A customizable open-source documentation template built with Next.js.', // Twitter card description
-    images: ['/og_image.png'], // Image used in the Twitter card
-    creator: '@sanjayrajeev', // Twitter handle of the content creator (optional)
+      'Uma plataforma de documentação personalizável construída com Next.js.',
+    images: ['/og_image.png'],
+    creator: '@ness',
   },
   // SEO Enhancements
   alternates: {
-    canonical: 'https://pinexio.vercel.app', // Set the canonical URL
+    canonical: 'https://ness.dev',
   },
-  robots: 'index, follow', // Allows search engines to index and follow links
+  robots: 'index, follow',
   // Optional: Hreflang for multilingual content (if applicable)
   hreflang: {
-    en: 'https://pinexio.vercel.app', // English version URL
-    // Add more hreflang if you have other languages (example: Spanish)
-    // "es": "https://pinexio.vercel.app/es",
+    'pt-BR': 'https://ness.dev',
   },
 };

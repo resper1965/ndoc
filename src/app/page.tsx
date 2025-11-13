@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { Button } from '@/components/button';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
+import { NessLogo } from '@/components/ness-logo';
 
 export default function Home() {
   const router = useRouter();
@@ -47,16 +48,7 @@ export default function Home() {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="flex gap-2 lg:gap-4 justify-center xs:px-2"
             >
-              <Image
-                alt="logo"
-                className="h-auto w-auto dark:invert"
-                width={100}
-                height={100}
-                src={`/logos/pinedocs.png`}
-              />
-              <h1 className="text-5xl content-center md:text-7xl font-stretch-110% -tracking-tighter text-gray-900 dark:text-white">
-                PINE<span className="md:text-8xl">X</span>IO
-              </h1>
+              <NessLogo size="xl" />
             </motion.div>
             <motion.p
               initial={{ opacity: 0, y: 10 }}
@@ -64,9 +56,9 @@ export default function Home() {
               transition={{ duration: 0.6, delay: 0.4 }}
               className="text-shadow-xs mt-6 text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto"
             >
-              A customizable open-source documentation template built with
-              Next.js 15, Tailwind CSS 4, and Contentlayer for beautiful, fast,
-              and flexible documentation.
+              Uma plataforma de documentação personalizável construída com
+              Next.js 15, Tailwind CSS 4 e Contentlayer para documentação
+              bonita, rápida e flexível.
             </motion.p>
           </div>
 
@@ -83,18 +75,15 @@ export default function Home() {
               onClick={() => router.push('/docs/getting-started/introduction')}
               size={'md'}
             >
-              Get Started
+              Começar
             </Button>
             <Button
               className="px-6 py-3 gap-2"
               variant={'outline'}
               size={'md'}
-              onClick={() =>
-                router.push('https://github.com/sanjayc208/pinexio')
-              }
+              onClick={() => router.push('/admin')}
             >
-              <Github size={20} />
-              GitHub
+              Admin
             </Button>
           </motion.div>
         </motion.div>
@@ -143,28 +132,10 @@ export default function Home() {
       {/* Sticky Footer */}
       <footer className="sticky bottom-0 z-10 bg-white/90 dark:bg-gray-950/90 backdrop-blur-sm border-t border-gray-200 dark:border-gray-800">
         <div className="container mx-auto px-4 py-3 text-center text-gray-600 dark:text-gray-400">
-          <div className="flex justify-end items-center space-x-4">
-            <Button
-              className="px-4 py-2 text-sm font-medium gap-2"
-              onClick={() =>
-                window.open(
-                  'https://vercel.com/new/clone?repository-url=https://github.com/sanjayc208/pinexio',
-                  '_blank'
-                )
-              }
-            >
-              <Image
-                src={'/logos/vercel.png'}
-                height={'20'}
-                width={'20'}
-                alt={'Deploy Vercel'}
-                className={'dark:invert'}
-              />
-              <span>Deploy to Vercel</span>
-            </Button>
-            <div className="flex text-sm text-right gap-3">
+          <div className="flex justify-center items-center space-x-4">
+            <div className="flex text-sm text-center gap-3">
               <p>
-                Built with ❤️ by <strong>Sanjay Rajeev</strong>
+                Feito com ❤️ pela <strong>Ness</strong>
               </p>
             </div>
           </div>

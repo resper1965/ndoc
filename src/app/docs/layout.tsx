@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { allDocs } from 'contentlayer/generated';
 import SearchDialog from '@/components/search-dialog';
 import { sidebarNav } from 'config/sidebar';
+import { NessLogo } from '@/components/ness-logo';
 import Image from 'next/image';
 import {
   SidebarProvider,
@@ -49,22 +50,8 @@ export default function DocsLayout({
       >
         <Sidebar>
           <SidebarHeader>
-            <SidebarHeaderLogo
-              logo={
-                <Image
-                  alt="logo"
-                  className={'h-auto w-aut dark:invert'}
-                  width={100}
-                  height={100}
-                  src={`/logos/pinedocs.png`}
-                />
-              }
-            />
-
-            <Link href={'/'} className="flex flex-1 gap-3">
-              <SidebarHeaderTitle>
-                PINE<span className="text-4xl">X</span>IO
-              </SidebarHeaderTitle>
+            <Link href={'/'} className="flex flex-1 gap-3 items-center">
+              <NessLogo size="md" />
             </Link>
           </SidebarHeader>
           <SidebarContent>
@@ -87,22 +74,12 @@ export default function DocsLayout({
           </SidebarContent>
 
           <SidebarFooter>
-            <UserAvatar>
-              {
-                <Image
-                  alt="logo"
-                  src={'https://avatars.githubusercontent.com/u/24631970?v=4'}
-                  width={100}
-                  height={100}
-                />
-              }
-            </UserAvatar>
             <div className="flex flex-col">
               <span className="text-sm font-medium text-gray-900 dark:text-white">
-                Sanjay Rajeev
+                Ness
               </span>
               <span className="text-xs text-gray-500 dark:text-gray-400">
-                sanjayc208@gmail.com
+                Plataforma de Documentação
               </span>
             </div>
           </SidebarFooter>
@@ -113,17 +90,15 @@ export default function DocsLayout({
           <Header className="justify-between py-2">
             <div className="flex items-center gap-4">
               <SidebarTrigger />
-              <h1 className="text-xl font-bold">Documentation</h1>
+              <h1 className="text-xl font-bold">Documentação</h1>
             </div>
             <div className="flex gap-2 items-center pr-0 lg:pr-8">
               <SearchDialog searchData={allDocs} />
               <ModeToggle />
               <Button
-                onClick={() =>
-                  router.push('https://github.com/sanjayc208/pinedocs')
-                }
+                onClick={() => router.push('/admin')}
               >
-                <Github className="h-[1.2rem] w-[1.2rem] transition-all" />
+                Admin
               </Button>
             </div>
           </Header>
