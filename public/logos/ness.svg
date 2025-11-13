@@ -1,0 +1,14 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="nessLogoTitle">
+  <title id="nessLogoTitle">Ness Logo</title>
+  <defs>
+    <linearGradient id="nessGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#334155" />
+    </linearGradient>
+  </defs>
+  <rect width="200" height="200" rx="32" fill="url(#nessGradient)" />
+  <path
+    d="M70 140V60h18l42 52V60h20v80h-18l-42-52v52H70z"
+    fill="#f8fafc"
+  />
+</svg>

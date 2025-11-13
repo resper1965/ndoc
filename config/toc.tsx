@@ -14,24 +14,32 @@ type TocData = {
 };
 
 // Your TocData object with the correct types
-export const TocData: TocData = {
-  'getting-started/introduction': [
-    {
-      title: 'Welcome to Pinexio',
-      href: '/docs/getting-started/introduction#welcome-to-pinexio',
-      pages: [
-        {
-          title: 'Why Choose Pinexio',
-          href: '/docs/getting-started/introduction#why-choose-pinexio',
-        },
+  export const TocData: TocData = {
+    'getting-started/introduction': [
+      {
+        title: 'Welcome to Ness Docs',
+        href: '/docs/getting-started/introduction#welcome-to-ness-docs',
+        pages: [
+          {
+            title: 'Why Choose Ness Docs',
+            href: '/docs/getting-started/introduction#why-choose-ness-docs',
+          },
 
-        {
-          title: 'What Makes Pinexio Special',
-          href: '/docs/getting-started/introduction#what-makes-pinexio-special',
-        },
-      ],
-    },
-  ],
+          {
+            title: 'What Makes Ness Different',
+            href: '/docs/getting-started/introduction#what-makes-ness-different',
+          },
+          {
+            title: 'Tecnologias usadas pela Ness Docs',
+            href: '/docs/getting-started/introduction#tecnologias-usadas-pela-ness-docs',
+          },
+          {
+            title: 'Ready to Start?',
+            href: '/docs/getting-started/introduction#ready-to-start',
+          },
+        ],
+      },
+    ],
   'getting-started/installation': [
     {
       title: 'Steps to install',

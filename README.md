@@ -1,26 +1,26 @@
-<a href="https://pinexio.vercel.app/">
+<a href="https://ness.com/docs">
 <p align="center">
-  <img src="./public/logos/pinedocs.png"  align="center" alt="fox logo" width="200px">
-  <h1 align="center"> PINEXIO </h1>
+  <img src="./public/logos/ness.svg"  align="center" alt="Ness logo" width="200px">
+  <h1 align="center"> NESS DOCS </h1>
   <p align="center">
-   Pinexio is a modern, customizable documentation template built for Next.js 15, Tailwind CSS 4, and MDX. It makes creating, managing, and presenting your project documentation effortless.
+   Ness Docs é o portal oficial de documentação da Ness, construído com Next.js 15, Tailwind CSS 4 e MDX. Centralize conhecimento de produto com identidade visual Slate e publicação rápida.
   </p>
 </p>
 </a>
 
-## Why Pinexio?
+## Why Ness Docs?
 
-- **Customizable UI** 🌈: Tailor the design to your needs with light/dark themes and minimal UI libraries.
-- **MDX Support** 📚: Write rich, interactive documentation with JSX components.
-- **Automatic Content Indexing** 🔍: Thanks to Contentlayer, MDX pages are automatically indexed and searchable.
-- **Zero Setup Hassle** 🚀: Add an MDX file to `/docs`, and it’s instantly live.
+- **Identidade consistente** 🎨: Variáveis Slate aplicadas aos modos claro/escuro garantem UI alinhada ao design system da Ness.
+- **MDX em produção** 📚: Misture Markdown e componentes React para contar histórias, documentar APIs e criar playbooks.
+- **Indexação automática** 🔍: Contentlayer indexa cada `.mdx` sem passos adicionais, alimentando a busca nativa.
+- **Fluxo sem atrito** 🚀: Basta criar um arquivo em `/docs` para publicar uma nova página.
 
 ## Key Technologies
 
-- **Next.js 15** for SEO-friendly, performant documentation.
-- **Tailwind CSS 4** for responsive design.
-- **MDX** to blend documentation with React components.
-- **Contentlayer** for seamless content management.
+- **Next.js 15** para performance e SEO.
+- **Tailwind CSS 4** com tema Slate personalizado.
+- **MDX** para conteúdo rico com componentes.
+- **Contentlayer** garantindo tipagem e indexação.
 
 ## Get Started
 
@@ -30,8 +30,8 @@
 
 ## Links
 
-- [View Demo](https://pinexio.vercel.app)
-- [GitHub Repo](https://github.com/sanjayc208/pinexio)
+- [View Demo](https://ness.com/docs)
+- [GitHub Repo](https://github.com/nesslabs/ness-docs)
 
 ---
 
@@ -43,6 +43,6 @@ Check out the [Next.js deployment guide](https://nextjs.org/docs/deployment) for
 
 Ready to go live? Click the button below and deploy your app in just a few clicks! 🔥
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/sanjayc208/pinexio)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/nesslabs/ness-docs)
 
-_Pinexio is open-source and free to use. Happy documenting!_ 🚀
+_Ness Docs é open-source e pronto para uso. Boa documentação!_ 🚀

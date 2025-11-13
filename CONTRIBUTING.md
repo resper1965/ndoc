@@ -1,6 +1,6 @@
-# Contributing to Pinexio Documentation Template
+# Contributing to Ness Docs
 
-Thank you for considering contributing to **Pinexio Documentation Template**! 🚀 Your contributions help improve this project for everyone. Please follow these guidelines to ensure a smooth collaboration.
+Thank you for considering contributing to **Ness Docs**! 🚀 Your help mantém a documentação oficial da Ness evoluindo continuamente. Siga estas orientações para garantir uma colaboração tranquila.
 
 ## 📌 How to Contribute
 
@@ -25,10 +25,10 @@ Have an idea for a new feature? Create a **Feature Request** issue or **start a 
 
 To contribute code, follow these steps:
 
-1. **Fork** this repository.
+1. **Fork** este repositório.
 2. **Clone** your forked repo:
    ```sh
-   git clone https://github.com/sanjayc208/pinexio.git
+   git clone https://github.com/<seu-usuario>/ness-docs.git
    ```
 3. **Create a new branch** for your changes:
    ```sh
@@ -38,11 +38,11 @@ To contribute code, follow these steps:
    ```sh
    git commit -m "feat: add dark mode toggle"
    ```
-5. **Push your branch** and create a pull request:
+5. **Push** a sua branch e abra um Pull Request:
    ```sh
    git push origin feature/my-new-feature
    ```
-6. Open a **Pull Request** from your fork to the `main` branch.
+6. Abra um **Pull Request** do seu fork para a branch `main`.
 
 ## 🛠 Development Setup
 

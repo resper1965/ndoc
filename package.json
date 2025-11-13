@@ -2,10 +2,10 @@
   "name": "documentation-template-nextjs",
   "version": "0.1.0",
   "private": true,
-  "author": "Sanjay Rajeev",
+  "author": "Ness",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/sanjayc208/pinexio/issues"
+    "url": "https://github.com/nesslabs/ness-docs/issues"
   },
   "scripts": {
     "dev": "next dev",

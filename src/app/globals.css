@@ -76,102 +76,108 @@ html {
     @apply border-border;
   }
 
-  :root {
-    /* Base Theme - Light Mode */
-    --background: 0 0% 100%;
-    --foreground: 0 0% 9%;
+    :root {
+      /* Tema Slate (modo claro) */
+      --background: 210 40% 98%;
+      --foreground: 222.2 47.4% 11.2%;
 
-    /* Borders */
-    --border: 0 0% 85%;
-    --border-header: 0 0% 85%;
+      /* Bordas */
+      --border: 214.3 31.8% 91.4%;
+      --border-header: 214.3 31.8% 91.4%;
 
-    /* UI Colors */
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 215 14% 34%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 215.4 35.87% 87.65%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+      /* Cores UI */
+      --primary: 221.2 83.2% 53.3%;
+      --primary-foreground: 210 40% 98%;
+      --secondary: 210 40% 96.1%;
+      --secondary-foreground: 222.2 47.4% 11.2%;
+      --muted: 210 40% 96.1%;
+      --muted-foreground: 215.4 16.3% 46.9%;
+      --accent: 210 40% 96.1%;
+      --accent-foreground: 222.2 47.4% 11.2%;
 
-    /* Component Colors */
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 9%;
+      /* Componentes */
+      --card: 0 0% 100%;
+      --card-foreground: 222.2 47.4% 11.2%;
+      --popover: 0 0% 100%;
+      --popover-foreground: 222.2 47.4% 11.2%;
 
-    /* Status Colors */
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --success: 142 71% 45%;
-    --success-foreground: 210 40% 98%;
-    --warning: 38 92% 50%;
-    --warning-foreground: 0 0% 9%;
+      /* Estados */
+      --destructive: 0 72.22% 50.59%;
+      --destructive-foreground: 210 40% 98%;
+      --success: 142 71% 45%;
+      --success-foreground: 210 40% 98%;
+      --warning: 38 92% 50%;
+      --warning-foreground: 222.2 47.4% 11.2%;
 
-    /* Other UI Elements */
-    --input: 220 13% 91%;
-    --ring: 222.2 47.4% 11.2%;
+      /* Outros elementos */
+      --input: 214.3 31.8% 91.4%;
+      --ring: 221.2 83.2% 53.3%;
 
-    /* Border Radius */
-    --radius: 0.5rem;
+      /* Border Radius */
+      --radius: 0.5rem;
 
-    /* Sidebar Elements (using secondary as base) */
-    --sidebar: 210 40% 96.1%;
-    /* Same as secondary */
-    --sidebar-foreground: 215.4 16.3% 46.9%;
-    /* Same as muted-foreground */
-    --sidebar-active: 215 14% 34%;
-    /* Light gray for active state */
-    --sidebar-active-foreground: 222.2 47.4% 11.2%;
-  }
+      /* Sidebar e botões */
+      --sidebar: 210 40% 96.1%;
+      --sidebar-foreground: 215.4 16.3% 46.9%;
+      --sidebar-active: 221.2 83.2% 53.3%;
+      --sidebar-active-foreground: 210 40% 98%;
+      --button: 221.2 83.2% 53.3%;
+      --button-border: 214.3 31.8% 91.4%;
+      --button-foreground: 210 40% 98%;
+      --button-hover: 221.2 83.2% 47%;
+      --button-secondary: 210 40% 96.1%;
+      --button-secondary-foreground: 222.2 47.4% 11.2%;
+    }
 
-  .dark {
-    /* Base Theme - Dark Mode */
-    --background: 0 0% 4%;
-    --foreground: 0 0% 93%;
+    .dark {
+      /* Tema Slate (modo escuro) */
+      --background: 226.7 12% 12%;
+      --foreground: 210 40% 98%;
 
-    /* Borders */
-    --border: 240 3.7% 25.9%;
-    --border-header: 240 3.7% 15.9%;
+      /* Bordas */
+      --border: 216.9 18.3% 24.5%;
+      --border-header: 217.2 32.6% 17.5%;
 
-    /* UI Colors */
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 220 13% 31%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 215 23.96% 33.07%;
-    --accent-foreground: 210 40% 98%;
+      /* Cores UI */
+      --primary: 217.2 91.2% 59.8%;
+      --primary-foreground: 222.9 84% 4.9%;
+      --secondary: 217.9 10.6% 64.9%;
+      --secondary-foreground: 210 40% 98%;
+      --muted: 215 27.9% 16.9%;
+      --muted-foreground: 217.9 10.6% 64.9%;
+      --accent: 217.9 10.6% 64.9%;
+      --accent-foreground: 210 40% 98%;
 
-    /* Component Colors */
-    --card: 0 0% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 6%;
-    --popover-foreground: 0 0% 93%;
+      /* Componentes */
+      --card: 224.3 18.3% 15.3%;
+      --card-foreground: 210 40% 98%;
+      --popover: 224.3 18.3% 15.3%;
+      --popover-foreground: 210 40% 98%;
 
-    /* Status Colors */
-    --destructive: 0 62.8% 50.6%;
-    --destructive-foreground: 210 40% 98%;
-    --success: 142 69% 40%;
-    --success-foreground: 210 40% 98%;
-    --warning: 38 92% 45%;
-    --warning-foreground: 0 0% 9%;
+      /* Estados */
+      --destructive: 0 72.22% 50.59%;
+      --destructive-foreground: 210 40% 98%;
+      --success: 142 69% 40%;
+      --success-foreground: 210 40% 98%;
+      --warning: 38 92% 45%;
+      --warning-foreground: 210 40% 98%;
 
-    /* Other UI Elements */
-    --input: 240 3.7% 15.9%;
-    --ring: 210 40% 98%;
+      /* Outros elementos */
+      --input: 216.9 18.3% 24.5%;
+      --ring: 217.2 91.2% 59.8%;
 
-    /* Sidebar Elements (using muted as base) */
-    --sidebar: 217.2 32.6% 17.5%;
-    /* Same as muted/secondary in dark mode */
-    --sidebar-foreground: 215 20.2% 65.1%;
-    /* Same as muted-foreground */
-    --sidebar-active: 220 13% 31%;
-    /* Darker gray for active state */
-    --sidebar-active-foreground: 210 40% 98%;
-  }
+      /* Sidebar e botões */
+      --sidebar: 215 27.9% 16.9%;
+      --sidebar-foreground: 217.9 10.6% 64.9%;
+      --sidebar-active: 217.2 91.2% 59.8%;
+      --sidebar-active-foreground: 222.9 84% 4.9%;
+      --button: 217.2 91.2% 59.8%;
+      --button-border: 216.9 18.3% 24.5%;
+      --button-foreground: 222.9 84% 4.9%;
+      --button-hover: 217.2 91.2% 64%;
+      --button-secondary: 215 27.9% 16.9%;
+      --button-secondary-foreground: 217.9 10.6% 64.9%;
+    }
 
   body {
     @apply bg-background text-foreground;
