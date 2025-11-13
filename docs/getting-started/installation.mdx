@@ -1,6 +1,6 @@
 ---
 title: Installation
-description: A guide to install Pinexio locally to your system and get it running
+description: Guia para instalar o Ness Docs localmente e preparar o ambiente de desenvolvimento.
 date: 2025-03-12
 ---
 
@@ -12,16 +12,16 @@ Welcome to the installation guide for forking the application from GitHub and se
   <Step>
     <StepTitle>Step 1: Fork the Repository</StepTitle>
     <StepContent>
-    <div>
       <div>
-        Visit our GitHub repository and click the "Fork" button to create your own copy.
+      <div>
+          Acesse o repositório oficial da Ness, faça login e clique em "Fork" para criar sua cópia.
       </div>
         <a
-          href="https://github.com/sanjayc208/pinexio"
+            href="https://github.com/nesslabs/ness-docs"
           target="_blank"
           rel="noopener noreferrer"
         >
-          Fork the Repository on GitHub
+            Fork do repositório da Ness
         </a>
       </div>
     </StepContent>
@@ -30,9 +30,9 @@ Welcome to the installation guide for forking the application from GitHub and se
     <StepTitle>Step 2: Clone Your Fork</StepTitle>
     <StepContent>
     <div>
-      After forking, clone your repository to your local machine:
+        Depois do fork, clone sua cópia para a máquina local:
   ```sh
-  git clone https://github.com/sanjayc208/pinexio.git
+    git clone https://github.com/<seu-usuario>/ness-docs.git
   ```
       </div>
     </StepContent>
@@ -79,12 +79,12 @@ Welcome to the installation guide for forking the application from GitHub and se
     <StepTitle>Step 5: Make Changes</StepTitle>
     <StepContent>
     <div>
-      <p>If you want to make changes:</p>
-
-      1. Edit files in the root directory <code>/</code> for global configurations.
-      2. Update or create MDX files in the <code>docs</code> directory to modify or add documentation.
-      3. Update or create MDX files in the <code>docs</code> directory to modify or add documentation.
-
+        <p>Pronto para personalizar?</p>
+        <ol>
+          <li>Atualize configurações globais no diretório <code>/</code> (Next.js, Tailwind, Contentlayer).</li>
+          <li>Crie ou edite arquivos MDX em <code>/docs</code> para novos tópicos.</li>
+          <li>Use os componentes prontos (`Button`, `Tabs`, `Note`) para padronizar exemplos.</li>
+        </ol>
           <FolderTree className="overflow-hidden p-2">
             <Folder element="docs" defaultOpen={true}>
               <File>
@@ -95,7 +95,7 @@ Welcome to the installation guide for forking the application from GitHub and se
               </File>
             </Folder>
           </FolderTree>
-      4. Refer to the existing documentation to see how things work.
+        <p>Dica: consulte a própria Ness Docs para copiar padrões de escrita e espaçamento.</p>
       </div>
     </StepContent>
 

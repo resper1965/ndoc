@@ -53,18 +53,16 @@ export default function DocsLayout({
               logo={
                 <Image
                   alt="logo"
-                  className={'h-auto w-aut dark:invert'}
+                  className="h-auto w-auto"
                   width={100}
                   height={100}
-                  src={`/logos/pinedocs.png`}
+                  src={`/logos/ness.svg`}
                 />
               }
             />
 
             <Link href={'/'} className="flex flex-1 gap-3">
-              <SidebarHeaderTitle>
-                PINE<span className="text-4xl">X</span>IO
-              </SidebarHeaderTitle>
+              <SidebarHeaderTitle>Ness Docs</SidebarHeaderTitle>
             </Link>
           </SidebarHeader>
           <SidebarContent>
@@ -90,8 +88,8 @@ export default function DocsLayout({
             <UserAvatar>
               {
                 <Image
-                  alt="logo"
-                  src={'https://avatars.githubusercontent.com/u/24631970?v=4'}
+                  alt="logo Ness"
+                  src={'/logos/ness.svg'}
                   width={100}
                   height={100}
                 />
@@ -99,10 +97,10 @@ export default function DocsLayout({
             </UserAvatar>
             <div className="flex flex-col">
               <span className="text-sm font-medium text-gray-900 dark:text-white">
-                Sanjay Rajeev
+                Ness Developer Experience
               </span>
               <span className="text-xs text-gray-500 dark:text-gray-400">
-                sanjayc208@gmail.com
+                devrel@ness.com
               </span>
             </div>
           </SidebarFooter>
@@ -120,7 +118,7 @@ export default function DocsLayout({
               <ModeToggle />
               <Button
                 onClick={() =>
-                  router.push('https://github.com/sanjayc208/pinedocs')
+                  router.push('https://github.com/nesslabs/ness-docs')
                 }
               >
                 <Github className="h-[1.2rem] w-[1.2rem] transition-all" />
