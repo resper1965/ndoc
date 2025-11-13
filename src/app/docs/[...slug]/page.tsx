@@ -7,18 +7,20 @@ import Toc from '@/components/toc';
 type tParams = Promise<{ slug: string[] }>;
 
 export const generateStaticParams = async () => {
-  return allDocs.map((doc) => {
-    // For a path like "getting-started/introduction",
-    // this creates { slug: ['getting-started', 'introduction'] }
-    const slugArray = doc._raw.flattenedPath.split('/');
-    return { slug: slugArray };
-  });
+  return allDocs
+    .filter((doc) => doc._raw.flattenedPath !== 'index') // Exclude index, handled by /docs/page.tsx
+    .map((doc) => {
+      // For a path like "getting-started/introduction",
+      // this creates { slug: ['getting-started', 'introduction'] }
+      const slugArray = doc._raw.flattenedPath.split('/');
+      return { slug: slugArray };
+    });
 };
 
 export const generateMetadata = async ({ params }: { params: tParams }) => {
-  // Join the slug array back into a path string
+  // Join the slug array back into a path string, or use 'index' for empty slug
   const awaitedParams = await params;
-  const path = awaitedParams.slug.join('/');
+  const path = awaitedParams.slug.length === 0 ? 'index' : awaitedParams.slug.join('/');
   const doc = allDocs.find((doc) => doc._raw.flattenedPath === path);
 
   if (!doc) throw new Error(`Doc not found for slug: ${path}`);

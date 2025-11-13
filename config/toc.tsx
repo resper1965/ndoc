@@ -17,19 +17,9 @@ type TocData = {
 export const TocData: TocData = {
   'getting-started/introduction': [
     {
-      title: 'Welcome to Pinexio',
-      href: '/docs/getting-started/introduction#welcome-to-pinexio',
-      pages: [
-        {
-          title: 'Why Choose Pinexio',
-          href: '/docs/getting-started/introduction#why-choose-pinexio',
-        },
-
-        {
-          title: 'What Makes Pinexio Special',
-          href: '/docs/getting-started/introduction#what-makes-pinexio-special',
-        },
-      ],
+      title: 'Welcome to ness Documentation',
+      href: '/docs#welcome-to-ness-documentation',
+      pages: [],
     },
   ],
   'getting-started/installation': [

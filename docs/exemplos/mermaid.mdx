@@ -1,0 +1,158 @@
+---
+title: "Exemplos de Diagramas Mermaid"
+description: "Exemplos de uso de diagramas Mermaid na documentação"
+---
+
+# Exemplos de Diagramas Mermaid
+
+Esta página demonstra como usar diagramas Mermaid na documentação.
+
+## Flowchart (Fluxograma)
+
+```mermaid
+flowchart TD
+    A[Início] --> B{Decisão}
+    B -->|Sim| C[Ação 1]
+    B -->|Não| D[Ação 2]
+    C --> E[Fim]
+    D --> E
+```
+
+## Sequence Diagram (Diagrama de Sequência)
+
+```mermaid
+sequenceDiagram
+    participant U as Usuário
+    participant A as API
+    participant D as Database
+    
+    U->>A: Requisição POST
+    A->>D: Salvar dados
+    D-->>A: Confirmação
+    A-->>U: Resposta 200 OK
+```
+
+## Gantt Chart (Gráfico de Gantt)
+
+```mermaid
+gantt
+    title Cronograma de Desenvolvimento
+    dateFormat YYYY-MM-DD
+    section Fase 1
+    Design           :2025-11-01, 7d
+    Implementação    :2025-11-08, 14d
+    section Fase 2
+    Testes           :2025-11-22, 7d
+    Deploy           :2025-11-29, 2d
+```
+
+## Class Diagram (Diagrama de Classes)
+
+```mermaid
+classDiagram
+    class Document {
+        +string path
+        +string content
+        +save()
+        +delete()
+    }
+    class API {
+        +createDocument()
+        +updateDocument()
+        +deleteDocument()
+    }
+    class Credentials {
+        +string username
+        +string password
+        +verify()
+    }
+    
+    API --> Document
+    API --> Credentials
+```
+
+## State Diagram (Diagrama de Estados)
+
+```mermaid
+stateDiagram-v2
+    [*] --> Criado
+    Criado --> Processando
+    Processando --> Concluído
+    Processando --> Erro
+    Erro --> Processando
+    Concluído --> [*]
+```
+
+## ER Diagram (Diagrama Entidade-Relacionamento)
+
+```mermaid
+erDiagram
+    DOCUMENT ||--o{ VERSION : tem
+    DOCUMENT {
+        string path
+        string content
+        datetime created_at
+    }
+    VERSION {
+        string hash
+        datetime created_at
+        string content
+    }
+    USER ||--o{ DOCUMENT : cria
+    USER {
+        string username
+        string password_hash
+    }
+```
+
+## Pie Chart (Gráfico de Pizza)
+
+```mermaid
+pie title Distribuição de Documentos
+    "Guides" : 40
+    "API Reference" : 30
+    "Tutorials" : 20
+    "Examples" : 10
+```
+
+## Git Graph (Gráfico Git)
+
+```mermaid
+gitgraph
+    commit id: "Initial"
+    branch develop
+    checkout develop
+    commit id: "Feature 1"
+    commit id: "Feature 2"
+    checkout main
+    merge develop
+    commit id: "Release"
+```
+
+## Como Usar
+
+Para adicionar um diagrama Mermaid em seus documentos MDX, use um bloco de código com a linguagem `mermaid`:
+
+````markdown
+```mermaid
+flowchart TD
+    A[Início] --> B[Fim]
+```
+````
+
+O diagrama será renderizado automaticamente com o tema ness (cores slate + #00ade8).
+
+## Tipos de Diagramas Suportados
+
+- Flowchart
+- Sequence Diagram
+- Gantt Chart
+- Class Diagram
+- State Diagram
+- ER Diagram
+- Pie Chart
+- Git Graph
+- E muitos outros!
+
+Consulte a [documentação oficial do Mermaid](https://mermaid.js.org/) para mais exemplos e sintaxe.
+

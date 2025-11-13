@@ -1,12 +1,53 @@
 ---
-title: "Documentation Home"
-description: "Starting point for the customized Pinexio documentation."
+title: "Bem-vindo"
+description: "Bem-vindo à plataforma de documentação ness"
 ---
 
-# Welcome
+# Bem-vindo à Documentação ness
 
-Este espaço está pronto para receber a documentação gerada via fluxo do Spec Kit.
+Esta é sua plataforma de documentação. Comece adicionando conteúdo criando arquivos MDX na pasta `/docs`.
 
-- Utilize os artefatos produzidos por `/speckit.constitution`, `/speckit.specify`, `/speckit.plan` e `/speckit.tasks`.
-- Substitua este conteúdo pelos materiais aprovados após a execução do processo BMAD.
+## Como Começar
 
+1. Crie um novo arquivo `.mdx` nesta pasta (ou em uma subpasta)
+2. Adicione frontmatter com `title` e `description`
+3. O arquivo será automaticamente processado pelo Contentlayer
+
+## Exemplo
+
+Crie um arquivo como `docs/getting-started.mdx`:
+
+```mdx
+---
+title: "Primeiros Passos"
+description: "Aprenda como começar"
+---
+
+# Primeiros Passos
+
+Seu conteúdo aqui...
+```
+
+## Recursos
+
+### Diagramas Mermaid
+
+Você pode criar diagramas usando Mermaid:
+
+```mermaid
+flowchart TD
+    A[Início] --> B[Processo]
+    B --> C[Fim]
+```
+
+Veja mais exemplos na página de [Exemplos de Mermaid](/docs/exemplos/mermaid).
+
+## Estrutura de Arquivos
+
+```
+docs/
+├── index.mdx          # Página inicial (esta página)
+├── exemplos/          # Exemplos e tutoriais
+│   └── mermaid.mdx    # Exemplos de diagramas
+└── ...                # Seus documentos aqui
+```

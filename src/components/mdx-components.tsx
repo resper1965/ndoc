@@ -76,6 +76,7 @@ import { Note } from '@/components/note';
 import { Checkbox } from '@/components/checkbox';
 import { Label } from '@/components/label';
 import { Input } from '@/components/input';
+import { Mermaid } from '@/components/mermaid';
 
 const components = {
   h1: ({ className, ...children }: React.HTMLAttributes<HTMLElement>) => (
@@ -195,6 +196,12 @@ const components = {
       return '';
     };
 
+    // Render Mermaid diagrams
+    if (language === 'mermaid') {
+      const mermaidCode = extractText(children);
+      return <Mermaid chart={mermaidCode} />;
+    }
+
     if (language !== 'plaintext') {
       return (
         <CustomSyntaxHighlighter
@@ -305,6 +312,7 @@ const components = {
   DialogDescription,
   DialogFooter,
   DialogHeader,
+  Mermaid,
 };
 
 interface Mdxchildren {

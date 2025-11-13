@@ -22,7 +22,7 @@ export default function Home() {
             <ModeToggle />
             <Button
               onClick={() =>
-                router.push('https://github.com/sanjayc208/pinexio')
+                router.push('https://github.com/resper1965/ndoc')
               }
             >
               <Github className="h-[1.2rem] w-[1.2rem] transition-all" />
@@ -48,15 +48,12 @@ export default function Home() {
               className="flex gap-2 lg:gap-4 justify-center xs:px-2"
             >
               <Image
-                alt="logo"
-                className="h-auto w-auto dark:invert"
-                width={100}
-                height={100}
-                src={`/logos/pinedocs.png`}
+                alt="ness logo"
+                className="h-auto w-auto"
+                width={200}
+                height={60}
+                src={`/logos/ness.svg`}
               />
-              <h1 className="text-5xl content-center md:text-7xl font-stretch-110% -tracking-tighter text-gray-900 dark:text-white">
-                PINE<span className="md:text-8xl">X</span>IO
-              </h1>
             </motion.div>
             <motion.p
               initial={{ opacity: 0, y: 10 }}
@@ -64,9 +61,8 @@ export default function Home() {
               transition={{ duration: 0.6, delay: 0.4 }}
               className="text-shadow-xs mt-6 text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto"
             >
-              A customizable open-source documentation template built with
-              Next.js 15, Tailwind CSS 4, and Contentlayer for beautiful, fast,
-              and flexible documentation.
+              Documentation platform for ness projects, built with Spec-Driven Development
+              and BMAD methodology using Next.js 15, Tailwind CSS 4, and Contentlayer.
             </motion.p>
           </div>
 
@@ -80,7 +76,7 @@ export default function Home() {
             <Button
               className="px-6 py-3"
               variant={'primary'}
-              onClick={() => router.push('/docs/getting-started/introduction')}
+              onClick={() => router.push('/docs')}
               size={'md'}
             >
               Get Started
@@ -90,7 +86,7 @@ export default function Home() {
               variant={'outline'}
               size={'md'}
               onClick={() =>
-                router.push('https://github.com/sanjayc208/pinexio')
+                router.push('https://github.com/resper1965/ndoc')
               }
             >
               <Github size={20} />
@@ -148,7 +144,7 @@ export default function Home() {
               className="px-4 py-2 text-sm font-medium gap-2"
               onClick={() =>
                 window.open(
-                  'https://vercel.com/new/clone?repository-url=https://github.com/sanjayc208/pinexio',
+                  'https://vercel.com/new/clone?repository-url=https://github.com/resper1965/ndoc',
                   '_blank'
                 )
               }
@@ -164,7 +160,7 @@ export default function Home() {
             </Button>
             <div className="flex text-sm text-right gap-3">
               <p>
-                Built with ❤️ by <strong>Sanjay Rajeev</strong>
+                Built with ❤️ by <strong>ness</strong>
               </p>
             </div>
           </div>

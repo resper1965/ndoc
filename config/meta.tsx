@@ -1,50 +1,46 @@
 export const meta = {
-  metadataBase: new URL('https://pinexio.vercel.app'),
-  title: 'Pinexio - Documentation template',
+  metadataBase: new URL('https://ndoc.vercel.app'),
+  title: 'ness Documentation',
   description:
-    'A customizable Open Source documentation template built with Next.js',
-  authors: [{ name: 'Sanjay Rajeev' }],
+    'Documentation platform for ness projects, built with Spec-Driven Development and BMAD methodology',
+  authors: [{ name: 'ness' }],
   keywords: [
-    'Pinexio',
-    'documentation template',
-    'template',
+    'ness',
+    'documentation',
+    'spec-driven development',
+    'BMAD',
     'Next.js',
     'React',
-    'JavaScript',
+    'TypeScript',
   ],
-  publisher: 'Sanjay Rajeev',
-  creator: 'Sanjay Rajeev',
+  publisher: 'ness',
+  creator: 'ness',
   openGraph: {
     type: 'website',
-    title: 'Pinexio - Documentation Template',
+    title: 'ness Documentation',
     description:
-      'A customizable open-source documentation template built with Next.js.',
+      'Documentation platform for ness projects, built with Spec-Driven Development and BMAD methodology.',
     images: [
       {
         url: '/og_image.png',
         width: 1200,
         height: 630,
-        alt: 'Pinexio Documentation Template',
+        alt: 'ness Documentation',
       },
     ],
   },
   twitter: {
-    card: 'summary_large_image', // Type of Twitter card
-    title: 'Pinexio - Documentation Template', // Twitter card title
+    card: 'summary_large_image',
+    title: 'ness Documentation',
     description:
-      'A customizable open-source documentation template built with Next.js.', // Twitter card description
-    images: ['/og_image.png'], // Image used in the Twitter card
-    creator: '@sanjayrajeev', // Twitter handle of the content creator (optional)
+      'Documentation platform for ness projects, built with Spec-Driven Development and BMAD methodology.',
+    images: ['/og_image.png'],
   },
-  // SEO Enhancements
   alternates: {
-    canonical: 'https://pinexio.vercel.app', // Set the canonical URL
+    canonical: 'https://ndoc.vercel.app',
   },
-  robots: 'index, follow', // Allows search engines to index and follow links
-  // Optional: Hreflang for multilingual content (if applicable)
+  robots: 'index, follow',
   hreflang: {
-    en: 'https://pinexio.vercel.app', // English version URL
-    // Add more hreflang if you have other languages (example: Spanish)
-    // "es": "https://pinexio.vercel.app/es",
+    en: 'https://ndoc.vercel.app',
   },
 };

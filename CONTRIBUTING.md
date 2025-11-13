@@ -1,72 +1,43 @@
-# Contributing to Pinexio Documentation Template
+# Contributing to ness Documentation
 
-Thank you for considering contributing to **Pinexio Documentation Template**! 🚀 Your contributions help improve this project for everyone. Please follow these guidelines to ensure a smooth collaboration.
+Thank you for considering contributing to **ness Documentation**! 🚀 Your contributions help improve this project for everyone. Please follow these guidelines to ensure a smooth collaboration.
 
-## 📌 How to Contribute
+## Development Workflow
 
-### 1️⃣ Reporting Bugs 🐛
+This project follows **Spec-Driven Development** using GitHub Spec Kit. All contributions must follow this workflow:
 
-If you find a bug, please open an issue with:
+1. **Specification**: Create feature branch and specification via `create-new-feature.sh`
+2. **Planning**: Execute `/speckit.plan` with technical stack details
+3. **Tasks**: Generate task breakdown via `/speckit.tasks`
+4. **Implementation**: Execute `/speckit.implement` or implement manually
+5. **Validation**: Run quality gates before creating PR
 
-- A clear **title** describing the issue.
-- Steps to **reproduce** the problem.
-- Expected vs. actual behavior.
-- Screenshots or code snippets (if applicable).
+See the [Development Workflow](/docs/settings/workflow) for detailed instructions.
 
-### 2️⃣ Suggesting Features 💡
+## Code of Conduct
 
-Have an idea for a new feature? Create a **Feature Request** issue or **start a new Discussion**:
+- Be respectful and inclusive
+- Follow the project constitution (see `/docs/specs/constitution`)
+- Maintain code quality standards
+- Update documentation when making changes
 
-- A brief **description** of the feature.
-- Why it would be useful.
-- Any possible implementation ideas.
+## Quality Gates
 
-### 3️⃣ Submitting a Pull Request (PR) 🔥
+Before submitting a PR:
 
-To contribute code, follow these steps:
+- [ ] Run `pnpm lint` and fix all errors
+- [ ] Run `pnpm type-check` and fix all errors
+- [ ] Update `library.md` if new Context7 libraries were used
+- [ ] Update documentation if needed
+- [ ] Ensure Lighthouse scores meet targets (≥ 90)
 
-1. **Fork** this repository.
-2. **Clone** your forked repo:
-   ```sh
-   git clone https://github.com/sanjayc208/pinexio.git
-   ```
-3. **Create a new branch** for your changes:
-   ```sh
-   git checkout -b feature/my-new-feature
-   ```
-4. **Make your changes** and commit them using [Conventional Commits](https://www.conventionalcommits.org/):
-   ```sh
-   git commit -m "feat: add dark mode toggle"
-   ```
-5. **Push your branch** and create a pull request:
-   ```sh
-   git push origin feature/my-new-feature
-   ```
-6. Open a **Pull Request** from your fork to the `main` branch.
+## Getting Started
 
-## 🛠 Development Setup
+1. Fork the repository
+2. Clone your fork: `git clone https://github.com/resper1965/ndoc.git`
+3. Install dependencies: `pnpm install`
+4. Create a feature branch: `./.specify/scripts/bash/create-new-feature.sh "Your feature"`
+5. Make your changes following the Spec-Driven Development workflow
+6. Submit a pull request
 
-1. Install dependencies:
-   ```sh
-   npm install
-   ```
-2. Run the development server:
-   ```sh
-   npm run dev
-   ```
-
-## ✅ Code Guidelines
-
-- Follow **ESLint** and **Prettier** rules.
-- Write **clear, modular, and well-documented** code.
-- Ensure **manual testing in the documentation site** for any changes.
-
-## 🤝 Community Guidelines
-
-- Be respectful and kind to others.
-- Keep discussions constructive and professional.
-- Help others if you can!
-
----
-
-**🚀 Let’s build an awesome Next.js documentation template together!**
+Thank you for contributing! 🙏

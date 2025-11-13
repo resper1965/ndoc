@@ -52,18 +52,18 @@ export default function DocsLayout({
             <SidebarHeaderLogo
               logo={
                 <Image
-                  alt="logo"
-                  className={'h-auto w-aut dark:invert'}
-                  width={100}
-                  height={100}
-                  src={`/logos/pinedocs.png`}
+                  alt="ness logo"
+                  className={'h-auto w-auto'}
+                  width={200}
+                  height={60}
+                  src={`/logos/ness.svg`}
                 />
               }
             />
 
             <Link href={'/'} className="flex flex-1 gap-3">
-              <SidebarHeaderTitle>
-                PINE<span className="text-4xl">X</span>IO
+              <SidebarHeaderTitle className="font-heading">
+                ness<span className="text-primary-500">.</span>
               </SidebarHeaderTitle>
             </Link>
           </SidebarHeader>
@@ -89,20 +89,17 @@ export default function DocsLayout({
           <SidebarFooter>
             <UserAvatar>
               {
-                <Image
-                  alt="logo"
-                  src={'https://avatars.githubusercontent.com/u/24631970?v=4'}
-                  width={100}
-                  height={100}
-                />
+                <div className="w-10 h-10 rounded-full bg-primary-500 flex items-center justify-center text-white font-heading font-semibold">
+                  n<span className="text-white">.</span>
+                </div>
               }
             </UserAvatar>
             <div className="flex flex-col">
-              <span className="text-sm font-medium text-gray-900 dark:text-white">
-                Sanjay Rajeev
+              <span className="text-sm font-medium text-gray-900 dark:text-white font-heading">
+                ness<span className="text-primary-500">.</span>
               </span>
               <span className="text-xs text-gray-500 dark:text-gray-400">
-                sanjayc208@gmail.com
+                Documentation Platform
               </span>
             </div>
           </SidebarFooter>
@@ -120,7 +117,7 @@ export default function DocsLayout({
               <ModeToggle />
               <Button
                 onClick={() =>
-                  router.push('https://github.com/sanjayc208/pinedocs')
+                  router.push('https://github.com/resper1965/ndoc')
                 }
               >
                 <Github className="h-[1.2rem] w-[1.2rem] transition-all" />
