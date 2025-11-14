@@ -36,14 +36,14 @@ echo ""
 
 # Configurar NEXT_PUBLIC_SUPABASE_URL
 echo "1️⃣  Configurando NEXT_PUBLIC_SUPABASE_URL..."
-echo "$SUPABASE_URL" | vercel env add NEXT_PUBLIC_SUPABASE_URL production preview development --scope "$TEAM_ID" --yes || {
-    echo "⚠️  Variável pode já existir. Continuando..."
+echo "$SUPABASE_URL" | vercel env add NEXT_PUBLIC_SUPABASE_URL production preview development --scope "$TEAM_ID" || {
+    echo "⚠️  Variável pode já existir ou erro ao configurar. Continuando..."
 }
 
 # Configurar NEXT_PUBLIC_SUPABASE_ANON_KEY
 echo "2️⃣  Configurando NEXT_PUBLIC_SUPABASE_ANON_KEY..."
-echo "$SUPABASE_ANON_KEY" | vercel env add NEXT_PUBLIC_SUPABASE_ANON_KEY production preview development --scope "$TEAM_ID" --yes || {
-    echo "⚠️  Variável pode já existir. Continuando..."
+echo "$SUPABASE_ANON_KEY" | vercel env add NEXT_PUBLIC_SUPABASE_ANON_KEY production preview development --scope "$TEAM_ID" || {
+    echo "⚠️  Variável pode já existir ou erro ao configurar. Continuando..."
 }
 
 echo ""
