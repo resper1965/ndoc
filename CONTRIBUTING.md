@@ -1,72 +1,102 @@
-# Contributing to Pinexio Documentation Template
+# Contribuindo para o Template
 
-Thank you for considering contributing to **Pinexio Documentation Template**! 🚀 Your contributions help improve this project for everyone. Please follow these guidelines to ensure a smooth collaboration.
+Obrigado por considerar contribuir para este template! 🎉
 
-## 📌 How to Contribute
+## Como Contribuir
 
-### 1️⃣ Reporting Bugs 🐛
+### Reportar Bugs
 
-If you find a bug, please open an issue with:
+1. Verifique se o bug já não foi reportado nas [Issues](https://github.com/resper1965/ndoc/issues)
+2. Crie uma nova issue com:
+   - Descrição clara do problema
+   - Passos para reproduzir
+   - Comportamento esperado vs. atual
+   - Ambiente (OS, Node.js, etc.)
 
-- A clear **title** describing the issue.
-- Steps to **reproduce** the problem.
-- Expected vs. actual behavior.
-- Screenshots or code snippets (if applicable).
+### Sugerir Melhorias
 
-### 2️⃣ Suggesting Features 💡
+1. Abra uma issue descrevendo a melhoria
+2. Explique o caso de uso
+3. Discuta antes de implementar (se for uma mudança grande)
 
-Have an idea for a new feature? Create a **Feature Request** issue or **start a new Discussion**:
+### Enviar Pull Requests
 
-- A brief **description** of the feature.
-- Why it would be useful.
-- Any possible implementation ideas.
-
-### 3️⃣ Submitting a Pull Request (PR) 🔥
-
-To contribute code, follow these steps:
-
-1. **Fork** this repository.
-2. **Clone** your forked repo:
-   ```sh
-   git clone https://github.com/sanjayc208/pinexio.git
+1. **Fork o repositório**
+2. **Crie uma branch**
+   ```bash
+   git checkout -b feature/minha-feature
    ```
-3. **Create a new branch** for your changes:
-   ```sh
-   git checkout -b feature/my-new-feature
+3. **Faça suas alterações**
+   - Siga o padrão de código existente
+   - Adicione testes se aplicável
+   - Atualize documentação se necessário
+4. **Commit suas mudanças**
+   ```bash
+   git commit -m "feat: adiciona nova funcionalidade"
    ```
-4. **Make your changes** and commit them using [Conventional Commits](https://www.conventionalcommits.org/):
-   ```sh
-   git commit -m "feat: add dark mode toggle"
+5. **Push para sua branch**
+   ```bash
+   git push origin feature/minha-feature
    ```
-5. **Push your branch** and create a pull request:
-   ```sh
-   git push origin feature/my-new-feature
-   ```
-6. Open a **Pull Request** from your fork to the `main` branch.
+6. **Abra um Pull Request**
 
-## 🛠 Development Setup
+## Padrões de Código
 
-1. Install dependencies:
-   ```sh
-   npm install
-   ```
-2. Run the development server:
-   ```sh
-   npm run dev
-   ```
+### TypeScript
 
-## ✅ Code Guidelines
+- Use TypeScript strict mode
+- Evite `any` (use tipos apropriados)
+- Documente funções públicas com JSDoc
 
-- Follow **ESLint** and **Prettier** rules.
-- Write **clear, modular, and well-documented** code.
-- Ensure **manual testing in the documentation site** for any changes.
+### Estilo
 
-## 🤝 Community Guidelines
+- Use Prettier (já configurado)
+- Siga as convenções do ESLint
+- Mantenha componentes pequenos e focados
 
-- Be respectful and kind to others.
-- Keep discussions constructive and professional.
-- Help others if you can!
+### Commits
+
+Use [Conventional Commits](https://www.conventionalcommits.org/):
+
+- `feat:` Nova funcionalidade
+- `fix:` Correção de bug
+- `docs:` Documentação
+- `style:` Formatação
+- `refactor:` Refatoração
+- `test:` Testes
+- `chore:` Manutenção
+
+## Desenvolvimento
+
+### Setup Local
+
+```bash
+git clone https://github.com/resper1965/ndoc.git
+cd ndoc
+pnpm install
+pnpm dev
+```
+
+### Testes
+
+Execute antes de commitar:
+
+```bash
+pnpm lint
+pnpm build
+```
+
+## Diretrizes
+
+- Mantenha o template simples e fácil de usar
+- Documente mudanças significativas
+- Considere impacto em usuários existentes
+- Teste em diferentes ambientes
+
+## Perguntas?
+
+Abra uma issue para discussão!
 
 ---
 
-**🚀 Let’s build an awesome Next.js documentation template together!**
+**Obrigado por contribuir! 🙏**

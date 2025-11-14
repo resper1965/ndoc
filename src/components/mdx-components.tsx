@@ -77,7 +77,7 @@ import { Checkbox } from '@/components/checkbox';
 import { Label } from '@/components/label';
 import { Input } from '@/components/input';
 
-const components = {
+export const components = {
   h1: ({ className, ...children }: React.HTMLAttributes<HTMLElement>) => (
     <h1
       className={`text-3xl font-semibold mt-3 mb-3 ${className}`}
@@ -191,7 +191,7 @@ const components = {
       if (typeof children === 'string') return children;
       if (Array.isArray(children)) return children.map(extractText).join('');
       if (React.isValidElement(children))
-        return extractText((children.props as any)?.children || '');
+        return extractText((children.props as { children?: React.ReactNode })?.children || '');
       return '';
     };
 

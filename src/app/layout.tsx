@@ -3,6 +3,8 @@ import './globals.css';
 import { ThemeProvider } from '@/components/theme-provider';
 import { Metadata } from 'next';
 import { meta } from '../../config/meta';
+import { ToastProvider } from '@/components/toast-provider';
+import { AuthProvider } from '@/contexts/auth-context';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -24,14 +26,17 @@ export default function RootLayout({
           text-sm
           font-regular tracking-wide antialiased`}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="light"
-          enableSystem
-          disableTransitionOnChange
-        >
-          {children}
-        </ThemeProvider>
+              <ThemeProvider
+                attribute="class"
+                defaultTheme="light"
+                enableSystem
+                disableTransitionOnChange
+              >
+                <AuthProvider>
+                  {children}
+                  <ToastProvider />
+                </AuthProvider>
+              </ThemeProvider>
       </body>
     </html>
   );

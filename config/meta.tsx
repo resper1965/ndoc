@@ -1,50 +1,51 @@
+import { clientBranding, appBranding, producerBranding } from './branding';
+
+const displayName = clientBranding.name || appBranding.name;
+const displayDescription = clientBranding.description || clientBranding.tagline || 
+  'Plataforma de documentação desenvolvida pela ness.';
+
 export const meta = {
-  metadataBase: new URL('https://pinexio.vercel.app'),
-  title: 'Pinexio - Documentation template',
-  description:
-    'A customizable Open Source documentation template built with Next.js',
-  authors: [{ name: 'Sanjay Rajeev' }],
+  metadataBase: new URL('https://github.com/resper1965/ndoc'),
+  title: `${displayName} - Documentação`,
+  description: displayDescription,
+  authors: [{ name: clientBranding.name || producerBranding.name }],
   keywords: [
-    'Pinexio',
-    'documentation template',
+    'n.doc',
+    'ness',
+    'documentação',
+    'documentation',
     'template',
     'Next.js',
     'React',
-    'JavaScript',
+    'MDX',
+    'Contentlayer',
   ],
-  publisher: 'Sanjay Rajeev',
-  creator: 'Sanjay Rajeev',
+  publisher: producerBranding.name,
+  creator: producerBranding.name,
   openGraph: {
     type: 'website',
-    title: 'Pinexio - Documentation Template',
-    description:
-      'A customizable open-source documentation template built with Next.js.',
+    title: `${displayName} - Documentação`,
+    description: displayDescription,
     images: [
       {
         url: '/og_image.png',
         width: 1200,
         height: 630,
-        alt: 'Pinexio Documentation Template',
+        alt: `${displayName} - Documentação`,
       },
     ],
   },
   twitter: {
-    card: 'summary_large_image', // Type of Twitter card
-    title: 'Pinexio - Documentation Template', // Twitter card title
-    description:
-      'A customizable open-source documentation template built with Next.js.', // Twitter card description
-    images: ['/og_image.png'], // Image used in the Twitter card
-    creator: '@sanjayrajeev', // Twitter handle of the content creator (optional)
+    card: 'summary_large_image',
+    title: `${displayName} - Documentação`,
+    description: displayDescription,
+    images: ['/og_image.png'],
   },
-  // SEO Enhancements
   alternates: {
-    canonical: 'https://pinexio.vercel.app', // Set the canonical URL
+    canonical: clientBranding.website || 'https://github.com/resper1965/ndoc',
   },
-  robots: 'index, follow', // Allows search engines to index and follow links
-  // Optional: Hreflang for multilingual content (if applicable)
+  robots: 'index, follow',
   hreflang: {
-    en: 'https://pinexio.vercel.app', // English version URL
-    // Add more hreflang if you have other languages (example: Spanish)
-    // "es": "https://pinexio.vercel.app/es",
+    'pt-BR': clientBranding.website || 'https://github.com/resper1965/ndoc',
   },
 };

@@ -23,20 +23,18 @@ import {
   NestedLink,
 } from '@/components/sidebar';
 import { Github } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 
 import Header from '@/components/header';
 import { ModeToggle } from '@/components/mode-toggle';
 import { Button } from '@/components/button';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { clientBranding, getDisplayName, getDisplayLogo } from '../../../config/branding';
 
 export default function DocsLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  // Destructure sidebarNav from configDocs
-  const router = useRouter();
   const isMobile = useIsMobile();
   return (
     <SidebarLayout>
@@ -56,14 +54,14 @@ export default function DocsLayout({
                   className={'h-auto w-aut dark:invert'}
                   width={100}
                   height={100}
-                  src={`/logos/pinedocs.png`}
+                  src={getDisplayLogo()}
                 />
               }
             />
 
             <Link href={'/'} className="flex flex-1 gap-3">
-              <SidebarHeaderTitle>
-                PINE<span className="text-4xl">X</span>IO
+              <SidebarHeaderTitle className="font-heading">
+                {getDisplayName()}
               </SidebarHeaderTitle>
             </Link>
           </SidebarHeader>
@@ -91,18 +89,18 @@ export default function DocsLayout({
               {
                 <Image
                   alt="logo"
-                  src={'https://avatars.githubusercontent.com/u/24631970?v=4'}
+                  src={getDisplayLogo()}
                   width={100}
                   height={100}
                 />
               }
             </UserAvatar>
             <div className="flex flex-col">
-              <span className="text-sm font-medium text-gray-900 dark:text-white">
-                Sanjay Rajeev
+              <span className="text-sm font-medium text-gray-900 dark:text-white font-heading">
+                {getDisplayName()}
               </span>
               <span className="text-xs text-gray-500 dark:text-gray-400">
-                sanjayc208@gmail.com
+                {clientBranding.tagline || 'Documentação'}
               </span>
             </div>
           </SidebarFooter>
@@ -118,13 +116,13 @@ export default function DocsLayout({
             <div className="flex gap-2 items-center pr-0 lg:pr-8">
               <SearchDialog searchData={allDocs} />
               <ModeToggle />
-              <Button
-                onClick={() =>
-                  router.push('https://github.com/sanjayc208/pinedocs')
-                }
-              >
-                <Github className="h-[1.2rem] w-[1.2rem] transition-all" />
-              </Button>
+              {clientBranding.github && (
+                <Button
+                  onClick={() => window.open(clientBranding.github, '_blank')}
+                >
+                  <Github className="h-[1.2rem] w-[1.2rem] transition-all" />
+                </Button>
+              )}
             </div>
           </Header>
           {/* <div className={`grid xl:grid xl:grid-cols-[1fr_270px]`}> */}

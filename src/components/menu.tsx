@@ -1,5 +1,6 @@
 import { cn } from '@/lib/utils';
 import React, { useState, useRef, useEffect } from 'react';
+import type { ReactElementProps } from '@/types/common';
 
 // Type definitions
 interface MenuProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -204,14 +205,14 @@ export const Menu: React.FC<MenuProps> = ({
       {React.Children.map(children, (child) => {
         if (React.isValidElement(child)) {
           if (child.type === MenuTrigger) {
-            return React.cloneElement(child as React.ReactElement<any>, {
+            return React.cloneElement(child as React.ReactElement<ReactElementProps>, {
               onClick: handleToggle,
               isOpen,
             });
           }
           if (child.type === PopMenu) {
             return isOpen
-              ? React.cloneElement(child as React.ReactElement<any>, {
+              ? React.cloneElement(child as React.ReactElement<ReactElementProps>, {
                   onClose: () => setIsOpen(false),
                   position: position,
                   isPositioning: isPositioning,

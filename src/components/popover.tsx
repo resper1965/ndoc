@@ -207,7 +207,7 @@ export const PopoverContent = ({
   const [dynamicStyles, setDynamicStyles] = useState({
     transform: 'translate(0px, 0px)',
   });
-  const [arrowStyles, setArrowStyles] = useState<any>({});
+  const [arrowStyles, setArrowStyles] = useState<Record<string, string | number>>({});
 
   // Convert the preferred position to initial placements
   const getInitialPlacement = (pos: PopoverPosition): Position => {
@@ -366,7 +366,7 @@ export const PopoverContent = ({
     arrowSize: number
   ) => {
     const arrowOffset = arrowSize / 2;
-    const position: any = {};
+    const position: Record<string, string> = {};
 
     // Based on popover placement, determine arrow position and border styles
     if (yAlign === 'top') {

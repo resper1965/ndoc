@@ -52,7 +52,8 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <button
         ref={ref}
-        className={cn(buttonVariants({ variant, size }), className)} // <-- Updated here
+        className={cn(buttonVariants({ variant, size }), className)}
+        aria-label={props['aria-label'] || (typeof props.children === 'string' ? props.children : undefined)}
         {...props}
       />
     );

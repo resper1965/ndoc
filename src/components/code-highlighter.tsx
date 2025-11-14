@@ -112,8 +112,8 @@ export const CodeHighlighter: React.FC<CodeHighlighterProps> = ({
       setTimeout(() => {
         setCopied(false);
       }, 2000);
-    } catch (err) {
-      console.error('Failed to copy text: ', err);
+    } catch {
+      // Erro ao copiar é silencioso (não crítico)
     }
   };
 

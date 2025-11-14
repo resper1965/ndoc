@@ -50,18 +50,27 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     { className, variant, size, fullWidth, isError, isLoading, ...props },
     ref
   ) => {
+    const inputId = props.id || props.name;
+    const ariaDescribedBy = isError ? `${inputId}-error` : undefined;
+    
     return (
       <div className="relative w-full">
         <input
           ref={ref}
+          id={inputId}
           className={cn(
             inputVariants({ variant, size, fullWidth, isError }),
             className
           )}
+          aria-invalid={isError ? true : undefined}
+          aria-describedby={ariaDescribedBy}
           {...props}
         />
         {isLoading && (
-          <Loader2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-muted-foreground" />
+          <Loader2 
+            className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-muted-foreground"
+            aria-hidden="true"
+          />
         )}
       </div>
     );

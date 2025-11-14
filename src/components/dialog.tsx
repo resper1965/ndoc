@@ -75,6 +75,20 @@ export function DialogContent({
   if (!ctx) throw new Error('DialogContent must be inside Dialog');
 
   const { open, setOpen } = ctx;
+  
+  // Navegação por teclado: ESC fecha o dialog
+  React.useEffect(() => {
+    if (!open) return;
+    
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setOpen(false);
+      }
+    };
+    
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [open, setOpen]);
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -112,6 +126,7 @@ export function DialogContent({
           setOpen(false);
         }
       }}
+      aria-hidden={!open}
     >
       <div
         className={cn(

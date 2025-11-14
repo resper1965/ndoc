@@ -3,11 +3,10 @@ import { Github } from 'lucide-react';
 import { ModeToggle } from '@/components/mode-toggle';
 import Image from 'next/image';
 import { Button } from '@/components/button';
-import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
+import { clientBranding, producerBranding, getDisplayName, getDisplayLogo } from '../../config/branding';
 
 export default function Home() {
-  const router = useRouter();
 
   return (
     <div className="flex flex-col min-h-screen bg-white dark:bg-gray-950 text-gray-900 dark:text-white">
@@ -20,13 +19,13 @@ export default function Home() {
           </nav>
           <div className="flex-1 flex gap-2 justify-end">
             <ModeToggle />
-            <Button
-              onClick={() =>
-                router.push('https://github.com/sanjayc208/pinexio')
-              }
-            >
-              <Github className="h-[1.2rem] w-[1.2rem] transition-all" />
-            </Button>
+            {clientBranding.github && (
+              <Button
+                onClick={() => window.open(clientBranding.github, '_blank')}
+              >
+                <Github className="h-[1.2rem] w-[1.2rem] transition-all" />
+              </Button>
+            )}
           </div>
         </div>
       </header>
@@ -52,10 +51,10 @@ export default function Home() {
                 className="h-auto w-auto dark:invert"
                 width={100}
                 height={100}
-                src={`/logos/pinedocs.png`}
+                src={getDisplayLogo()}
               />
-              <h1 className="text-5xl content-center md:text-7xl font-stretch-110% -tracking-tighter text-gray-900 dark:text-white">
-                PINE<span className="md:text-8xl">X</span>IO
+              <h1 className="text-5xl content-center md:text-7xl font-stretch-110% -tracking-tighter text-gray-900 dark:text-white font-heading">
+                {getDisplayName()}
               </h1>
             </motion.div>
             <motion.p
@@ -64,9 +63,8 @@ export default function Home() {
               transition={{ duration: 0.6, delay: 0.4 }}
               className="text-shadow-xs mt-6 text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto"
             >
-              A customizable open-source documentation template built with
-              Next.js 15, Tailwind CSS 4, and Contentlayer for beautiful, fast,
-              and flexible documentation.
+              {clientBranding.tagline || clientBranding.description || 
+                'Plataforma de documentação desenvolvida pela ness. Template moderno e completo usando Next.js 15, Tailwind CSS 4 e MDX.'}
             </motion.p>
           </div>
 
@@ -80,22 +78,22 @@ export default function Home() {
             <Button
               className="px-6 py-3"
               variant={'primary'}
-              onClick={() => router.push('/docs/getting-started/introduction')}
+              onClick={() => window.location.href = '/docs'}
               size={'md'}
             >
               Get Started
             </Button>
-            <Button
-              className="px-6 py-3 gap-2"
-              variant={'outline'}
-              size={'md'}
-              onClick={() =>
-                router.push('https://github.com/sanjayc208/pinexio')
-              }
-            >
-              <Github size={20} />
-              GitHub
-            </Button>
+            {clientBranding.github && (
+              <Button
+                className="px-6 py-3 gap-2"
+                variant={'outline'}
+                size={'md'}
+                onClick={() => window.open(clientBranding.github, '_blank')}
+              >
+                <Github size={20} />
+                GitHub
+              </Button>
+            )}
           </motion.div>
         </motion.div>
         <div className="mt-16 mb-6 flex flex-wrap justify-center items-center gap-8 md:gap-12">
@@ -144,11 +142,11 @@ export default function Home() {
       <footer className="sticky bottom-0 z-10 bg-white/90 dark:bg-gray-950/90 backdrop-blur-sm border-t border-gray-200 dark:border-gray-800">
         <div className="container mx-auto px-4 py-3 text-center text-gray-600 dark:text-gray-400">
           <div className="flex justify-end items-center space-x-4">
-            <Button
+              <Button
               className="px-4 py-2 text-sm font-medium gap-2"
               onClick={() =>
                 window.open(
-                  'https://vercel.com/new/clone?repository-url=https://github.com/sanjayc208/pinexio',
+                  'https://vercel.com/new/clone?repository-url=https://github.com/resper1965/ndoc',
                   '_blank'
                 )
               }
@@ -164,7 +162,7 @@ export default function Home() {
             </Button>
             <div className="flex text-sm text-right gap-3">
               <p>
-                Built with ❤️ by <strong>Sanjay Rajeev</strong>
+                {producerBranding.footerText}
               </p>
             </div>
           </div>
