@@ -1,9 +1,9 @@
 # 📚 n.doc - Plataforma de Documentação Inteligente
 
 **Versão**: 1.0.0  
-**Status**: ✅ **Produção Ready**
+**Status**: ✅ **Em Produção**
 
-Uma plataforma moderna e completa para criação, gerenciamento e publicação de documentação técnica, com suporte a geração e melhoria de documentos usando Inteligência Artificial.
+**n.doc** é uma aplicação completa e moderna para criação, gerenciamento e publicação de documentação técnica. Desenvolvida pela **ness.**, oferece recursos avançados como geração e melhoria de documentos usando Inteligência Artificial, editor avançado, autenticação robusta e multi-tenancy.
 
 ---
 
@@ -445,9 +445,13 @@ pnpm test         # Testes
 
 ### Vercel (Recomendado)
 
-1. Conecte seu repositório ao Vercel
-2. Configure as variáveis de ambiente (veja [VERCEL-SETUP.md](./VERCEL-SETUP.md))
-3. Deploy automático a cada push
+A aplicação está configurada para deploy automático na Vercel:
+
+1. ✅ Repositório conectado ao Vercel
+2. ✅ Variáveis de ambiente configuradas
+3. ✅ Deploy automático a cada push para `main`
+
+**🌐 URL de Produção**: https://ndoc-eight.vercel.app
 
 **📖 Guia Completo**: Veja [VERCEL-SETUP.md](./VERCEL-SETUP.md) para instruções detalhadas de configuração.
 
