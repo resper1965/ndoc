@@ -64,7 +64,7 @@ export default function Home() {
               className="text-shadow-xs mt-6 text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto"
             >
               {clientBranding.tagline || clientBranding.description || 
-                'Plataforma de documentação desenvolvida pela ness. Template moderno e completo usando Next.js 15, Tailwind CSS 4 e MDX.'}
+                'Plataforma de documentação inteligente desenvolvida pela ness. Crie, gerencie e publique documentação técnica com suporte a IA.'}
             </motion.p>
           </div>
 

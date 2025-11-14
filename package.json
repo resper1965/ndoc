@@ -4,7 +4,7 @@
   "private": false,
   "author": "ness.",
   "license": "MIT",
-  "description": "n.doc - Plataforma de documentação desenvolvida pela ness. Template moderno e completo usando Next.js 15, Tailwind CSS 4 e MDX",
+  "description": "n.doc - Plataforma de documentação inteligente desenvolvida pela ness. Aplicação completa para criação, gerenciamento e publicação de documentação técnica com IA.",
   "repository": {
     "type": "git",
     "url": "https://github.com/resper1965/ndoc.git"
@@ -35,14 +35,14 @@
   "keywords": [
     "nextjs",
     "documentation",
-    "template",
+    "documentation-platform",
     "docs",
-    "nextjs-template",
-    "static-site",
     "mdx",
-    "documentation-template",
+    "supabase",
+    "ai",
+    "documentation-management",
     "nextjs-docs",
-    "nextjs-starter"
+    "content-management"
   ],
   "dependencies": {
     "@codemirror/lang-markdown": "^6.5.0",

@@ -1,6 +1,6 @@
-# Contribuindo para o Template
+# Contribuindo para n.doc
 
-Obrigado por considerar contribuir para este template! 🎉
+Obrigado por considerar contribuir para a plataforma n.doc! 🎉
 
 ## Como Contribuir
 
@@ -88,7 +88,7 @@ pnpm build
 
 ## Diretrizes
 
-- Mantenha o template simples e fácil de usar
+- Mantenha a aplicação simples e fácil de usar
 - Documente mudanças significativas
 - Considere impacto em usuários existentes
 - Teste em diferentes ambientes

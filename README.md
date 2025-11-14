@@ -26,10 +26,10 @@ Uma plataforma moderna e completa para criação, gerenciamento e publicação d
 ### Pré-requisitos
 
 - Node.js 20+ e pnpm
-- Conta no Supabase
+- Conta no Supabase (já configurada)
 - (Opcional) Conta OpenAI ou Anthropic para recursos de IA
 
-### Instalação
+### Instalação Local
 
 ```bash
 # Clone o repositório
@@ -476,11 +476,15 @@ supabase functions deploy improve-document
 
 ## 🤝 Contribuindo
 
-1. Fork o projeto
-2. Crie uma branch (`git checkout -b feature/nova-feature`)
+Contribuições são bem-vindas! Para contribuir:
+
+1. Fork o repositório
+2. Crie uma branch para sua feature (`git checkout -b feature/nova-feature`)
 3. Commit suas mudanças (`git commit -m 'Adiciona nova feature'`)
 4. Push para a branch (`git push origin feature/nova-feature`)
 5. Abra um Pull Request
+
+Veja [CONTRIBUTING.md](./CONTRIBUTING.md) para mais detalhes.
 
 ---
 
