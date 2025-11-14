@@ -49,15 +49,25 @@ export default function LoginPage() {
         {/* Logo e Título */}
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
-            {getDisplayLogo() && (
+            {getDisplayLogo() ? (
               <img
                 src={getDisplayLogo()}
                 alt={getDisplayName()}
                 className="h-12 w-auto"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                  const fallback = document.createElement('div');
+                  fallback.className = 'w-12 h-12 rounded-full bg-primary-500 flex items-center justify-center';
+                  fallback.innerHTML = `<span class="text-xl font-bold text-white">${getDisplayName().charAt(0).toUpperCase()}</span>`;
+                  e.currentTarget.parentElement?.appendChild(fallback);
+                }}
               />
-            )}
-            {!getDisplayLogo() && (
-              <h2 className="text-2xl font-bold text-primary">{getDisplayName()}</h2>
+            ) : (
+              <div className="w-12 h-12 rounded-full bg-primary-500 flex items-center justify-center">
+                <span className="text-xl font-bold text-white">
+                  {getDisplayName().charAt(0).toUpperCase()}
+                </span>
+              </div>
             )}
           </div>
           <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-50">

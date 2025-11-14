@@ -44,15 +44,27 @@ export default function Home() {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="flex gap-2 lg:gap-4 justify-center xs:px-2"
+              className="flex gap-2 lg:gap-4 justify-center items-center xs:px-2"
             >
-              <Image
-                alt="logo"
-                className="h-auto w-auto dark:invert"
-                width={100}
-                height={100}
-                src={getDisplayLogo()}
-              />
+              {getDisplayLogo() ? (
+                <Image
+                  alt="logo"
+                  className="h-auto w-auto dark:invert"
+                  width={100}
+                  height={100}
+                  src={getDisplayLogo()}
+                  onError={(e) => {
+                    // Fallback: esconder imagem se não carregar
+                    e.currentTarget.style.display = 'none';
+                  }}
+                />
+              ) : (
+                <div className="w-16 h-16 md:w-24 md:h-24 rounded-full bg-primary-500 flex items-center justify-center">
+                  <span className="text-2xl md:text-4xl font-bold text-white">
+                    {getDisplayName().charAt(0).toUpperCase()}
+                  </span>
+                </div>
+              )}
               <h1 className="text-5xl content-center md:text-7xl font-stretch-110% -tracking-tighter text-gray-900 dark:text-white font-heading">
                 {getDisplayName()}
               </h1>

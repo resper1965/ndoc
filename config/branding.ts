@@ -88,9 +88,9 @@ export function getDisplayName(): string {
 
 /**
  * Helper para obter o logo a ser exibido
- * Se o cliente configurou um logo, usa o do cliente, senão usa o logo padrão da ness.
+ * Se o cliente configurou um logo, usa o do cliente, senão retorna null (sem logo)
  */
-export function getDisplayLogo(): string {
-  return clientBranding.logo || "/logos/ness.svg";
+export function getDisplayLogo(): string | null {
+  return clientBranding.logo || null;
 }
 

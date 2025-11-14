@@ -46,17 +46,28 @@ export default function DocsLayout({
       >
         <Sidebar>
           <SidebarHeader>
-            <SidebarHeaderLogo
-              logo={
-                <Image
-                  alt="logo"
-                  className={'h-auto w-aut dark:invert'}
-                  width={100}
-                  height={100}
-                  src={getDisplayLogo()}
-                />
-              }
-            />
+              <SidebarHeaderLogo
+                logo={
+                  getDisplayLogo() ? (
+                    <Image
+                      alt="logo"
+                      className={'h-auto w-aut dark:invert'}
+                      width={100}
+                      height={100}
+                      src={getDisplayLogo()}
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-primary-500 flex items-center justify-center">
+                      <span className="text-lg font-bold text-white">
+                        {getDisplayName().charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                  )
+                }
+              />
 
             <Link href={'/'} className="flex flex-1 gap-3">
               <SidebarHeaderTitle className="font-heading">
