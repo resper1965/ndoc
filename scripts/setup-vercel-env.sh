@@ -34,17 +34,23 @@ TEAM_ID="team_iz6jrPdYbt5I3BtGFHb6hY16"
 echo "📋 Configurando variáveis para o projeto: $PROJECT_NAME"
 echo ""
 
-# Configurar NEXT_PUBLIC_SUPABASE_URL
+# Configurar NEXT_PUBLIC_SUPABASE_URL para cada ambiente
 echo "1️⃣  Configurando NEXT_PUBLIC_SUPABASE_URL..."
-echo "$SUPABASE_URL" | vercel env add NEXT_PUBLIC_SUPABASE_URL production preview development --scope "$TEAM_ID" || {
-    echo "⚠️  Variável pode já existir ou erro ao configurar. Continuando..."
-}
+for env in production preview development; do
+    echo "   Configurando para $env..."
+    echo "$SUPABASE_URL" | vercel env add NEXT_PUBLIC_SUPABASE_URL "$env" --scope "$TEAM_ID" 2>&1 | grep -v "Error" || {
+        echo "   ⚠️  Variável pode já existir para $env. Continuando..."
+    }
+done
 
-# Configurar NEXT_PUBLIC_SUPABASE_ANON_KEY
+# Configurar NEXT_PUBLIC_SUPABASE_ANON_KEY para cada ambiente
 echo "2️⃣  Configurando NEXT_PUBLIC_SUPABASE_ANON_KEY..."
-echo "$SUPABASE_ANON_KEY" | vercel env add NEXT_PUBLIC_SUPABASE_ANON_KEY production preview development --scope "$TEAM_ID" || {
-    echo "⚠️  Variável pode já existir ou erro ao configurar. Continuando..."
-}
+for env in production preview development; do
+    echo "   Configurando para $env..."
+    echo "$SUPABASE_ANON_KEY" | vercel env add NEXT_PUBLIC_SUPABASE_ANON_KEY "$env" --scope "$TEAM_ID" 2>&1 | grep -v "Error" || {
+        echo "   ⚠️  Variável pode já existir para $env. Continuando..."
+    }
+done
 
 echo ""
 echo "✅ Variáveis configuradas com sucesso!"
