@@ -498,7 +498,7 @@ MIT License - veja [LICENSE](./LICENSE) para detalhes.
 
 ---
 
-## 👥 Autores
+## 👥 Desenvolvido por
 
 **ness.** - Desenvolvimento e manutenção
 
@@ -506,11 +506,14 @@ MIT License - veja [LICENSE](./LICENSE) para detalhes.
 
 ## 🙏 Agradecimentos
 
-- Supabase pela infraestrutura
+- Supabase pela infraestrutura e autenticação
 - Next.js pela framework
-- CodeMirror pelo editor
+- CodeMirror pelo editor avançado
 - OpenAI e Anthropic pelas APIs de IA
+- Comunidade open-source
 
 ---
+
+**🌐 Aplicação em Produção**: https://ndoc-eight.vercel.app
 
 **Última atualização**: 2025-01-14
