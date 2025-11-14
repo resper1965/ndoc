@@ -51,7 +51,7 @@ export default function LoginPage() {
           <div className="flex justify-center mb-4">
             {getDisplayLogo() ? (
               <img
-                src={getDisplayLogo()}
+                src={getDisplayLogo()!}
                 alt={getDisplayName()}
                 className="h-12 w-auto"
                 onError={(e) => {
