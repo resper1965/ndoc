@@ -1,6 +1,7 @@
 'use client';
 import React from 'react';
-import { useMDXComponent } from 'next-contentlayer2/hooks';
+// Contentlayer removido - usando next-mdx-remote
+// import { useMDXComponent } from 'next-contentlayer2/hooks';
 import clsx from 'clsx';
 import SearchButton from '@/components/search-button';
 import Preview from '@/components/preview';
@@ -307,18 +308,6 @@ export const components = {
   DialogHeader,
 };
 
-interface Mdxchildren {
-  code: string;
-}
-
-export function Mdx({ code }: Mdxchildren) {
-  const Component = useMDXComponent(code, {
-    style: 'default',
-  });
-
-  return (
-    <div className="mdx">
-      <Component components={components} />
-    </div>
-  );
-}
+// Componente Mdx removido - usando MDXRenderer de mdx-renderer.tsx
+// Este arquivo mantém apenas os componentes MDX para compatibilidade
+// A renderização real é feita via next-mdx-remote no MDXRenderer

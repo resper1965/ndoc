@@ -3,7 +3,6 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { allDocs } from 'contentlayer/generated';
 import SearchDialog from '@/components/search-dialog';
 import { sidebarNav } from 'config/sidebar';
 import Image from 'next/image';
@@ -114,7 +113,7 @@ export default function DocsLayout({
               <h1 className="text-xl font-bold">Documentation</h1>
             </div>
             <div className="flex gap-2 items-center pr-0 lg:pr-8">
-              <SearchDialog searchData={allDocs} />
+              <SearchDialog searchData={[]} />
               <ModeToggle />
               {clientBranding.github && (
                 <Button
