@@ -446,8 +446,10 @@ pnpm test         # Testes
 ### Vercel (Recomendado)
 
 1. Conecte seu repositório ao Vercel
-2. Configure as variáveis de ambiente
+2. Configure as variáveis de ambiente (veja [VERCEL-SETUP.md](./VERCEL-SETUP.md))
 3. Deploy automático a cada push
+
+**📖 Guia Completo**: Veja [VERCEL-SETUP.md](./VERCEL-SETUP.md) para instruções detalhadas de configuração.
 
 ### Edge Functions
 
