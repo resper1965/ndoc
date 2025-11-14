@@ -52,7 +52,7 @@ export default function Home() {
                   className="h-auto w-auto dark:invert"
                   width={100}
                   height={100}
-                  src={getDisplayLogo()}
+                  src={getDisplayLogo()!}
                   onError={(e) => {
                     // Fallback: esconder imagem se não carregar
                     e.currentTarget.style.display = 'none';

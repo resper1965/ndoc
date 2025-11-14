@@ -54,7 +54,7 @@ export default function DocsLayout({
                       className={'h-auto w-aut dark:invert'}
                       width={100}
                       height={100}
-                      src={getDisplayLogo()}
+                      src={getDisplayLogo()!}
                       onError={(e) => {
                         e.currentTarget.style.display = 'none';
                       }}
