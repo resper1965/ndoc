@@ -95,16 +95,22 @@ export default function DocsLayout({
           </SidebarContent>
 
           <SidebarFooter>
-            <UserAvatar>
-              {
-                <Image
-                  alt="logo"
-                  src={getDisplayLogo()}
-                  width={100}
-                  height={100}
-                />
-              }
-            </UserAvatar>
+                 <UserAvatar>
+                   {getDisplayLogo() ? (
+                     <Image
+                       alt="logo"
+                       src={getDisplayLogo()!}
+                       width={100}
+                       height={100}
+                     />
+                   ) : (
+                     <div className="w-10 h-10 rounded-full bg-primary-500 flex items-center justify-center">
+                       <span className="text-sm font-bold text-white">
+                         {getDisplayName().charAt(0).toUpperCase()}
+                       </span>
+                     </div>
+                   )}
+                 </UserAvatar>
             <div className="flex flex-col">
               <span className="text-sm font-medium text-gray-900 dark:text-white font-heading">
                 {getDisplayName()}
