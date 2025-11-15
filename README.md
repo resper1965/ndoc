@@ -1,9 +1,9 @@
-# 📚 n.doc - Plataforma de Documentação Inteligente
+# 📚 n.doc - Plataforma SaaS de Documentação Inteligente
 
-**Versão**: 1.0.0  
-**Status**: ✅ **Em Produção**
+**Versão**: 2.0.0
+**Status**: ✅ **SaaS 100% Funcional**
 
-**n.doc** é uma aplicação completa e moderna para criação, gerenciamento e publicação de documentação técnica. Desenvolvida pela **ness.**, oferece recursos avançados como geração e melhoria de documentos usando Inteligência Artificial, editor avançado, autenticação robusta e multi-tenancy.
+**n.doc** é uma plataforma SaaS completa e moderna para criação, gerenciamento e publicação de documentação técnica. Desenvolvida pela **ness.**, oferece recursos profissionais como planos de assinatura, limites configuráveis, geração e melhoria de documentos usando IA, editor avançado, autenticação robusta, multi-tenancy com isolamento total e compliance LGPD.
 
 ---
 
@@ -18,6 +18,43 @@
 - 📝 **Templates pré-definidos** para diferentes tipos de documentos
 - 🔍 **Busca e filtros** avançados
 - 🎨 **Interface moderna** e responsiva
+
+---
+
+## 💎 Recursos SaaS
+
+**n.doc** é uma plataforma SaaS 100% funcional com recursos profissionais de gestão e monetização:
+
+### 📊 Planos e Assinaturas
+- ✅ **4 planos**: Free, Starter, Professional, Enterprise
+- ✅ **Limites configuráveis**: documentos, usuários, storage, requisições de IA
+- ✅ **Trial de 14 dias** para novos usuários
+- ✅ **Preparado para Stripe**: estrutura de subscriptions, invoices e webhooks
+- ✅ **Enforcement automático**: APIs bloqueiam quando limites são atingidos
+
+### 👥 Multi-tenancy e Organizações
+- ✅ **Auto-criação de organização** no signup (via webhook)
+- ✅ **RBAC completo**: 5 níveis de permissão (superadmin, owner, admin, editor, viewer)
+- ✅ **Sistema de convites** por email com tokens seguros
+- ✅ **Isolamento total** de dados por organização (RLS)
+
+### 📈 Tracking e Auditoria
+- ✅ **Usage tracking automático**: documentos, usuários, storage, IA
+- ✅ **Audit logs completos**: todas ações importantes registradas
+- ✅ **Dashboard de uso**: visualize consumo vs limites em tempo real
+- ✅ **Compliance LGPD**: rastreamento completo de mudanças
+
+### 🎯 Onboarding e UX
+- ✅ **Wizard de onboarding** em 4 etapas para novos usuários
+- ✅ **Configuração de organização** facilitada
+- ✅ **Páginas legais**: Termos de Uso e Política de Privacidade
+- ✅ **Rate limiting** obrigatório em produção (via Upstash Redis)
+
+### 🔐 Segurança
+- ✅ **Row Level Security (RLS)** em todas as tabelas
+- ✅ **Validação de environment** no startup
+- ✅ **Proteção contra DDoS** com rate limiting distribuído
+- ✅ **Limites de paginação** para prevenir ataques
 
 ---
 
@@ -111,6 +148,18 @@ Para integrar mudanças da branch de desenvolvimento para main:
 - Fazer merge com segurança
 - Passos pós-merge
 - Troubleshooting
+
+### 🔗 Configurar Webhook de Auto-criação de Organização
+
+**⚠️ NECESSÁRIO** para que organizações sejam criadas automaticamente no signup.
+
+**➡️ Veja o guia completo:** [WEBHOOK-SETUP.md](./WEBHOOK-SETUP.md)
+
+- Por que webhooks são necessários (limitação de auth.users)
+- Configuração passo a passo no Supabase Dashboard
+- Payload e verificação
+- Alternativa com Edge Function
+- Troubleshooting completo
 
 ---
 
