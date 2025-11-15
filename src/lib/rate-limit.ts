@@ -23,14 +23,22 @@ export const rateLimitConfig = {
   'api/auth:signup': { limit: 3, window: '1 h' }, // 3 tentativas por hora
 } as const;
 
-// Inicializar Redis (Upstash) se disponível
+// Inicializar Redis (Upstash) - OBRIGATÓRIO em produção
 let redis: Redis | null = null;
 let ratelimit: Ratelimit | null = null;
 
-try {
-  const redisUrl = process.env.UPSTASH_REDIS_REST_URL;
-  const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN;
+const redisUrl = process.env.UPSTASH_REDIS_REST_URL;
+const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN;
+const isProduction = process.env.NODE_ENV === 'production';
 
+// Em produção, Redis é obrigatório
+if (isProduction && (!redisUrl || !redisToken)) {
+  throw new Error(
+    'FATAL: Redis (Upstash) é obrigatório em produção. Configure UPSTASH_REDIS_REST_URL e UPSTASH_REDIS_REST_TOKEN'
+  );
+}
+
+try {
   if (redisUrl && redisToken) {
     redis = new Redis({
       url: redisUrl,
@@ -42,9 +50,14 @@ try {
       limiter: Ratelimit.slidingWindow(10, '1 m'), // Default: 10 req/min
       analytics: true,
     });
+  } else if (!isProduction) {
+    console.warn('⚠️  Rate limiting: Redis não configurado, usando fallback em memória (apenas desenvolvimento)');
   }
-} catch {
-  console.warn('Rate limiting: Redis não disponível, usando fallback em memória');
+} catch (error) {
+  if (isProduction) {
+    throw new Error('FATAL: Falha ao conectar ao Redis em produção: ' + error);
+  }
+  console.warn('Rate limiting: Erro ao conectar ao Redis, usando fallback em memória');
 }
 
 // Fallback em memória para desenvolvimento

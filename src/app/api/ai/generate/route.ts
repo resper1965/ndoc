@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { getUserOrganization } from '@/lib/supabase/utils';
+import { canUseAI, incrementAIUsage, formatLimitError } from '@/lib/supabase/limits';
 import { logger } from '@/lib/logger';
 import { z } from 'zod';
 
@@ -41,6 +42,20 @@ export async function POST(request: NextRequest) {
     }
 
     const { topic, theme_id } = validation.data;
+
+    // Verificar limites de IA
+    const limitCheck = await canUseAI(organizationId);
+    if (!limitCheck.allowed) {
+      return NextResponse.json(
+        {
+          error: formatLimitError(limitCheck),
+          limit: limitCheck.limit,
+          current: limitCheck.current,
+          upgradeRequired: limitCheck.upgradeRequired,
+        },
+        { status: 403 }
+      );
+    }
 
     // Buscar tema
     const { data: theme, error: themeError } = await supabase
@@ -100,6 +115,9 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
+
+    // Incrementar contador de uso de IA
+    await incrementAIUsage(organizationId);
 
     return NextResponse.json({
       content: functionData.content,

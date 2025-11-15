@@ -75,6 +75,45 @@ pnpm start
 
 ---
 
+## 📖 Guias de Configuração
+
+### 🗄️ Migrations do Banco de Dados
+
+Para configurar o banco de dados pela primeira vez ou aplicar atualizações:
+
+**➡️ Veja o guia completo:** [MIGRATIONS.md](./MIGRATIONS.md)
+
+- Todas as 5 migrations documentadas
+- Como executar via Supabase CLI ou Dashboard
+- Ordem correta de execução
+- Troubleshooting completo
+
+### ⚡ Configurar Redis (Upstash)
+
+**⚠️ OBRIGATÓRIO EM PRODUÇÃO** para rate limiting distribuído.
+
+**➡️ Veja o guia completo:** [REDIS-SETUP.md](./REDIS-SETUP.md)
+
+- Como criar conta no Upstash
+- Configurar database Redis
+- Obter credenciais
+- Configurar variáveis de ambiente
+- Verificação e troubleshooting
+
+### 🔀 Fazer Merge no GitHub
+
+Para integrar mudanças da branch de desenvolvimento para main:
+
+**➡️ Veja o guia completo:** [MERGE-GUIDE.md](./MERGE-GUIDE.md)
+
+- Criar Pull Request no GitHub
+- Revisar mudanças
+- Fazer merge com segurança
+- Passos pós-merge
+- Troubleshooting
+
+---
+
 ## 🔑 Configuração de Chaves de IA
 
 ### Quando Preciso Configurar a Chave de IA?
