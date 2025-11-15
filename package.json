@@ -1,10 +1,10 @@
 {
   "name": "n.doc",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": false,
   "author": "ness.",
   "license": "MIT",
-  "description": "n.doc - Plataforma de documentação inteligente desenvolvida pela ness. Aplicação completa para criação, gerenciamento e publicação de documentação técnica com IA.",
+  "description": "n.doc - Plataforma SaaS de documentação inteligente desenvolvida pela ness. Aplicação completa com planos de assinatura, multi-tenancy, limites configuráveis e IA para criação e gestão de documentação técnica.",
   "repository": {
     "type": "git",
     "url": "https://github.com/resper1965/ndoc.git"
