@@ -84,27 +84,48 @@ supabase db diff
 **Criado:** 2025-01-15
 **Dependências:** Migration 0
 
+**⚠️ ATENÇÃO:** Esta migration requer configuração manual de webhook no Supabase Dashboard. Veja [WEBHOOK-SETUP.md](WEBHOOK-SETUP.md) para instruções detalhadas.
+
 **Descrição:** Cria automaticamente uma organização pessoal quando um usuário se cadastra via Supabase Auth.
 
 **Cria:**
-- ✅ **Função:** `handle_new_user()`
+- ✅ **Função:** `handle_new_user(user_id, user_email, user_metadata)`
+  - Aceita parâmetros (compatível com webhooks)
   - Gera slug único a partir do email
   - Cria organização com nome baseado no usuário
   - Adiciona usuário como `owner` da organização
+  - Retorna JSONB com resultado da operação
 
-- ✅ **Trigger:** `on_auth_user_created`
-  - Executa após `INSERT` em `auth.users`
-  - Chama `handle_new_user()` automaticamente
+**⚠️ Configuração Necessária:**
+
+Como não é possível criar triggers diretamente na tabela `auth.users` (tabela gerenciada pelo Supabase Auth), você deve configurar um **Database Webhook**:
+
+1. Acesse o [Supabase Dashboard](https://supabase.com/dashboard)
+2. Vá para **Database** → **Webhooks**
+3. Crie webhook com:
+   - **Tabela:** `auth.users`
+   - **Evento:** `INSERT` (após signup)
+   - **Função:** `handle_new_user()`
+
+📖 **Guia completo:** [WEBHOOK-SETUP.md](WEBHOOK-SETUP.md)
 
 **Impacto:**
 - ✅ Elimina necessidade de criação manual de organização
 - ✅ Melhora UX no signup
 - ✅ Garante que todo usuário tenha uma organização
+- ⚠️ Requer configuração manual de webhook (one-time setup)
 
 **Exemplo:**
 ```sql
 -- Usuário: joao@example.com
 -- Organização criada: "João's Organization" (slug: joao)
+
+-- Ou testar manualmente:
+SELECT handle_new_user(
+  'user-uuid'::UUID,
+  'joao@example.com',
+  '{"name": "João Silva"}'::JSONB
+);
 ```
 
 ---
@@ -369,6 +390,17 @@ supabase db diff
 ---
 
 ## 🔧 Troubleshooting
+
+### Erro: "permission denied for schema auth" ou "cannot create trigger on auth.users"
+
+**Causa:** Tentativa de criar trigger na tabela `auth.users`, que é gerenciada pelo Supabase Auth
+
+**Solução:**
+- ✅ A migration `20250115000000_auto_create_organization.sql` foi atualizada para **não** criar o trigger
+- ⚠️ Você deve configurar um **Database Webhook** no Supabase Dashboard
+- 📖 Siga as instruções detalhadas em [WEBHOOK-SETUP.md](WEBHOOK-SETUP.md)
+
+**Nota:** Este é um comportamento esperado. Tabelas do schema `auth` são protegidas e não permitem triggers via SQL. A solução com webhook é a abordagem recomendada pelo Supabase.
 
 ### Erro: "relation already exists"
 
