@@ -59,11 +59,11 @@ export default function SignupPage() {
       }
 
       if (data.user) {
-        showSuccess('Conta criada com sucesso! Verifique seu e-mail para confirmar.');
-        // Redirecionar para login após um delay
+        showSuccess('Conta criada com sucesso!');
+        // Redirecionar para onboarding
         setTimeout(() => {
-          router.push('/login');
-        }, 2000);
+          router.push('/onboarding');
+        }, 1500);
       }
     } catch (error) {
       logger.error('Signup error', error);

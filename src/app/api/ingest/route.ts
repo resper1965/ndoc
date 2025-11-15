@@ -17,6 +17,7 @@ import { createClient } from '@/lib/supabase/server';
 import { validateMDX } from '@/lib/validate-mdx';
 import { isSuperadmin, canEditDocuments, canDeleteDocuments } from '@/lib/supabase/permissions';
 import { getUserOrganization } from '@/lib/supabase/utils';
+import { canCreateDocument, formatLimitError } from '@/lib/supabase/limits';
 import { logger } from '@/lib/logger';
 import { checkRateLimit, getRateLimitIdentifier } from '@/lib/rate-limit';
 import { documentSchema, listDocumentsQuerySchema } from '@/lib/validations';
@@ -121,6 +122,30 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Sem permissão para criar/editar documentos' }, { status: 403 });
     }
 
+    // Verificar se documento já existe (para saber se é criação ou atualização)
+    const { data: existingDoc } = await supabase
+      .from('documents')
+      .select('id')
+      .eq('organization_id', organizationId)
+      .eq('path', path.replace(/\.mdx$/, ''))
+      .single();
+
+    // Verificar limites apenas para criação de novos documentos
+    if (!existingDoc && !isSuper) {
+      const limitCheck = await canCreateDocument(organizationId);
+      if (!limitCheck.allowed) {
+        return NextResponse.json(
+          {
+            error: formatLimitError(limitCheck),
+            limit: limitCheck.limit,
+            current: limitCheck.current,
+            upgradeRequired: limitCheck.upgradeRequired,
+          },
+          { status: 403 }
+        );
+      }
+    }
+
     // Parsear frontmatter
     const parsed = matter(content);
     const frontmatter = parsed.data;
@@ -139,26 +164,19 @@ export async function POST(request: NextRequest) {
       updated_at: new Date().toISOString(),
     };
 
-    // Verificar se documento já existe
-    const { data: existing } = await supabase
-      .from('documents')
-      .select('id')
-      .eq('organization_id', organizationId)
-      .eq('path', documentData.path)
-      .single();
-
-    if (existing) {
+    // Usar a verificação que já fizemos antes
+    if (existingDoc) {
       // Atualizar documento existente
       // Criar versão no histórico antes de atualizar
       const { data: currentDoc } = await supabase
         .from('documents')
         .select('content, frontmatter')
-        .eq('id', existing.id)
+        .eq('id', existingDoc.id)
         .single();
 
       if (currentDoc) {
         await supabase.from('document_versions').insert({
-          document_id: existing.id,
+          document_id: existingDoc.id,
           content: currentDoc.content,
           frontmatter: currentDoc.frontmatter,
           created_by: user.id,
@@ -177,13 +195,13 @@ export async function POST(request: NextRequest) {
           status: documentData.status,
           updated_at: documentData.updated_at,
         })
-        .eq('id', existing.id);
+        .eq('id', existingDoc.id);
 
       if (updateError) {
         return NextResponse.json({ error: 'Erro ao atualizar documento', details: updateError.message }, { status: 500 });
       }
 
-      return NextResponse.json({ message: 'Documento atualizado com sucesso', id: existing.id });
+      return NextResponse.json({ message: 'Documento atualizado com sucesso', id: existingDoc.id });
     } else {
       // Criar novo documento
       const { data: newDoc, error: insertError } = await supabase
