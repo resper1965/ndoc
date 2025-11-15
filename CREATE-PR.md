@@ -29,7 +29,7 @@ Após o último push, o GitHub mostra automaticamente:
 
 **Título:**
 ```
-feat: Transformar aplicação em SaaS 100% funcional
+feat: Transformar aplicação em SaaS 100% funcional (v2.0.0)
 ```
 
 **Descrição (copie e cole):**
@@ -44,13 +44,13 @@ Transformar n.doc de aplicação single-tenant em SaaS multi-tenant completo com
 ## ✅ Features Implementadas
 
 ### 🗄️ Backend/Database
-- [x] **Trigger automático de criação de organização** - Signup cria org automaticamente
+- [x] **Auto-criação de organização via webhook** - Signup cria org automaticamente (fix para auth.users trigger)
 - [x] **Sistema completo de planos e assinaturas** - 4 planos (Free, Starter, Professional, Enterprise)
 - [x] **Enforcement de limites por plano** - Bloqueia ações ao atingir limite
 - [x] **Sistema de auditoria (audit logs)** - Rastreia todas as mudanças
 - [x] **Sistema de convites para equipe** - Tokens seguros com expiração
 - [x] **Tracking automático de uso** - Contadores de documentos, usuários, IA
-- [x] **5 migrations SQL** - Todas documentadas
+- [x] **5 migrations SQL** - Todas documentadas e testadas
 
 ### 🎨 Frontend
 - [x] **Wizard de onboarding** - 4 etapas: Bem-vindo, Organização, Primeiro Doc, Concluído
@@ -69,10 +69,11 @@ Transformar n.doc de aplicação single-tenant em SaaS multi-tenant completo com
 - [x] **Logging e monitoramento** - Logger estruturado com sanitização
 
 ### 📚 Documentação
-- [x] **MIGRATIONS.md** - Guia completo de 5 migrations (~3,000 palavras)
+- [x] **MIGRATIONS.md** - Guia completo de 5 migrations com instruções de webhook (~3,500 palavras)
+- [x] **WEBHOOK-SETUP.md** - Configuração webhook auto-org no Supabase (~3,000 palavras)
 - [x] **REDIS-SETUP.md** - Setup do Upstash Redis (~2,500 palavras)
 - [x] **MERGE-GUIDE.md** - Guia de merge no GitHub (~2,000 palavras)
-- [x] **README.md atualizado** - Seção de guias de configuração
+- [x] **README.md v2.0** - Seção completa de recursos SaaS + guias de configuração
 
 ---
 
@@ -80,20 +81,48 @@ Transformar n.doc de aplicação single-tenant em SaaS multi-tenant completo com
 
 | Métrica | Valor |
 |---------|-------|
-| **Commits** | 4 |
-| **Arquivos Criados** | 18+ |
-| **Arquivos Modificados** | 12+ |
-| **Linhas de Código** | ~4,000+ |
-| **Migrations SQL** | 5 |
-| **Documentação** | ~8,000 palavras |
+| **Commits** | 10 |
+| **Arquivos Criados** | 22+ |
+| **Arquivos Modificados** | 15+ |
+| **Linhas de Código** | ~5,000+ |
+| **Migrations SQL** | 5 (todas documentadas) |
+| **Documentação** | ~14,000 palavras |
+| **Versão** | 1.0.0 → 2.0.0 |
 
 ---
 
 ## 📋 Checklist Pós-Merge
 
-Após fazer merge, **IMPORTANTE** executar:
+Após fazer merge, **IMPORTANTE** executar estas configurações:
 
-### 1. Executar Migrations no Supabase ⚠️
+### 1. Configurar Webhook de Auto-criação de Organização ⚠️
+
+**CRÍTICO** para que organizações sejam criadas automaticamente no signup.
+
+**Via Supabase Dashboard:**
+1. Database → Webhooks → Create a new hook
+2. Configurar:
+   - **Name:** auto-create-organization
+   - **Table:** auth.users
+   - **Events:** INSERT
+   - **Type:** HTTP Request
+   - **Method:** POST
+   - **URL:** `https://[PROJECT_REF].supabase.co/rest/v1/rpc/handle_new_user`
+   - **Headers:**
+     - `Content-Type: application/json`
+     - `apikey: [SERVICE_ROLE_KEY]`
+   - **Payload:**
+     ```json
+     {
+       "user_id": "{{ record.id }}",
+       "user_email": "{{ record.email }}",
+       "user_metadata": {{ record.raw_user_meta_data }}
+     }
+     ```
+
+**Guia completo:** `WEBHOOK-SETUP.md`
+
+### 2. Executar Migrations no Supabase ⚠️
 
 ```bash
 # Via Supabase CLI
@@ -115,7 +144,7 @@ supabase db push
 
 **Guia:** `MIGRATIONS.md`
 
-### 2. Configurar Redis (Upstash) ⚠️
+### 3. Configurar Redis (Upstash) ⚠️
 
 **OBRIGATÓRIO para produção!**
 
@@ -129,7 +158,7 @@ supabase db push
 
 **Guia:** `REDIS-SETUP.md`
 
-### 3. Testar em Produção
+### 4. Testar em Produção
 
 - [ ] Signup → Verificar redirecionamento para /onboarding
 - [ ] Completar wizard de onboarding
@@ -157,10 +186,27 @@ supabase db push
 - `src/lib/rate-limit.ts` - Rate limiting obrigatório
 
 **Documentação:**
-- `MIGRATIONS.md`
-- `REDIS-SETUP.md`
-- `MERGE-GUIDE.md`
-- `README.md`
+- `MIGRATIONS.md` - Guia de 5 migrations com webhook
+- `WEBHOOK-SETUP.md` - Configuração webhook auto-org
+- `REDIS-SETUP.md` - Setup Redis Upstash
+- `MERGE-GUIDE.md` - Workflow GitHub
+- `README.md` - Atualizado v2.0 com recursos SaaS
+
+**Configuração:**
+- `package.json` - Versão 2.0.0, descrição SaaS atualizada
+
+---
+
+## 📝 Commits Pendentes de Merge
+
+Estes commits estão na branch `claude/analyze-saas-application-01Q63FH2PdqkKyo9bj5W65LF` aguardando merge:
+
+1. **b68e808** - `chore: atualizar versão para 2.0.0 e descrição SaaS`
+2. **28c9930** - `docs: adicionar seção completa de recursos SaaS ao README`
+3. **63b9613** - `docs: atualizar MIGRATIONS.md com instruções de webhook`
+4. **6c441d2** - `fix: converter auto_create_organization para abordagem webhook`
+
+**Total:** 4 commits novos desde o último PR
 
 ---
 
