@@ -45,13 +45,13 @@ export const listDocumentsQuerySchema = z.object({
   list: z.string().optional(),
   path: z.string().optional(),
   organization_id: z.string().uuid().optional(),
-  page: z.string().regex(/^\d+$/).transform(Number).optional(),
-  limit: z.string().regex(/^\d+$/).transform(Number).optional(),
+  page: z.string().regex(/^\d+$/).transform(Number).min(1, 'Página deve ser no mínimo 1').optional(),
+  limit: z.string().regex(/^\d+$/).transform(Number).min(1, 'Limite deve ser no mínimo 1').max(100, 'Limite máximo de 100 itens por página').optional(),
 });
 
 export const listUsersQuerySchema = z.object({
   organization_id: z.string().uuid().optional(),
-  page: z.string().regex(/^\d+$/).transform(Number).optional(),
-  limit: z.string().regex(/^\d+$/).transform(Number).optional(),
+  page: z.string().regex(/^\d+$/).transform(Number).min(1, 'Página deve ser no mínimo 1').optional(),
+  limit: z.string().regex(/^\d+$/).transform(Number).min(1, 'Limite deve ser no mínimo 1').max(100, 'Limite máximo de 100 itens por página').optional(),
 });
 
