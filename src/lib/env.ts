@@ -51,7 +51,9 @@ function validateEnv(): EnvConfig {
 
   // Validar formato de URLs
   try {
-    new URL(required.NEXT_PUBLIC_SUPABASE_URL);
+    if (required.NEXT_PUBLIC_SUPABASE_URL) {
+      new URL(required.NEXT_PUBLIC_SUPABASE_URL);
+    }
   } catch {
     throw new Error('❌ NEXT_PUBLIC_SUPABASE_URL não é uma URL válida');
   }
@@ -65,23 +67,37 @@ function validateEnv(): EnvConfig {
   }
 
   return {
-    NEXT_PUBLIC_SUPABASE_URL: required.NEXT_PUBLIC_SUPABASE_URL,
-    NEXT_PUBLIC_SUPABASE_ANON_KEY: required.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    NEXT_PUBLIC_SUPABASE_URL: required.NEXT_PUBLIC_SUPABASE_URL!,
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: required.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     UPSTASH_REDIS_REST_URL: env.UPSTASH_REDIS_REST_URL,
     UPSTASH_REDIS_REST_TOKEN: env.UPSTASH_REDIS_REST_TOKEN,
     NODE_ENV: (env.NODE_ENV as EnvConfig['NODE_ENV']) || 'development',
   };
 }
 
-// Exportar configuração validada
-export const env = validateEnv();
+// Exportar configuração validada (lazy evaluation para evitar erros no build)
+let cachedEnv: EnvConfig | null = null;
 
-// Log de configuração (sem expor valores sensíveis)
-if (process.env.NODE_ENV !== 'test') {
-  console.log('✅ Variáveis de ambiente validadas com sucesso');
-  console.log(`   - Ambiente: ${env.NODE_ENV}`);
-  console.log(`   - Supabase URL: ${env.NEXT_PUBLIC_SUPABASE_URL}`);
-  console.log(
-    `   - Redis configurado: ${env.UPSTASH_REDIS_REST_URL ? 'Sim' : 'Não (fallback em memória)'}`
-  );
+export function getEnv(): EnvConfig {
+  if (!cachedEnv) {
+    cachedEnv = validateEnv();
+    
+    // Log de configuração (sem expor valores sensíveis)
+    if (process.env.NODE_ENV !== 'test') {
+      console.log('✅ Variáveis de ambiente validadas com sucesso');
+      console.log(`   - Ambiente: ${cachedEnv.NODE_ENV}`);
+      console.log(`   - Supabase URL: ${cachedEnv.NEXT_PUBLIC_SUPABASE_URL}`);
+      console.log(
+        `   - Redis configurado: ${cachedEnv.UPSTASH_REDIS_REST_URL ? 'Sim' : 'Não (fallback em memória)'}`
+      );
+    }
+  }
+  return cachedEnv;
 }
+
+// Exportar como getter para compatibilidade
+export const env = new Proxy({} as EnvConfig, {
+  get(_target, prop) {
+    return getEnv()[prop as keyof EnvConfig];
+  }
+});

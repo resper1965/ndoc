@@ -27,12 +27,13 @@ export const rateLimitConfig = {
 let redis: Redis | null = null;
 let ratelimit: Ratelimit | null = null;
 
-const redisUrl = process.env.UPSTASH_REDIS_REST_URL;
-const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN;
+const redisUrl = process.env.UPSTASH_REDIS_REST_URL?.trim();
+const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN?.trim();
 const isProduction = process.env.NODE_ENV === 'production';
+const isBuild = process.env.NEXT_PHASE === 'phase-production-build';
 
-// Em produção, Redis é obrigatório
-if (isProduction && (!redisUrl || !redisToken)) {
+// Em produção (runtime), Redis é obrigatório, mas não durante o build
+if (isProduction && !isBuild && (!redisUrl || !redisToken)) {
   throw new Error(
     'FATAL: Redis (Upstash) é obrigatório em produção. Configure UPSTASH_REDIS_REST_URL e UPSTASH_REDIS_REST_TOKEN'
   );

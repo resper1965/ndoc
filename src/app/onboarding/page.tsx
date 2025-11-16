@@ -45,7 +45,7 @@ export default function OnboardingPage() {
   const fetchOrganization = async () => {
     try {
       const supabase = createClient();
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from('organization_members')
         .select(`
           organization_id,
@@ -60,9 +60,12 @@ export default function OnboardingPage() {
         .single();
 
       if (data && data.organizations) {
-        setOrganizationData(data.organizations);
-        setOrgName(data.organizations.name);
-        setOrgSlug(data.organizations.slug);
+        const org = Array.isArray(data.organizations) ? data.organizations[0] : data.organizations;
+        if (org) {
+          setOrganizationData(org);
+          setOrgName(org.name);
+          setOrgSlug(org.slug);
+        }
       }
     } catch (error) {
       console.error('Error fetching organization:', error);
@@ -108,7 +111,7 @@ export default function OnboardingPage() {
         showSuccess('Organização atualizada!');
         handleNext();
       }
-    } catch (error) {
+    } catch {
       showError('Erro ao atualizar organização');
     } finally {
       setLoading(false);
@@ -153,7 +156,7 @@ Divirta-se documentando!
         showSuccess('Primeiro documento criado!');
         handleNext();
       }
-    } catch (error) {
+    } catch {
       showError('Erro ao criar documento');
     } finally {
       setLoading(false);

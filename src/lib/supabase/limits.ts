@@ -54,7 +54,7 @@ export interface LimitCheckResult {
  * Busca informações do plano da organização
  */
 export async function getOrganizationPlan(organizationId: string): Promise<Plan | null> {
-  const supabase = createServerClient();
+  const supabase = await createServerClient();
 
   const { data: subscription } = await supabase
     .from('subscriptions')
@@ -87,7 +87,7 @@ export async function getOrganizationPlan(organizationId: string): Promise<Plan 
  * Busca estatísticas de uso da organização
  */
 export async function getOrganizationUsage(organizationId: string): Promise<UsageStats | null> {
-  const supabase = createServerClient();
+  const supabase = await createServerClient();
 
   // Buscar período atual
   const currentPeriodStart = new Date();
@@ -250,7 +250,7 @@ export async function hasFeature(
  * Incrementa contador de uso de IA
  */
 export async function incrementAIUsage(organizationId: string): Promise<void> {
-  const supabase = createServerClient();
+  const supabase = await createServerClient();
 
   const currentPeriodStart = new Date();
   currentPeriodStart.setDate(1);
@@ -275,7 +275,7 @@ export async function incrementAIUsage(organizationId: string): Promise<void> {
  * Busca todos os planos disponíveis (para pricing page)
  */
 export async function getAllPlans(): Promise<Plan[]> {
-  const supabase = createServerClient();
+  const supabase = await createServerClient();
 
   const { data, error } = await supabase
     .from('plans')

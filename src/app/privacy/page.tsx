@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { getDisplayName } from '../../../config/branding';
 
 export default function PrivacyPage() {
@@ -199,12 +200,12 @@ export default function PrivacyPage() {
         </div>
 
         <div className="mt-12 pt-8 border-t border-gray-200 dark:border-gray-800">
-          <a
+          <Link
             href="/"
             className="text-blue-600 dark:text-blue-400 hover:underline"
           >
             ← Voltar para a página inicial
-          </a>
+          </Link>
         </div>
       </div>
     </div>

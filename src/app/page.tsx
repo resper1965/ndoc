@@ -2,6 +2,7 @@
 import { Github } from 'lucide-react';
 import { ModeToggle } from '@/components/mode-toggle';
 import Image from 'next/image';
+import Link from 'next/link';
 import { Button } from '@/components/button';
 import { motion } from 'framer-motion';
 import { clientBranding, producerBranding, getDisplayName, getDisplayLogo } from '../../config/branding';
@@ -41,13 +42,13 @@ export default function Home() {
             <a href="#pricing" className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100">
               Pricing
             </a>
-            <a href="/docs" className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100">
+            <Link href="/docs" className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100">
               Docs
-            </a>
+            </Link>
           </nav>
           <div className="flex items-center gap-3">
             <Button
-              variant="ghost"
+              variant="outline"
               onClick={() => window.location.href = '/login'}
               className="hidden sm:flex"
             >
@@ -190,7 +191,7 @@ export default function Home() {
               <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
                 <li><a href="#features" className="hover:text-gray-900 dark:hover:text-gray-100">Features</a></li>
                 <li><a href="#pricing" className="hover:text-gray-900 dark:hover:text-gray-100">Pricing</a></li>
-                <li><a href="/docs" className="hover:text-gray-900 dark:hover:text-gray-100">Documentação</a></li>
+                <li><Link href="/docs" className="hover:text-gray-900 dark:hover:text-gray-100">Documentação</Link></li>
                 <li><a href="/signup" className="hover:text-gray-900 dark:hover:text-gray-100">Começar Grátis</a></li>
               </ul>
             </div>
