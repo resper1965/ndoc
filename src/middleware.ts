@@ -72,13 +72,6 @@ export async function middleware(req: NextRequest) {
         return NextResponse.redirect(redirectUrl);
       }
 
-      // Redirect /docs para primeira página (se necessário)
-      if (pathname === '/docs') {
-        return NextResponse.redirect(
-          new URL('/docs/getting-started/introduction', req.url)
-        );
-      }
-
       return NextResponse.next();
     }
 
@@ -133,12 +126,8 @@ export async function middleware(req: NextRequest) {
       return NextResponse.redirect(redirectUrl);
     }
 
-    // Redirect /docs para primeira página (se necessário)
-    if (pathname === '/docs') {
-      return NextResponse.redirect(
-        new URL('/docs/getting-started/introduction', req.url)
-      );
-    }
+    // Redirect /docs para /docs (sem redirecionamento específico)
+    // A página /docs irá lidar com a navegação
 
     // Return the response with updated session
     return supabaseResponse;

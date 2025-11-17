@@ -26,24 +26,18 @@ export default function Home() {
                   e.currentTarget.style.display = 'none';
                 }}
               />
-            ) : (
-              <div className="w-8 h-8 rounded-full bg-primary-500 flex items-center justify-center">
-                <span className="text-sm font-bold text-white">
-                  {getDisplayName().charAt(0).toUpperCase()}
-                </span>
-              </div>
-            )}
+            ) : null}
             <span className="text-lg font-semibold">{getDisplayName()}</span>
           </div>
           <nav className="hidden md:flex items-center gap-6">
-            <a href="#features" className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100">
-              Features
+            <a href="#recursos" className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100">
+              Recursos
             </a>
-            <a href="#pricing" className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100">
-              Pricing
+            <a href="#precos" className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100">
+              Preços
             </a>
             <Link href="/docs" className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100">
-              Docs
+              Documentação
             </Link>
           </nav>
           <div className="flex items-center gap-3">
@@ -93,13 +87,7 @@ export default function Home() {
                     e.currentTarget.style.display = 'none';
                   }}
                 />
-              ) : (
-                <div className="w-16 h-16 md:w-24 md:h-24 rounded-full bg-primary-500 flex items-center justify-center">
-                  <span className="text-2xl md:text-4xl font-bold text-white">
-                    {getDisplayName().charAt(0).toUpperCase()}
-                  </span>
-                </div>
-              )}
+              ) : null}
               <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight text-gray-900 dark:text-white font-heading text-center">
                 Documentação Inteligente<br />para Sua Equipe
               </h1>
@@ -151,6 +139,90 @@ export default function Home() {
             Sem cartão de crédito • Setup em 2 minutos • Cancelamento a qualquer momento
           </motion.p>
         </motion.div>
+
+        {/* Features Section */}
+        <section id="recursos" className="container mx-auto px-4 py-16 mt-16">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+              Recursos Poderosos
+            </h2>
+            <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+              Tudo que você precisa para criar e gerenciar documentação técnica de forma eficiente
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
+              <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">IA Integrada</h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                Gere e melhore documentação automaticamente com inteligência artificial
+              </p>
+            </div>
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
+              <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">Editor Avançado</h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                Editor MDX com preview em tempo real e suporte a componentes React
+              </p>
+            </div>
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
+              <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">Colaboração</h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                Trabalhe em equipe com controle de acesso e versionamento
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* Pricing Section */}
+        <section id="precos" className="container mx-auto px-4 py-16 bg-gray-50 dark:bg-gray-900">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+              Planos Simples
+            </h2>
+            <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+              Escolha o plano ideal para sua equipe
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            <div className="bg-white dark:bg-gray-800 p-8 rounded-lg border border-gray-200 dark:border-gray-700">
+              <h3 className="text-2xl font-bold mb-2 text-gray-900 dark:text-white">Grátis</h3>
+              <p className="text-3xl font-bold mb-4 text-gray-900 dark:text-white">R$ 0<span className="text-lg">/mês</span></p>
+              <ul className="space-y-2 mb-6 text-gray-600 dark:text-gray-400">
+                <li>✓ Até 10 documentos</li>
+                <li>✓ 1 usuário</li>
+                <li>✓ 100MB de armazenamento</li>
+              </ul>
+              <Button variant="outline" className="w-full" onClick={() => window.location.href = '/signup'}>
+                Começar Grátis
+              </Button>
+            </div>
+            <div className="bg-white dark:bg-gray-800 p-8 rounded-lg border-2 border-primary-500 dark:border-primary-500">
+              <h3 className="text-2xl font-bold mb-2 text-gray-900 dark:text-white">Pro</h3>
+              <p className="text-3xl font-bold mb-4 text-gray-900 dark:text-white">R$ 49<span className="text-lg">/mês</span></p>
+              <ul className="space-y-2 mb-6 text-gray-600 dark:text-gray-400">
+                <li>✓ Documentos ilimitados</li>
+                <li>✓ Até 10 usuários</li>
+                <li>✓ 10GB de armazenamento</li>
+                <li>✓ IA integrada</li>
+              </ul>
+              <Button variant="primary" className="w-full" onClick={() => window.location.href = '/signup'}>
+                Assinar Pro
+              </Button>
+            </div>
+            <div className="bg-white dark:bg-gray-800 p-8 rounded-lg border border-gray-200 dark:border-gray-700">
+              <h3 className="text-2xl font-bold mb-2 text-gray-900 dark:text-white">Enterprise</h3>
+              <p className="text-3xl font-bold mb-4 text-gray-900 dark:text-white">Custom</p>
+              <ul className="space-y-2 mb-6 text-gray-600 dark:text-gray-400">
+                <li>✓ Tudo do Pro</li>
+                <li>✓ Usuários ilimitados</li>
+                <li>✓ Armazenamento ilimitado</li>
+                <li>✓ Suporte prioritário</li>
+              </ul>
+              <Button variant="outline" className="w-full" onClick={() => window.location.href = '/signup'}>
+                Contatar Vendas
+              </Button>
+            </div>
+          </div>
+        </section>
       </main>
 
       {/* Footer */}
@@ -170,13 +242,7 @@ export default function Home() {
                       e.currentTarget.style.display = 'none';
                     }}
                   />
-                ) : (
-                  <div className="w-6 h-6 rounded-full bg-primary-500 flex items-center justify-center">
-                    <span className="text-xs font-bold text-white">
-                      {getDisplayName().charAt(0).toUpperCase()}
-                    </span>
-                  </div>
-                )}
+                ) : null}
                 <span className="font-semibold">{getDisplayName()}</span>
               </div>
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
@@ -189,8 +255,8 @@ export default function Home() {
             <div>
               <h3 className="font-semibold mb-4">Produto</h3>
               <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-                <li><a href="#features" className="hover:text-gray-900 dark:hover:text-gray-100">Features</a></li>
-                <li><a href="#pricing" className="hover:text-gray-900 dark:hover:text-gray-100">Pricing</a></li>
+                <li><a href="#recursos" className="hover:text-gray-900 dark:hover:text-gray-100">Recursos</a></li>
+                <li><a href="#precos" className="hover:text-gray-900 dark:hover:text-gray-100">Preços</a></li>
                 <li><Link href="/docs" className="hover:text-gray-900 dark:hover:text-gray-100">Documentação</Link></li>
                 <li><a href="/signup" className="hover:text-gray-900 dark:hover:text-gray-100">Começar Grátis</a></li>
               </ul>

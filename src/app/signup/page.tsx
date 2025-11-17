@@ -112,13 +112,7 @@ export default function SignupPage() {
                   e.currentTarget.parentElement?.appendChild(fallback);
                 }}
               />
-            ) : (
-              <div className="w-12 h-12 rounded-full bg-primary-500 flex items-center justify-center">
-                <span className="text-xl font-bold text-white">
-                  {getDisplayName().charAt(0).toUpperCase()}
-                </span>
-              </div>
-            )}
+            ) : null}
           </div>
           <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-50">
             Criar conta

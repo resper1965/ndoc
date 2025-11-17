@@ -65,7 +65,7 @@ export const producerBranding = {
   dotColor: "#00ade8", // Cor do ponto após "ness"
   website: "https://github.com/resper1965/ndoc",
   description: "Desenvolvido pela ness.",
-  footerText: "Built with ❤️ by ness.",
+  footerText: "powered by ness.",
 } as const;
 
 /**
