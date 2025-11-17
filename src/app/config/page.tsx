@@ -135,7 +135,7 @@ export default function ConfigPage() {
 
     try {
       const response = await fetch('/api/config/credentials', {
-        method: 'POST',
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
