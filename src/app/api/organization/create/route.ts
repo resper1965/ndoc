@@ -39,7 +39,8 @@ export async function POST() {
       });
     }
 
-    // Chamar função handle_new_user
+    // Chamar função handle_new_user via RPC
+    // Nota: Se der erro 404, o PostgREST pode precisar recarregar o schema
     const { data, error } = await supabase.rpc('handle_new_user', {
       user_id: user.id,
       user_email: user.email || '',
@@ -48,8 +49,25 @@ export async function POST() {
 
     if (error) {
       console.error('Error calling handle_new_user:', error);
+      console.error('Error details:', JSON.stringify(error, null, 2));
+      console.error('Error code:', error.code);
+      console.error('Error message:', error.message);
+      
+      // Se for erro 404 (PGRST116), a função pode não estar exposta pelo PostgREST
+      if (error.code === 'PGRST116' || error.message?.includes('NOT_FOUND') || error.message?.includes('404')) {
+        return NextResponse.json(
+          { 
+            error: 'Função handle_new_user não encontrada via RPC. O PostgREST pode precisar recarregar o schema.',
+            details: error.message,
+            code: error.code,
+            hint: 'Tente recarregar o schema do PostgREST no Supabase Dashboard ou aguarde alguns minutos. Veja TROUBLESHOOTING-RPC-404.md para mais detalhes.'
+          },
+          { status: 500 }
+        );
+      }
+      
       return NextResponse.json(
-        { error: error.message || 'Erro ao criar organização' },
+        { error: error.message || 'Erro ao criar organização', details: error },
         { status: 500 }
       );
     }
