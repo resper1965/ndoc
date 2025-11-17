@@ -334,63 +334,95 @@ export async function GET(request: NextRequest) {
 
     // Se list=true, retornar lista de documentos
     if (list) {
-      // Verificar autenticação (opcional para listagem)
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      try {
+        // Verificar autenticação (opcional para listagem)
+        const {
+          data: { user },
+          error: authError,
+        } = await supabase.auth.getUser();
 
-      let query = supabase
-        .from('documents')
-        .select('id, path, title, description, status, created_at, updated_at');
+        if (authError) {
+          logger.error('Error getting user in GET /api/ingest', authError);
+        }
 
-      // Se autenticado, mostrar documentos da organização do usuário + publicados
-      if (user) {
-        const organizationId = await getUserOrganization();
-        const isSuper = await isSuperadmin();
-        
-        if (isSuper) {
-          // Superadmin vê todos os documentos
-          // Não aplicar filtro de status
-        } else if (organizationId) {
-          // Usuário autenticado: documentos da sua organização + publicados
-          query = query.or(`organization_id.eq.${organizationId},status.eq.published`);
+        let query = supabase
+          .from('documents')
+          .select('id, path, title, description, status, created_at, updated_at, organization_id');
+
+        // Se autenticado, mostrar documentos da organização do usuário + publicados
+        if (user) {
+          try {
+            const organizationId = await getUserOrganization();
+            const isSuper = await isSuperadmin();
+            
+            if (isSuper) {
+              // Superadmin vê todos os documentos
+              // Não aplicar filtro de status ou organização
+            } else if (organizationId) {
+              // Usuário autenticado: documentos da sua organização + publicados
+              // Usar sintaxe correta do PostgREST para OR
+              query = query.or(`organization_id.eq.${organizationId},status.eq.published`);
+            } else {
+              // Usuário sem organização: apenas publicados
+              query = query.eq('status', 'published');
+            }
+          } catch (permError) {
+            logger.error('Error checking permissions in GET /api/ingest', permError);
+            // Em caso de erro, mostrar apenas documentos publicados
+            query = query.eq('status', 'published');
+          }
         } else {
-          // Usuário sem organização: apenas publicados
+          // Não autenticado: apenas documentos publicados
           query = query.eq('status', 'published');
         }
-      } else {
-        // Não autenticado: apenas documentos publicados
-        query = query.eq('status', 'published');
+
+        const { data: documents, error } = await query.order('order_index', { ascending: true });
+
+        if (error) {
+          logger.error('Error querying documents in GET /api/ingest', error);
+          logger.error('Error details:', JSON.stringify(error, null, 2));
+          return NextResponse.json({ 
+            error: 'Erro ao listar documentos', 
+            details: error.message,
+            code: error.code,
+            hint: error.hint || 'Verifique as políticas RLS da tabela documents'
+          }, { status: 500 });
+        }
+
+        // Paginação
+        const start = (page - 1) * limit;
+        const end = start + limit - 1;
+        const paginatedDocs = documents?.slice(start, end + 1) || [];
+        const total = documents?.length || 0;
+
+        return NextResponse.json({
+          documents: paginatedDocs.map((doc) => ({
+            path: `${doc.path}.mdx`,
+            url: `/docs/${doc.path}`,
+            title: doc.title,
+            description: doc.description,
+            createdAt: doc.created_at,
+            updatedAt: doc.updated_at,
+          })),
+          pagination: {
+            page,
+            limit,
+            total,
+            totalPages: Math.ceil(total / limit),
+            hasNext: end < total - 1,
+            hasPrev: page > 1,
+          },
+        });
+      } catch (listError) {
+        logger.error('Unexpected error in GET /api/ingest (list=true)', listError);
+        return NextResponse.json(
+          { 
+            error: 'Erro interno ao listar documentos',
+            details: listError instanceof Error ? listError.message : 'Unknown error'
+          },
+          { status: 500 }
+        );
       }
-
-      const { data: documents, error } = await query.order('order_index', { ascending: true });
-
-      if (error) {
-        return NextResponse.json({ error: 'Erro ao listar documentos', details: error.message }, { status: 500 });
-      }
-
-      // Paginação
-      const start = (page - 1) * limit;
-      const end = start + limit - 1;
-      const paginatedDocs = documents?.slice(start, end + 1) || [];
-      const total = documents?.length || 0;
-
-      return NextResponse.json({
-        documents: paginatedDocs.map((doc) => ({
-          path: `${doc.path}.mdx`,
-          url: `/docs/${doc.path}`,
-          title: doc.title,
-          description: doc.description,
-        })),
-        pagination: {
-          page,
-          limit,
-          total,
-          totalPages: Math.ceil(total / limit),
-          hasNext: end < total - 1,
-          hasPrev: page > 1,
-        },
-      });
     }
 
     // Se path especificado, retornar documento específico

@@ -45,6 +45,16 @@ GRANT EXECUTE ON FUNCTION public.is_superadmin() TO authenticated;
 GRANT EXECUTE ON FUNCTION public.is_superadmin() TO service_role;
 GRANT EXECUTE ON FUNCTION public.is_superadmin() TO anon;
 
+-- Função: user_belongs_to_organization
+GRANT EXECUTE ON FUNCTION public.user_belongs_to_organization(uuid) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.user_belongs_to_organization(uuid) TO service_role;
+GRANT EXECUTE ON FUNCTION public.user_belongs_to_organization(uuid) TO anon;
+
+-- Função: get_user_organizations
+GRANT EXECUTE ON FUNCTION public.get_user_organizations() TO authenticated;
+GRANT EXECUTE ON FUNCTION public.get_user_organizations() TO service_role;
+GRANT EXECUTE ON FUNCTION public.get_user_organizations() TO anon;
+
 -- ============================================
 -- COMMENTS
 -- ============================================
