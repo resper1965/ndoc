@@ -42,19 +42,21 @@ export default function Home() {
             </Link>
           </nav>
           <div className="flex items-center gap-3">
-            <Button
-              variant="outline"
-              onClick={() => window.location.href = '/login'}
-              className="hidden sm:flex"
-            >
-              Login
-            </Button>
-            <Button
-              variant="primary"
-              onClick={() => window.location.href = '/signup'}
-            >
-              Começar Grátis
-            </Button>
+            <Link href="/login">
+              <Button
+                variant="outline"
+                className="hidden sm:flex"
+              >
+                Login
+              </Button>
+            </Link>
+            <Link href="/signup">
+              <Button
+                variant="primary"
+              >
+                Começar Grátis
+              </Button>
+            </Link>
             <ModeToggle />
           </div>
         </div>
@@ -112,22 +114,24 @@ export default function Home() {
             transition={{ duration: 0.6, delay: 0.6 }}
             className="flex flex-col sm:flex-row gap-4 mt-10 justify-center items-center"
           >
-            <Button
-              className="px-8 py-6 text-lg"
-              variant={'primary'}
-              onClick={() => window.location.href = '/signup'}
-              size={'lg'}
-            >
-              Começar Grátis
-            </Button>
-            <Button
-              className="px-8 py-6 text-lg"
-              variant={'outline'}
-              size={'lg'}
-              onClick={() => window.location.href = '/docs'}
-            >
-              Ver Documentação
-            </Button>
+            <Link href="/signup">
+              <Button
+                className="px-8 py-6 text-lg"
+                variant={'primary'}
+                size={'lg'}
+              >
+                Começar Grátis
+              </Button>
+            </Link>
+            <Link href="/docs">
+              <Button
+                className="px-8 py-6 text-lg"
+                variant={'outline'}
+                size={'lg'}
+              >
+                Ver Documentação
+              </Button>
+            </Link>
           </motion.div>
           
           {/* Trust indicators */}
@@ -192,9 +196,11 @@ export default function Home() {
                 <li>✓ 1 usuário</li>
                 <li>✓ 100MB de armazenamento</li>
               </ul>
-              <Button variant="outline" className="w-full" onClick={() => window.location.href = '/signup'}>
-                Começar Grátis
-              </Button>
+              <Link href="/signup">
+                <Button variant="outline" className="w-full">
+                  Começar Grátis
+                </Button>
+              </Link>
             </div>
             <div className="bg-white dark:bg-gray-800 p-8 rounded-lg border-2 border-primary-500 dark:border-primary-500">
               <h3 className="text-2xl font-bold mb-2 text-gray-900 dark:text-white">Pro</h3>
@@ -205,9 +211,11 @@ export default function Home() {
                 <li>✓ 10GB de armazenamento</li>
                 <li>✓ IA integrada</li>
               </ul>
-              <Button variant="primary" className="w-full" onClick={() => window.location.href = '/signup'}>
-                Assinar Pro
-              </Button>
+              <Link href="/signup">
+                <Button variant="primary" className="w-full">
+                  Assinar Pro
+                </Button>
+              </Link>
             </div>
             <div className="bg-white dark:bg-gray-800 p-8 rounded-lg border border-gray-200 dark:border-gray-700">
               <h3 className="text-2xl font-bold mb-2 text-gray-900 dark:text-white">Enterprise</h3>
@@ -218,9 +226,11 @@ export default function Home() {
                 <li>✓ Armazenamento ilimitado</li>
                 <li>✓ Suporte prioritário</li>
               </ul>
-              <Button variant="outline" className="w-full" onClick={() => window.location.href = '/signup'}>
-                Contatar Vendas
-              </Button>
+              <Link href="/signup">
+                <Button variant="outline" className="w-full">
+                  Contatar Vendas
+                </Button>
+              </Link>
             </div>
           </div>
         </section>

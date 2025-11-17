@@ -19,6 +19,11 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
+
+  // Verificar parâmetro redirect da URL
+  const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+  const redirectTo = searchParams?.get('redirect') || '/docs';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,7 +39,9 @@ export default function LoginPage() {
       }
 
       showSuccess('Login realizado com sucesso!');
-      router.push('/config');
+      
+      // Redirecionar para a URL especificada ou /docs (padrão)
+      router.push(redirectTo);
       router.refresh();
     } catch (error) {
       logger.error('Login error', error);
@@ -170,6 +177,21 @@ export default function LoginPage() {
                   )}
                 </button>
               </div>
+            </div>
+
+            {/* Lembrar-me */}
+            <div className="flex items-center">
+              <input
+                id="rememberMe"
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                disabled={loading}
+              />
+              <Label htmlFor="rememberMe" className="ml-2 text-sm text-gray-600 dark:text-gray-400">
+                Lembrar-me
+              </Label>
             </div>
 
             {/* Botão de Login */}
