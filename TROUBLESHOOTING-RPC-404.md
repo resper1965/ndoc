@@ -4,16 +4,34 @@
 
 ---
 
+## 🆕 SOLUÇÃO COMPLETA DISPONÍVEL
+
+**⚠️ Este documento foi atualizado!**
+
+Para a **solução completa e atualizada** deste erro após deploy na Vercel, consulte:
+
+👉 **[SOLUCAO-ERRO-404-DEPLOY.md](./SOLUCAO-ERRO-404-DEPLOY.md)**
+
+A solução inclui:
+- ✅ Migration com permissões GRANT explícitas
+- ✅ Passo a passo completo de aplicação
+- ✅ Scripts de verificação e testes
+- ✅ Análise técnica detalhada
+
+---
+
 ## 🔍 Diagnóstico
 
 Este erro ocorre quando o Supabase PostgREST não consegue encontrar a função RPC `handle_new_user`.
 
-### ✅ Verificações Realizadas
+### ❌ Problema Identificado
 
 1. ✅ Função existe no banco de dados
 2. ✅ Função está no schema `public`
-3. ✅ Permissões EXECUTE concedidas para: PUBLIC, anon, authenticated, service_role
+3. ❌ **Permissões EXECUTE NÃO foram concedidas explicitamente**
 4. ✅ Função é SECURITY DEFINER
+
+**Causa raiz:** Falta de comandos `GRANT EXECUTE` nas migrations originais.
 
 ### ⚠️ Possíveis Causas
 
@@ -112,5 +130,5 @@ Após aplicar uma solução, verifique:
 
 ---
 
-**Última atualização:** 2025-01-15
+**Última atualização:** 2025-01-17 (Solução completa adicionada em SOLUCAO-ERRO-404-DEPLOY.md)
 
