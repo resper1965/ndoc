@@ -59,6 +59,27 @@ export default function SignupPage() {
       }
 
       if (data.user) {
+        // Criar organização automaticamente
+        try {
+          const createOrgResponse = await fetch('/api/organization/create', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
+
+          if (createOrgResponse.ok) {
+            const orgData = await createOrgResponse.json();
+            logger.info('Organization created:', orgData);
+          } else {
+            // Não bloquear o fluxo se falhar (pode ser criada depois)
+            logger.warn('Failed to create organization automatically');
+          }
+        } catch (orgError) {
+          // Não bloquear o fluxo se falhar
+          logger.warn('Error creating organization:', orgError);
+        }
+
         showSuccess('Conta criada com sucesso!');
         // Redirecionar para onboarding
         setTimeout(() => {

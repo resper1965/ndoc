@@ -1,5 +1,7 @@
 # 📖 Manual do Usuário - n.doc
 
+> **💡 Fluxo da Aplicação:** Para entender o fluxo completo da aplicação, veja [FLUXO-APLICACAO.md](./FLUXO-APLICACAO.md)
+
 **Versão**: 1.0.0  
 **Última atualização**: 2025-01-14
 

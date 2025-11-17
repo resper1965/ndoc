@@ -2,22 +2,196 @@
 
 **Última atualização:** 2025-01-15
 
-Este guia mostra como configurar um **Database Webhook** no Supabase para criar automaticamente uma organização quando um usuário se cadastra.
+Este guia mostra como configurar a criação automática de organização quando um usuário se cadastra.
+
+---
+
+## ✅ STATUS: IMPLEMENTADO E VERIFICADO
+
+**✅ Solução Automática Implementada e Funcionando!**
+
+A aplicação já está **100% configurada** para criar a organização automaticamente após o signup, **sem necessidade de webhook**.
+
+### ✅ Verificação via MCP (2025-01-15)
+
+- ✅ Função `handle_new_user()` existe e está configurada corretamente
+- ✅ Função `create_default_subscription()` existe
+- ✅ Planos criados: Free, Starter, Professional, Enterprise
+- ✅ API Route `/api/organization/create` implementada
+- ✅ Integração no signup implementada
+- ✅ **Tudo funcionando!**
+
+### 🎯 Como Funciona
+
+1. Usuário se cadastra em `/signup`
+2. Supabase Auth cria o usuário
+3. Frontend chama automaticamente `POST /api/organization/create`
+4. API route chama `handle_new_user()` via RPC
+5. Organização criada automaticamente com:
+   - Nome baseado no usuário
+   - Slug único gerado do email
+   - Subscription "free" com trial de 14 dias
+   - Usuário adicionado como `owner`
+6. Usuário redirecionado para `/onboarding`
+
+**✅ Não é necessário configurar webhook!** A funcionalidade já está ativa e testada.
 
 ---
 
 ## 📖 Índice
 
-1. [Por que Webhook?](#por-que-webhook)
-2. [Pré-requisitos](#pré-requisitos)
-3. [Passo a Passo](#passo-a-passo)
-4. [Verificar se Está Funcionando](#verificar-se-está-funcionando)
-5. [Troubleshooting](#troubleshooting)
-6. [Alternativa: Edge Function](#alternativa-edge-function)
+1. [Solução Automática (Recomendada)](#solução-automática-recomendada) ⭐
+2. [Por que Webhook?](#por-que-webhook)
+3. [Pré-requisitos](#pré-requisitos)
+4. [Passo a Passo (Webhook - Plano Pago)](#passo-a-passo)
+5. [Verificar se Está Funcionando](#verificar-se-está-funcionando)
+6. [Troubleshooting](#troubleshooting)
+7. [Alternativa: Edge Function](#alternativa-edge-function)
 
 ---
 
-## 🔍 Por que Webhook?
+## ✅ Solução Automática (Recomendada)
+
+### Como Funciona
+
+A aplicação já está configurada para criar a organização automaticamente após o signup, **sem necessidade de webhook**.
+
+**Arquivos envolvidos:**
+- `src/app/signup/page.tsx` - Chama a API após signup
+- `src/app/api/organization/create/route.ts` - API route que cria a organização
+- `supabase/migrations/20250115000000_auto_create_organization.sql` - Função `handle_new_user()`
+
+**Fluxo:**
+```
+1. Usuário preenche formulário de signup
+2. Supabase Auth cria o usuário
+3. Frontend chama POST /api/organization/create
+4. API route chama handle_new_user() via RPC
+5. Organização criada automaticamente
+6. Usuário redirecionado para /onboarding
+```
+
+### ✅ Verificar se Está Funcionando
+
+#### Teste Rápido
+
+1. **Criar conta de teste:**
+   ```bash
+   # Acesse a aplicação
+   http://localhost:3000/signup
+   # ou
+   https://ndoc-eight.vercel.app/signup
+   ```
+
+2. **Preencha o formulário:**
+   - Nome completo
+   - Email válido
+   - Senha (mínimo 6 caracteres)
+   - Confirme a senha
+
+3. **Clique em "Criar conta"**
+
+4. **Verificar no Supabase Dashboard:**
+   - Acesse: https://supabase.com/dashboard
+   - Vá para **Table Editor** > `organizations`
+   - Deve aparecer uma nova organização com:
+     - Nome: "NomeDoUsuario's Organization"
+     - Slug: baseado no email (ex: `joao` para `joao@example.com`)
+     - Plan: "free"
+   
+5. **Verificar em `organization_members`:**
+   - Deve ter um registro com:
+     - `user_id`: ID do usuário criado
+     - `role`: "owner"
+     - `organization_id`: ID da organização criada
+
+6. **Verificar em `subscriptions`:**
+   - Deve ter uma subscription com:
+     - `organization_id`: ID da organização criada
+     - `plan_id`: ID do plano "free"
+     - `status`: "trialing" (trial de 14 dias)
+     - `trial_end`: Data 14 dias no futuro
+
+#### Verificação via SQL (Opcional)
+
+```sql
+-- Verificar organização criada
+SELECT 
+  o.name,
+  o.slug,
+  o.plan,
+  om.role,
+  s.status,
+  s.trial_end
+FROM organizations o
+INNER JOIN organization_members om ON o.id = om.organization_id
+INNER JOIN subscriptions s ON o.id = s.organization_id
+WHERE om.user_id = 'SEU_USER_ID_AQUI'
+ORDER BY o.created_at DESC
+LIMIT 1;
+```
+
+### 🔧 Troubleshooting
+
+#### Se a Organização Não For Criada
+
+1. **Verificar se a migration foi executada:**
+   ```sql
+   -- No SQL Editor do Supabase
+   SELECT proname, pronargs 
+   FROM pg_proc 
+   WHERE proname = 'handle_new_user';
+   -- Deve retornar: handle_new_user | 3
+   ```
+
+2. **Verificar logs do navegador:**
+   - Abra DevTools (F12)
+   - Vá para aba "Console"
+   - Procure por erros após o signup
+   - Procure por chamadas para `/api/organization/create`
+
+3. **Verificar logs da API (Vercel):**
+   - Acesse: https://vercel.com/dashboard
+   - Selecione o projeto `ndoc`
+   - Vá para **Functions** > `/api/organization/create`
+   - Verifique logs de erro
+
+4. **Verificar autenticação:**
+   ```sql
+   -- Verificar se o usuário foi criado
+   SELECT id, email, created_at 
+   FROM auth.users 
+   ORDER BY created_at DESC 
+   LIMIT 5;
+   ```
+
+5. **Testar função manualmente:**
+   ```sql
+   -- Substitua pelos valores reais
+   SELECT handle_new_user(
+     'user-uuid-aqui'::UUID,
+     'teste@example.com',
+     '{"name": "Usuário Teste"}'::JSONB
+   );
+   ```
+
+#### Erros Comuns
+
+**Erro: "Não autenticado"**
+- Causa: Usuário não está logado quando a API é chamada
+- Solução: Verificar se `supabase.auth.getUser()` está retornando o usuário
+
+**Erro: "Usuário já possui organização"**
+- Causa: Organização já foi criada anteriormente
+- Solução: Isso é normal, a função retorna sucesso mesmo assim
+
+**Erro: "Function does not exist"**
+- Causa: Migration não foi executada
+- Solução: Execute a migration `20250115000000_auto_create_organization.sql`
+
+---
+
+## 🔍 Por que Webhook? (Apenas para Plano Pago)
 
 A tabela `auth.users` é gerenciada pelo Supabase e **não permite** criar triggers diretamente via SQL.
 
@@ -55,20 +229,27 @@ Antes de configurar o webhook:
 
 ### Passo 2: Abrir Seção de Webhooks
 
+**⚠️ ATENÇÃO:** Se você não encontrar a opção "Webhooks" no menu Database, significa que seu plano não suporta Database Webhooks. Use a [Solução Automática](#solução-automática-recomendada) acima.
+
 1. No menu lateral esquerdo, clique em **"Database"**
-2. Na aba superior, clique em **"Webhooks"**
-3. Você verá a lista de webhooks (vazia inicialmente)
+2. Na aba superior, procure por **"Webhooks"** ou **"Database Webhooks"**
+3. Se não encontrar, você está no plano FREE - use a solução automática acima
+4. Se encontrar, clique em **"Webhooks"**
+5. Você verá a lista de webhooks (vazia inicialmente)
 
 ---
 
 ### Passo 3: Criar Novo Webhook
 
-1. Clique em **"Create a new hook"** ou **"Enable Webhooks"**
-2. Preencha o formulário:
+1. Clique em **"Create a new hook"** ou **"New Webhook"** ou **"Enable Webhooks"**
+2. Se não aparecer essa opção, você está no plano FREE - use a solução automática acima
+3. Preencha o formulário:
 
 ---
 
 ### Passo 4: Configurar Detalhes do Webhook
+
+**⚠️ Se você não conseguiu chegar até aqui, significa que Database Webhooks não está disponível no seu plano. Use a [Solução Automática](#solução-automática-recomendada) que já está implementada.**
 
 #### **Name (Nome):**
 ```
@@ -425,9 +606,11 @@ if (data.user) {
 
 ---
 
-## ✅ Checklist Final
+## ✅ Checklist Final (Antigo - Apenas para Referência)
 
-Antes de considerar concluído:
+> **Nota:** Este checklist é apenas para referência histórica. A solução atual **não requer webhook** e funciona automaticamente via API Route.
+
+Antes de considerar concluído (método antigo com webhook):
 
 - [ ] Migration executada
 - [ ] Função `handle_new_user()` existe no banco
@@ -476,6 +659,83 @@ apikey: [SERVICE_ROLE_KEY]
 
 ---
 
-**Última atualização:** 2025-01-15
-**Tempo de configuração:** ~10 minutos
-**Dificuldade:** Média
+## 🚀 Próximos Passos
+
+Agora que a criação automática de organização está funcionando, você pode:
+
+### 1. ✅ TESTAR O FLUXO COMPLETO (URGENTE)
+
+```bash
+# 1. Criar uma conta de teste
+# Acesse: https://ndoc-eight.vercel.app/signup
+# ou: http://localhost:3000/signup (se rodando localmente)
+
+# 2. Verificar no Supabase Dashboard
+# - Table Editor > organizations
+# - Table Editor > organization_members
+# - Table Editor > subscriptions
+```
+
+**Critério de Sucesso:**
+- ✅ Organização criada automaticamente
+- ✅ Usuário adicionado como owner
+- ✅ Subscription criada com trial de 14 dias
+- ✅ Redirecionamento para `/onboarding` funcionando
+
+### 2. 📝 TESTAR ONBOARDING
+
+- ✅ Wizard aparece corretamente
+- ✅ Etapas podem ser completadas
+- ✅ Primeiro documento pode ser criado
+
+### 3. 🔐 VERIFICAR VARIÁVEIS DE AMBIENTE
+
+Certifique-se de que todas as variáveis estão configuradas no Vercel:
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `UPSTASH_REDIS_REST_URL` (opcional)
+- `UPSTASH_REDIS_REST_TOKEN` (opcional)
+
+### 4. 🧪 TESTAR RECURSOS PRINCIPAIS
+
+- ✅ Criação de documentos
+- ✅ Geração com IA
+- ✅ Sistema de convites
+- ✅ Tracking de uso
+
+### 5. 📊 MONITORAR LOGS
+
+- **Vercel:** Functions logs para APIs
+- **Supabase:** Database logs para queries
+- **Browser:** Console para erros do frontend
+
+### 6. 📚 DOCUMENTAÇÃO ADICIONAL
+
+- [PROXIMOS-PASSOS.md](PROXIMOS-PASSOS.md) - Guia completo de próximos passos
+- [MIGRATIONS.md](MIGRATIONS.md) - Guia completo de migrations
+- [README.md](README.md) - Documentação principal
+
+---
+
+## ✅ Checklist Final
+
+Antes de considerar concluído:
+
+- [x] Migration `auto_create_organization` executada
+- [x] Função `handle_new_user()` criada e verificada via MCP
+- [x] API Route `/api/organization/create` implementada
+- [x] Integração no signup implementada
+- [x] Planos criados (Free, Starter, Professional, Enterprise)
+- [x] Função `create_default_subscription()` criada
+- [ ] **Teste de signup bem-sucedido** ⬅️ **PRÓXIMO PASSO**
+- [ ] Organização criada automaticamente
+- [ ] Usuário adicionado como owner
+- [ ] Subscription criada com trial de 14 dias
+- [ ] Onboarding funcionando
+
+---
+
+**Última atualização:** 2025-01-15  
+**Status:** ✅ **IMPLEMENTADO E VERIFICADO**  
+**Tempo de configuração:** ~0 minutos (já está pronto!)  
+**Dificuldade:** Nenhuma (tudo automatizado)

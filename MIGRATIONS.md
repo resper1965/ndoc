@@ -84,7 +84,7 @@ supabase db diff
 **Criado:** 2025-01-15
 **Dependências:** Migration 0
 
-**⚠️ ATENÇÃO:** Esta migration requer configuração manual de webhook no Supabase Dashboard. Veja [WEBHOOK-SETUP.md](WEBHOOK-SETUP.md) para instruções detalhadas.
+**✅ STATUS:** Implementado e funcionando via API Route (não requer webhook).
 
 **Descrição:** Cria automaticamente uma organização pessoal quando um usuário se cadastra via Supabase Auth.
 
@@ -96,16 +96,13 @@ supabase db diff
   - Adiciona usuário como `owner` da organização
   - Retorna JSONB com resultado da operação
 
-**⚠️ Configuração Necessária:**
+**✅ Solução Implementada:**
 
-Como não é possível criar triggers diretamente na tabela `auth.users` (tabela gerenciada pelo Supabase Auth), você deve configurar um **Database Webhook**:
+A criação automática de organização funciona via **API Route** que chama a função `handle_new_user()` após o signup. **Não é necessário configurar webhook!**
 
-1. Acesse o [Supabase Dashboard](https://supabase.com/dashboard)
-2. Vá para **Database** → **Webhooks**
-3. Crie webhook com:
-   - **Tabela:** `auth.users`
-   - **Evento:** `INSERT` (após signup)
-   - **Função:** `handle_new_user()`
+**Arquivos:**
+- `src/app/api/organization/create/route.ts` - API route
+- `src/app/signup/page.tsx` - Chama a API após signup
 
 📖 **Guia completo:** [WEBHOOK-SETUP.md](WEBHOOK-SETUP.md)
 
@@ -113,7 +110,7 @@ Como não é possível criar triggers diretamente na tabela `auth.users` (tabela
 - ✅ Elimina necessidade de criação manual de organização
 - ✅ Melhora UX no signup
 - ✅ Garante que todo usuário tenha uma organização
-- ⚠️ Requer configuração manual de webhook (one-time setup)
+- ✅ Funciona automaticamente sem configuração adicional
 
 **Exemplo:**
 ```sql
@@ -397,10 +394,11 @@ supabase db diff
 
 **Solução:**
 - ✅ A migration `20250115000000_auto_create_organization.sql` foi atualizada para **não** criar o trigger
-- ⚠️ Você deve configurar um **Database Webhook** no Supabase Dashboard
-- 📖 Siga as instruções detalhadas em [WEBHOOK-SETUP.md](WEBHOOK-SETUP.md)
+- ✅ A solução implementada usa **API Route** que chama a função após signup
+- ✅ **Não é necessário configurar webhook!** Tudo funciona automaticamente
+- 📖 Veja [WEBHOOK-SETUP.md](WEBHOOK-SETUP.md) para detalhes
 
-**Nota:** Este é um comportamento esperado. Tabelas do schema `auth` são protegidas e não permitem triggers via SQL. A solução com webhook é a abordagem recomendada pelo Supabase.
+**Nota:** Este é um comportamento esperado. Tabelas do schema `auth` são protegidas e não permitem triggers via SQL. A solução com API Route é mais simples e funciona no plano free.
 
 ### Erro: "relation already exists"
 

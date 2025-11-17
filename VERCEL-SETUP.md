@@ -41,6 +41,8 @@ vercel
 
 ## 🔑 Passo 2: Configurar Variáveis de Ambiente
 
+> **💡 Dica:** Para configuração rápida, veja também [VERCEL-ENV-VARS.md](./VERCEL-ENV-VARS.md)
+
 ### Variáveis Obrigatórias
 
 Você **DEVE** configurar estas variáveis para a aplicação funcionar:
@@ -48,6 +50,7 @@ Você **DEVE** configurar estas variáveis para a aplicação funcionar:
 #### 1. `NEXT_PUBLIC_SUPABASE_URL`
 - **Onde obter**: Dashboard do Supabase → Settings → API → Project URL
 - **Formato**: `https://xxxxx.supabase.co`
+- **Projeto atual**: `https://ajyvonzyoyxmiczflfiz.supabase.co`
 - **Exemplo**: `https://abcdefghijklmnop.supabase.co`
 
 #### 2. `NEXT_PUBLIC_SUPABASE_ANON_KEY`
