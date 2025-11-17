@@ -3,7 +3,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import SearchDialog from '@/components/search-dialog';
+import { SemanticSearchDialog } from '@/components/semantic-search-dialog';
 import { sidebarNav } from 'config/sidebar';
 import Image from 'next/image';
 import {
@@ -21,7 +21,7 @@ import {
   UserAvatar,
   NestedLink,
 } from '@/components/sidebar';
-import { Github } from 'lucide-react';
+import { Github, Home, Settings, Shield } from 'lucide-react';
 
 import Header from '@/components/header';
 import { ModeToggle } from '@/components/mode-toggle';
@@ -126,14 +126,33 @@ export default function DocsLayout({
           <Header className="justify-between py-2">
             <div className="flex items-center gap-4">
               <SidebarTrigger />
-              <h1 className="text-xl font-bold">Documentation</h1>
+              <h1 className="text-xl font-bold">Documentação</h1>
             </div>
             <div className="flex gap-2 items-center pr-0 lg:pr-8">
-              <SearchDialog searchData={[]} />
+              <Link href="/">
+                <Button variant="none" className="flex items-center gap-2">
+                  <Home className="h-4 w-4" />
+                  <span className="hidden sm:inline">Início</span>
+                </Button>
+              </Link>
+              <Link href="/config">
+                <Button variant="none" className="flex items-center gap-2">
+                  <Settings className="h-4 w-4" />
+                  <span className="hidden sm:inline">Configurações</span>
+                </Button>
+              </Link>
+              <Link href="/admin">
+                <Button variant="none" className="flex items-center gap-2">
+                  <Shield className="h-4 w-4" />
+                  <span className="hidden sm:inline">Admin</span>
+                </Button>
+              </Link>
+              <SemanticSearchDialog />
               <ModeToggle />
               {clientBranding.github && (
                 <Button
                   onClick={() => window.open(clientBranding.github, '_blank')}
+                  variant="none"
                 >
                   <Github className="h-[1.2rem] w-[1.2rem] transition-all" />
                 </Button>

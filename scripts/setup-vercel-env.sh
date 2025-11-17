@@ -1,68 +1,75 @@
 #!/bin/bash
 
 # Script para configurar variáveis de ambiente na Vercel
-# Projeto: ndoc (ndoc-xi1n)
-# Team: nessbr-projects
+# Uso: ./scripts/setup-vercel-env.sh
 
 set -e
 
-echo "🚀 Configurando variáveis de ambiente na Vercel para o projeto 'ndoc'..."
+echo "🔧 Configurando variáveis de ambiente na Vercel..."
 echo ""
 
-# Verificar se Vercel CLI está instalado
-if ! command -v vercel &> /dev/null; then
-    echo "❌ Vercel CLI não está instalado."
-    echo "   Instale com: npm i -g vercel"
-    exit 1
-fi
-
-# Verificar se está logado
-if ! vercel whoami &> /dev/null; then
-    echo "❌ Você não está logado na Vercel."
-    echo "   Execute: vercel login"
-    exit 1
-fi
-
-# Variáveis do Supabase (obtidas via MCP)
+# Variáveis do Supabase
 SUPABASE_URL="https://ajyvonzyoyxmiczflfiz.supabase.co"
 SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFqeXZvbnp5b3l4bWljemZsZml6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMxMjYwNTEsImV4cCI6MjA3ODcwMjA1MX0.Q1IdRXq2KVhe4-Gk_TDohtaN_mJU7hULHz80EkqBgx4"
 
-# Projeto Vercel
-PROJECT_NAME="ndoc-xi1n"
-TEAM_ID="team_iz6jrPdYbt5I3BtGFHb6hY16"
+# Variáveis do .env.local (se existir)
+if [ -f .env.local ]; then
+  source .env.local
+fi
 
-echo "📋 Configurando variáveis para o projeto: $PROJECT_NAME"
-echo ""
+# Função para adicionar variável
+add_env_var() {
+  local name=$1
+  local value=$2
+  local env=${3:-production}
+  
+  if [ -z "$value" ]; then
+    echo "⚠️  $name não definida, pulando..."
+    return
+  fi
+  
+  echo "📝 Adicionando $name para $env..."
+  echo "$value" | vercel env add "$name" "$env" 2>&1 | grep -v "Retrieving project" || true
+}
 
-# Configurar NEXT_PUBLIC_SUPABASE_URL para cada ambiente
-echo "1️⃣  Configurando NEXT_PUBLIC_SUPABASE_URL..."
-for env in production preview development; do
-    echo "   Configurando para $env..."
-    echo "$SUPABASE_URL" | vercel env add NEXT_PUBLIC_SUPABASE_URL "$env" --scope "$TEAM_ID" 2>&1 | grep -v "Error" || {
-        echo "   ⚠️  Variável pode já existir para $env. Continuando..."
-    }
-done
+# Variáveis obrigatórias
+echo "📦 Configurando variáveis obrigatórias..."
+add_env_var "NEXT_PUBLIC_SUPABASE_URL" "$SUPABASE_URL" "production"
+add_env_var "NEXT_PUBLIC_SUPABASE_URL" "$SUPABASE_URL" "preview"
+add_env_var "NEXT_PUBLIC_SUPABASE_URL" "$SUPABASE_URL" "development"
 
-# Configurar NEXT_PUBLIC_SUPABASE_ANON_KEY para cada ambiente
-echo "2️⃣  Configurando NEXT_PUBLIC_SUPABASE_ANON_KEY..."
-for env in production preview development; do
-    echo "   Configurando para $env..."
-    echo "$SUPABASE_ANON_KEY" | vercel env add NEXT_PUBLIC_SUPABASE_ANON_KEY "$env" --scope "$TEAM_ID" 2>&1 | grep -v "Error" || {
-        echo "   ⚠️  Variável pode já existir para $env. Continuando..."
-    }
-done
+add_env_var "NEXT_PUBLIC_SUPABASE_ANON_KEY" "$SUPABASE_ANON_KEY" "production"
+add_env_var "NEXT_PUBLIC_SUPABASE_ANON_KEY" "$SUPABASE_ANON_KEY" "preview"
+add_env_var "NEXT_PUBLIC_SUPABASE_ANON_KEY" "$SUPABASE_ANON_KEY" "development"
+
+# Variáveis opcionais mas recomendadas
+if [ -n "$SUPABASE_SERVICE_ROLE_KEY" ]; then
+  add_env_var "SUPABASE_SERVICE_ROLE_KEY" "$SUPABASE_SERVICE_ROLE_KEY" "production"
+  add_env_var "SUPABASE_SERVICE_ROLE_KEY" "$SUPABASE_SERVICE_ROLE_KEY" "preview"
+fi
+
+if [ -n "$OPENAI_API_KEY" ]; then
+  add_env_var "OPENAI_API_KEY" "$OPENAI_API_KEY" "production"
+  add_env_var "OPENAI_API_KEY" "$OPENAI_API_KEY" "preview"
+fi
+
+if [ -n "$UPSTASH_REDIS_REST_URL" ]; then
+  add_env_var "UPSTASH_REDIS_REST_URL" "$UPSTASH_REDIS_REST_URL" "production"
+  add_env_var "UPSTASH_REDIS_REST_URL" "$UPSTASH_REDIS_REST_URL" "preview"
+fi
+
+if [ -n "$UPSTASH_REDIS_REST_TOKEN" ]; then
+  add_env_var "UPSTASH_REDIS_REST_TOKEN" "$UPSTASH_REDIS_REST_TOKEN" "production"
+  add_env_var "UPSTASH_REDIS_REST_TOKEN" "$UPSTASH_REDIS_REST_TOKEN" "preview"
+fi
+
+if [ -n "$NEXT_PUBLIC_APP_URL" ]; then
+  add_env_var "NEXT_PUBLIC_APP_URL" "$NEXT_PUBLIC_APP_URL" "production"
+  add_env_var "NEXT_PUBLIC_APP_URL" "$NEXT_PUBLIC_APP_URL" "preview"
+fi
 
 echo ""
-echo "✅ Variáveis configuradas com sucesso!"
+echo "✅ Variáveis de ambiente configuradas!"
 echo ""
-echo "📝 Variáveis configuradas:"
-echo "   - NEXT_PUBLIC_SUPABASE_URL"
-echo "   - NEXT_PUBLIC_SUPABASE_ANON_KEY"
-echo ""
-echo "🔍 Para verificar, execute:"
-echo "   vercel env ls --scope $TEAM_ID"
-echo ""
-echo "🚀 Para fazer deploy, execute:"
-echo "   vercel --prod --scope $TEAM_ID"
-echo ""
-
+echo "📋 Verificar variáveis: vercel env ls"
+echo "🚀 Próximo passo: vercel --prod"

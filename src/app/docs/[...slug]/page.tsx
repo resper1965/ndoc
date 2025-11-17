@@ -25,10 +25,10 @@ export const generateMetadata = async ({ params }: { params: tParams }) => {
 
   return {
     title: doc.title,
-    description: doc.description || 'A detailed guide to the topic.',
+    description: doc.description || 'Documentação detalhada sobre o tópico.',
     openGraph: {
       title: doc.title,
-      description: doc.description || 'A detailed guide to the topic.',
+      description: doc.description || 'Documentação detalhada sobre o tópico.',
     },
   };
 };

@@ -125,6 +125,7 @@ export default function LoginPage() {
                   required
                   className="pl-10 pr-10"
                   disabled={loading}
+                  autoComplete="current-password"
                 />
                 <button
                   type="button"

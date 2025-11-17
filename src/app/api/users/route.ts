@@ -49,9 +49,9 @@ export async function GET(request: NextRequest) {
     
     // Validação de query params
     const queryValidation = listUsersQuerySchema.safeParse({
-      organization_id: searchParams.get('organization_id'),
-      page: searchParams.get('page'),
-      limit: searchParams.get('limit'),
+      organization_id: searchParams.get('organization_id') || undefined,
+      page: searchParams.get('page') || undefined,
+      limit: searchParams.get('limit') || undefined,
     });
 
     if (!queryValidation.success) {

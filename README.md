@@ -559,10 +559,19 @@ supabase functions deploy improve-document
 
 ## 📚 Documentação Adicional
 
+### Para Usuários
 - [Manual do Usuário](./MANUAL-USUARIO.md) - Guia completo para usuários
+- [Guia da Tela de Configuração](./GUIA-TELA-CONFIGURACAO.md) - Como usar a interface de configuração
+
+### Para Desenvolvedores
+- [Especificações do Projeto](./.specify/) - Spec-kit completo com:
+  - [Constituição](./.specify/constitution.md) - Princípios e arquitetura
+  - [Estado Atual](./.specify/current.md) - Funcionalidades implementadas
+  - [Plano de Desenvolvimento](./.specify/plan.md) - Roadmap e fases
+  - [Tarefas Detalhadas](./.specify/tasks.md) - Lista de tarefas por fase
+  - [Comparação](./.specify/comparison.md) - Estado atual vs. especificação
+- [Análise de Gap Funcional](./ANALISE-GAP-FUNCIONAL.md) - O que falta implementar
 - [Changelog](./CHANGELOG.md) - Histórico de mudanças
-- [Estágio Atual](./ESTAGIO-ATUAL.md) - Status da aplicação
-- [Implementação Completa](./IMPLEMENTACAO-COMPLETA.md) - Detalhes técnicos
 
 ---
 

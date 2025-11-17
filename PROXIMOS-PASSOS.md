@@ -1,320 +1,207 @@
-# 🚀 Próximos Passos - n.doc
+# 🎯 Próximos Passos - ndocs
 
-**Última atualização:** 2025-01-15  
-**Status Atual:** ✅ Migrations executadas | ✅ Criação automática de organização implementada
-
----
-
-## ✅ O Que Já Está Pronto
-
-- ✅ Todas as migrations executadas via MCP
-- ✅ Função `handle_new_user()` criada e verificada
-- ✅ API Route `/api/organization/create` implementada
-- ✅ Integração no signup funcionando
-- ✅ Planos SaaS criados (Free, Starter, Professional, Enterprise)
-- ✅ Sistema de subscriptions com trial de 14 dias
-- ✅ Tracking de uso implementado
-- ✅ Sistema de auditoria (audit logs)
-- ✅ Sistema de convites
-- ✅ Deploy na Vercel configurado
+**Data**: 2025-01-18  
+**Status Atual**: 54% completo (26/48 tarefas)
 
 ---
 
-## 🎯 Próximos Passos (Ordem de Prioridade)
+## 📋 Resumo do Estado Atual
 
-### 1. ✅ TESTAR O FLUXO COMPLETO (URGENTE)
+### ✅ Concluído
+- **Fase 1: Fundação** (100%) - Migrations aplicadas, pgvector habilitado
+- **Fase 2: Templates** (80%) - Templates padrão criados e inseridos no banco
+- **Fase 3: Conversão** (72%) - Sistema de upload e conversores implementados
 
-**Objetivo:** Verificar se tudo está funcionando end-to-end
-
-```bash
-# 1. Criar uma conta de teste
-# Acesse: https://ndoc-eight.vercel.app/signup
-# ou: http://localhost:3000/signup (se rodando localmente)
-
-# 2. Preencher formulário:
-# - Nome: "Teste Usuário"
-# - Email: "teste@example.com"
-# - Senha: "senha123"
-# - Confirmar senha: "senha123"
-
-# 3. Clicar em "Criar conta"
-
-# 4. Verificar no Supabase Dashboard:
-# - Table Editor > organizations
-#   → Deve ter uma organização "Teste Usuário's Organization"
-# - Table Editor > organization_members
-#   → Deve ter o usuário como "owner"
-# - Table Editor > subscriptions
-#   → Deve ter subscription "free" com status "trialing"
-```
-
-**Critério de Sucesso:**
-- ✅ Organização criada automaticamente
-- ✅ Usuário adicionado como owner
-- ✅ Subscription criada com trial de 14 dias
-- ✅ Redirecionamento para `/onboarding` funcionando
+### ⚠️ Pendente Imediato
+- Corrigir erros de build (tipos TypeScript)
+- Testar conversores de documentos
+- Completar conversores pendentes (ODT, PPTX)
 
 ---
 
-### 2. 📝 TESTAR ONBOARDING
+## 🚀 Próximos Passos (Ordem de Prioridade)
 
-**Objetivo:** Verificar se o wizard de onboarding está funcionando
+### 1. **Corrigir Build** (URGENTE - 30 min)
+**Objetivo**: Resolver erros de compilação TypeScript
 
-```bash
-# Após criar conta, você deve ser redirecionado para /onboarding
+**Tarefas**:
+- [ ] Corrigir tipos do `pptx-parser` (adicionar `as any` ou criar declaração de tipos)
+- [ ] Verificar e corrigir outros erros de tipos
+- [ ] Garantir que `pnpm build` compila sem erros
 
-# Verificar:
-# - ✅ Wizard aparece corretamente
-# - ✅ Etapas podem ser completadas
-# - ✅ Primeiro documento pode ser criado
-# - ✅ Organização é configurada corretamente
-```
-
-**Critério de Sucesso:**
-- ✅ Usuário consegue completar todas as etapas
-- ✅ Primeiro documento é criado com sucesso
-- ✅ Redirecionamento para dashboard funciona
+**Arquivos afetados**:
+- `src/lib/processing/convert-document.ts`
 
 ---
 
-### 3. 🔐 VERIFICAR VARIÁVEIS DE AMBIENTE
+### 2. **Completar Fase 3: Conversão** (1-2 horas)
+**Objetivo**: Finalizar sistema de conversão de documentos
 
-**Objetivo:** Garantir que todas as variáveis estão configuradas
+**Tarefas**:
+- [ ] Testar conversores implementados (PDF, DOCX, HTML, JSON, CSV, XLSX)
+- [ ] Melhorar conversor RTF (atualmente básico)
+- [ ] Implementar conversor ODT completo
+- [ ] Melhorar conversor PPTX (atualmente em desenvolvimento)
+- [ ] Adicionar tratamento de erros robusto
+- [ ] Criar testes unitários para conversores
 
-**Local (.env.local):**
-```env
-NEXT_PUBLIC_SUPABASE_URL=https://ajyvonzyoyxmiczflfiz.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=sua_chave_aqui
-UPSTASH_REDIS_REST_URL=https://comic-raven-37828.upstash.io
-UPSTASH_REDIS_REST_TOKEN=seu_token_aqui
-```
-
-**Vercel (Produção):**
-```bash
-# Verificar variáveis na Vercel
-vercel env ls
-
-# Ou via Dashboard:
-# https://vercel.com/dashboard > ndoc > Settings > Environment Variables
-```
-
-**Variáveis Necessárias:**
-- ✅ `NEXT_PUBLIC_SUPABASE_URL`
-- ✅ `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-- ✅ `UPSTASH_REDIS_REST_URL` (opcional, mas recomendado)
-- ✅ `UPSTASH_REDIS_REST_TOKEN` (opcional, mas recomendado)
+**Arquivos**:
+- `src/lib/processing/convert-document.ts`
+- `src/app/api/ingest/upload/route.ts`
+- `tests/converters/` (criar)
 
 ---
 
-### 4. 🧪 TESTAR RECURSOS PRINCIPAIS
+### 3. **Integrar Upload na Interface** (1 hora)
+**Objetivo**: Adicionar componente de upload na página de configuração
 
-#### 4.1. Criação de Documentos
+**Tarefas**:
+- [ ] Adicionar `DocumentUpload` na página `/config`
+- [ ] Criar seção "Upload de Documentos" na aba "Documentos"
+- [ ] Adicionar seleção de template durante upload
+- [ ] Mostrar progresso de conversão
+- [ ] Exibir lista de documentos processados
 
-```bash
-# 1. Acesse a aplicação logado
-# 2. Vá para a seção de documentos
-# 3. Crie um novo documento
-# 4. Verifique se:
-#    - ✅ Documento é salvo no banco
-#    - ✅ Contador de documentos é atualizado
-#    - ✅ Limites do plano são respeitados
-```
-
-#### 4.2. Geração de Documentos com IA
-
-```bash
-# 1. Configure um AI Provider (OpenAI ou Anthropic)
-#    - Vá para /config
-#    - Seção "AI Providers"
-#    - Adicione API key
-
-# 2. Configure um AI Theme
-#    - Seção "AI Themes"
-#    - Crie um tema
-
-# 3. Teste geração de documento
-#    - Use o botão "Gerar com IA" no editor
-#    - Verifique se:
-#      - ✅ Documento é gerado
-#      - ✅ Contador de IA é incrementado
-#      - ✅ Limites são respeitados
-```
-
-#### 4.3. Sistema de Convites
-
-```bash
-# 1. Como admin/owner, convide um novo membro
-# 2. Verifique se:
-#    - ✅ Convite é criado
-#    - ✅ Email é enviado (se configurado)
-#    - ✅ Token é gerado
-#    - ✅ Convite pode ser aceito
-```
+**Arquivos**:
+- `src/app/config/page.tsx`
+- `src/components/document-upload.tsx` (já criado)
 
 ---
 
-### 5. 📊 MONITORAR LOGS E MÉTRICAS
+### 4. **Fase 4: Pipeline de Vetorização** (4-6 horas)
+**Objetivo**: Implementar processamento completo de documentos (chunking → embeddings → armazenamento)
 
-**Vercel:**
-```bash
-# Ver logs em tempo real
-vercel logs --follow
+**Tarefas**:
+- [ ] Criar função `generateEmbeddings()` usando OpenAI
+- [ ] Criar função `storeEmbeddings()` no Supabase
+- [ ] Criar API route `/api/process/document/[id]` para processar documentos
+- [ ] Implementar worker/queue para processamento assíncrono
+- [ ] Criar endpoint para verificar status de processamento
+- [ ] Atualizar `document_processing_jobs` com progresso
+- [ ] Testar pipeline completo
 
-# Ou via Dashboard:
-# https://vercel.com/dashboard > ndoc > Deployments > [último] > Functions
-```
+**Arquivos a criar**:
+- `src/lib/vectorization/generate-embeddings.ts`
+- `src/lib/vectorization/store-embeddings.ts`
+- `src/app/api/process/document/[id]/route.ts`
+- `src/app/api/process/status/[id]/route.ts`
 
-**Supabase:**
-```bash
-# Dashboard > Logs > API Logs
-# Verificar queries e erros
-```
-
-**Browser:**
-```bash
-# DevTools (F12) > Console
-# Verificar erros do frontend
-```
-
----
-
-### 6. 🚀 DEPLOY EM PRODUÇÃO
-
-**Se ainda não fez deploy:**
-
-```bash
-# 1. Fazer deploy
-vercel --prod
-
-# 2. Verificar build
-vercel logs --follow
-
-# 3. Testar em produção
-# https://ndoc-eight.vercel.app
-```
-
-**Se já fez deploy:**
-
-```bash
-# 1. Verificar se está na branch correta
-git branch
-
-# 2. Fazer merge se necessário
-git checkout main
-git merge sua-branch
-
-# 3. Push e deploy
-git push origin main
-vercel --prod
-```
+**Dependências**:
+- OpenAI API Key configurada
+- Função `chunkDocument()` já implementada ✅
 
 ---
 
-### 7. 🔒 CONFIGURAR SEGURANÇA
+### 5. **Fase 5: Busca Semântica** (3-4 horas)
+**Objetivo**: Implementar busca semântica usando embeddings
 
-#### 7.1. Habilitar Leaked Password Protection
+**Tarefas**:
+- [ ] Criar API route `/api/search/semantic` que:
+  - Recebe query de texto
+  - Gera embedding da query
+  - Busca documentos similares usando `semantic_search()`
+  - Retorna resultados ordenados por similaridade
+- [ ] Criar componente `SearchDialog` melhorado com busca semântica
+- [ ] Adicionar filtros (tipo de documento, organização, data)
+- [ ] Implementar paginação
+- [ ] Adicionar highlight de resultados
+- [ ] Testar performance com diferentes queries
 
-```bash
-# Supabase Dashboard > Settings > Auth > Passwords
-# ✅ Habilitar "Leaked password protection"
-```
+**Arquivos a criar/modificar**:
+- `src/app/api/search/semantic/route.ts`
+- `src/components/search-dialog.tsx` (melhorar existente)
+- `src/lib/search/semantic-search.ts`
 
-#### 7.2. Verificar RLS Policies
-
-```sql
--- Verificar se RLS está habilitado em todas as tabelas
-SELECT tablename, rowsecurity
-FROM pg_tables
-WHERE schemaname = 'public'
-ORDER BY tablename;
-
--- Todas devem ter rowsecurity = true
-```
-
-#### 7.3. Verificar Rate Limiting
-
-```bash
-# Verificar se Redis está configurado
-# Se não estiver, rate limiting usará fallback em memória
-# (funciona, mas não é distribuído)
-```
+**Dependências**:
+- Função `semantic_search()` já criada no banco ✅
+- Embeddings já armazenados (Fase 4)
 
 ---
 
-### 8. 📚 DOCUMENTAÇÃO
+### 6. **Fase 6: RAG para Chatbot** (4-6 horas)
+**Objetivo**: Preparar sistema para integração com chatbot
 
-#### 8.1. Atualizar README
+**Tarefas**:
+- [ ] Criar função `ragQuery()` que:
+  - Recebe pergunta do usuário
+  - Busca contexto relevante usando busca semântica
+  - Formata contexto para LLM
+  - Retorna contexto + citações
+- [ ] Criar API route `/api/rag/query`
+- [ ] Implementar sistema de citações (referências aos documentos)
+- [ ] Adicionar metadados de contexto (documento, chunk, similaridade)
+- [ ] Criar interface de teste para RAG
+- [ ] Documentar formato de resposta para integração com chatbot
 
-- [ ] Adicionar screenshots
-- [ ] Adicionar exemplos de uso
-- [ ] Documentar APIs principais
+**Arquivos a criar**:
+- `src/lib/rag/query.ts`
+- `src/app/api/rag/query/route.ts`
+- `src/app/api/rag/test/page.tsx` (opcional - interface de teste)
 
-#### 8.2. Criar Guias de Uso
-
-- [ ] Guia de onboarding para usuários
-- [ ] Guia de administração
-- [ ] Guia de integração com Stripe (quando implementar)
-
----
-
-### 9. 🎨 MELHORIAS DE UX
-
-- [ ] Adicionar loading states
-- [ ] Melhorar mensagens de erro
-- [ ] Adicionar tooltips
-- [ ] Melhorar responsividade mobile
-
----
-
-### 10. 💰 INTEGRAÇÃO COM STRIPE (Futuro)
-
-**Quando estiver pronto para monetizar:**
-
-1. Criar conta Stripe
-2. Configurar produtos e preços
-3. Implementar webhooks do Stripe
-4. Integrar checkout
-5. Testar fluxo completo de pagamento
-
-**Documentação:** Ver `PLANEJAMENTO-SAAS.md` para roadmap completo
+**Dependências**:
+- Busca semântica funcionando (Fase 5)
+- OpenAI API configurada
 
 ---
 
-## 📋 Checklist Rápido
+### 7. **Melhorias e Polimento** (2-3 horas)
+**Objetivo**: Melhorar UX e adicionar features finais
 
-Use este checklist para acompanhar o progresso:
-
-### Setup Inicial
-- [x] Migrations executadas
-- [x] Função `handle_new_user()` criada
-- [x] API Route implementada
-- [x] Planos criados
-- [ ] **Teste de signup** ⬅️ **FAZER AGORA**
-- [ ] Teste de onboarding
-- [ ] Variáveis de ambiente verificadas
-
-### Funcionalidades Core
-- [ ] Criação de documentos
-- [ ] Geração com IA
-- [ ] Sistema de convites
-- [ ] Tracking de uso
-- [ ] Limites de plano
-
-### Produção
-- [ ] Deploy na Vercel
-- [ ] Logs monitorados
-- [ ] Segurança configurada
-- [ ] Documentação atualizada
+**Tarefas**:
+- [ ] Interface para gerenciar templates (criar/editar)
+- [ ] Dashboard de processamento (ver jobs em andamento)
+- [ ] Estatísticas de documentos (quantos vetorizados, etc.)
+- [ ] Melhorar tratamento de erros em toda aplicação
+- [ ] Adicionar logs estruturados
+- [ ] Documentação de API
 
 ---
 
-## 🆘 Precisa de Ajuda?
+## 📊 Cronograma Estimado
 
-- **Erros no signup?** → Ver [WEBHOOK-SETUP.md](WEBHOOK-SETUP.md) seção Troubleshooting
-- **Erros nas migrations?** → Ver [MIGRATIONS.md](MIGRATIONS.md) seção Troubleshooting
-- **Problemas no deploy?** → Ver [VERCEL-SETUP.md](VERCEL-SETUP.md)
-- **Dúvidas sobre o projeto?** → Ver [README.md](README.md)
+| Fase | Tempo Estimado | Prioridade |
+|------|----------------|------------|
+| 1. Corrigir Build | 30 min | 🔴 Crítica |
+| 2. Completar Fase 3 | 1-2 horas | 🟡 Alta |
+| 3. Integrar Upload | 1 hora | 🟡 Alta |
+| 4. Fase 4: Vetorização | 4-6 horas | 🟢 Média |
+| 5. Fase 5: Busca | 3-4 horas | 🟢 Média |
+| 6. Fase 6: RAG | 4-6 horas | 🟢 Média |
+| 7. Melhorias | 2-3 horas | 🔵 Baixa |
+
+**Total estimado**: 15-22 horas de desenvolvimento
 
 ---
 
-**Próximo passo imediato:** 🎯 **TESTAR O FLUXO DE SIGNUP**
+## 🎯 Meta Imediata (Próxima Sessão)
+
+**Foco**: Corrigir build e completar Fase 3
+
+1. ✅ Corrigir erros de build (30 min)
+2. ✅ Testar conversores básicos (30 min)
+3. ✅ Integrar upload na interface (1 hora)
+4. ✅ Iniciar Fase 4 (vetorização) - se houver tempo
+
+---
+
+## 📝 Notas Importantes
+
+### Dependências Externas
+- **OpenAI API Key**: Necessária para embeddings e RAG
+- **Supabase**: Já configurado ✅
+- **Vercel**: Já configurado ✅
+
+### Decisões Técnicas Pendentes
+- [ ] Escolher biblioteca de queue para processamento assíncrono (ou usar Supabase Edge Functions?)
+- [ ] Definir estratégia de chunking por tipo de documento
+- [ ] Decidir sobre cache de embeddings
+
+### Testes Necessários
+- [ ] Testes unitários para conversores
+- [ ] Testes de integração para pipeline de vetorização
+- [ ] Testes de performance para busca semântica
+- [ ] Testes end-to-end do fluxo completo
+
+---
+
+**Última atualização**: 2025-01-18

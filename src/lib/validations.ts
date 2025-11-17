@@ -50,8 +50,8 @@ export const listDocumentsQuerySchema = z.object({
 });
 
 export const listUsersQuerySchema = z.object({
-  organization_id: z.string().uuid().optional(),
-  page: z.string().regex(/^\d+$/).transform(Number).pipe(z.number().min(1, 'Página deve ser no mínimo 1')).optional(),
-  limit: z.string().regex(/^\d+$/).transform(Number).pipe(z.number().min(1, 'Limite deve ser no mínimo 1').max(100, 'Limite máximo de 100 itens por página')).optional(),
+  organization_id: z.string().uuid().optional().or(z.literal('').transform(() => undefined)),
+  page: z.string().regex(/^\d+$/).transform(Number).pipe(z.number().min(1, 'Página deve ser no mínimo 1')).optional().or(z.literal('').transform(() => undefined)),
+  limit: z.string().regex(/^\d+$/).transform(Number).pipe(z.number().min(1, 'Limite deve ser no mínimo 1').max(100, 'Limite máximo de 100 itens por página')).optional().or(z.literal('').transform(() => undefined)),
 });
 

@@ -7,8 +7,13 @@ export const dynamic = 'force-dynamic';
 import { Button } from '@/components/button';
 import { Input } from '@/components/input';
 import { Label } from '@/components/label';
-import { Edit, X, AlertCircle, Plus, Lock, FileText, Sparkles, Users, Shield, Code } from 'lucide-react';
+import { Edit, X, AlertCircle, Plus, Lock, FileText, Sparkles, Users, Shield, Code, Home } from 'lucide-react';
 import { Tabs, TabsList, Tab, TabsContent } from '@/components/tabs';
+import Link from 'next/link';
+import { ModeToggle } from '@/components/mode-toggle';
+import { BrandingText } from '@/components/branding-text';
+import { getDisplayLogo } from '../../../config/branding';
+import Image from 'next/image';
 import { validateMDX, type ValidationError } from '@/lib/validate-mdx';
 import { showSuccess, showError, showWarning } from '@/lib/toast';
 import { useConfirmDialog } from '@/components/confirm-dialog';
@@ -16,10 +21,12 @@ import { logger } from '@/lib/logger';
 import { UserManagementSection } from '@/components/user-management-section';
 import { SuperAdminSection } from '@/components/super-admin-section';
 import { AIConfigSection } from '@/components/ai-config-section';
+import { TemplateManagementSection } from '@/components/template-management-section';
 import { MDXEditorWithPreview } from '@/components/mdx-editor-with-preview';
 import { documentTemplates, applyTemplate } from '@/lib/templates';
 import { DocumentCard } from '@/components/document-card';
-import { Search, Filter } from 'lucide-react';
+import { DocumentUpload } from '@/components/document-upload';
+import { Search, Filter, Upload as UploadIcon } from 'lucide-react';
 import matter from 'gray-matter';
 import {
   Dialog,
@@ -423,10 +430,58 @@ export default function ConfigPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
-      {ConfirmDialogComponent}
-      
-      {/* Create Document Dialog */}
+    <div className="min-h-screen bg-white dark:bg-gray-950">
+      {/* Header com Navegação */}
+      <header className="sticky top-0 z-10 bg-white/90 dark:bg-gray-950/90 backdrop-blur-sm border-b border-gray-200 dark:border-gray-800">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+                {getDisplayLogo() ? (
+                  <Image
+                    alt="logo"
+                    className="h-8 w-auto dark:invert"
+                    width={32}
+                    height={32}
+                    src={getDisplayLogo()!}
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                    }}
+                  />
+                ) : null}
+                <BrandingText className="text-lg" />
+              </Link>
+              <nav className="hidden md:flex items-center gap-1 ml-6">
+                <Link href="/">
+                  <Button variant="none" size="sm" className="flex items-center gap-2">
+                    <Home className="h-4 w-4" />
+                    Início
+                  </Button>
+                </Link>
+                <Link href="/docs">
+                  <Button variant="none" size="sm" className="flex items-center gap-2">
+                    <FileText className="h-4 w-4" />
+                    Documentação
+                  </Button>
+                </Link>
+                <Button variant="none" size="sm" className="flex items-center gap-2 bg-primary/10 text-primary">
+                  <Shield className="h-4 w-4" />
+                  Configurações
+                </Button>
+              </nav>
+            </div>
+            <div className="flex items-center gap-2">
+              <ModeToggle />
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Conteúdo Principal */}
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
+        {ConfirmDialogComponent}
+        
+        {/* Create Document Dialog */}
       <Dialog open={showCreateDialog} setOpen={setShowCreateDialog}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -679,6 +734,10 @@ ${newDocForm.order ? `order: ${parseInt(newDocForm.order) || 0}` : ''}
             <FileText className="h-4 w-4" />
             Documentos
           </Tab>
+          <Tab value="templates" className="flex items-center gap-2">
+            <FileText className="h-4 w-4" />
+            Templates
+          </Tab>
           <Tab value="ai" className="flex items-center gap-2">
             <Sparkles className="h-4 w-4" />
             Inteligência Artificial
@@ -739,6 +798,7 @@ ${newDocForm.order ? `order: ${parseInt(newDocForm.order) || 0}` : ''}
               required
               placeholder="Digite sua senha atual"
               className="mt-1"
+              autoComplete="current-password"
             />
           </div>
 
@@ -767,6 +827,7 @@ ${newDocForm.order ? `order: ${parseInt(newDocForm.order) || 0}` : ''}
               }
               placeholder="Deixe em branco para manter a atual"
               className="mt-1"
+              autoComplete="new-password"
             />
           </div>
 
@@ -782,6 +843,7 @@ ${newDocForm.order ? `order: ${parseInt(newDocForm.order) || 0}` : ''}
                 }
                 placeholder="Confirme a nova senha"
                 className="mt-1"
+                autoComplete="new-password"
               />
             </div>
           )}
@@ -811,8 +873,64 @@ ${newDocForm.order ? `order: ${parseInt(newDocForm.order) || 0}` : ''}
             <div className="mb-6">
               <h2 className="text-2xl font-heading font-semibold mb-2">Gerenciamento de Documentos</h2>
               <p className="text-slate-600 dark:text-slate-400 text-sm">
-                Crie, edite e gerencie seus documentos MDX
+                Crie, edite e gerencie seus documentos MDX. Faça upload de arquivos (PDF, DOCX, HTML, etc.) para conversão automática.
               </p>
+            </div>
+
+            {/* Upload Section */}
+            <div className="mb-6">
+              <h3 className="text-lg font-heading font-semibold mb-3 flex items-center gap-2">
+                <UploadIcon className="h-5 w-5" />
+                Upload de Documentos
+              </h3>
+              <DocumentUpload
+                onUpload={async (file) => {
+                  try {
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    
+                    // Opcional: adicionar template e tipo
+                    // formData.append('templateId', '...');
+                    // formData.append('documentType', 'policy');
+
+                    const response = await fetch('/api/ingest/upload', {
+                      method: 'POST',
+                      body: formData,
+                    });
+
+                    if (!response.ok) {
+                      const error = await response.json();
+                      throw new Error(error.error || 'Erro ao fazer upload');
+                    }
+
+                    const result = await response.json();
+                    showSuccess(`Documento "${result.document.title}" convertido com sucesso!`);
+
+                    // Iniciar processamento automático (vetorização)
+                    if (result.document?.id) {
+                      try {
+                        const processResponse = await fetch(`/api/process/document/${result.document.id}`, {
+                          method: 'POST',
+                        });
+                        if (processResponse.ok) {
+                          showSuccess('Processamento de vetorização iniciado em background');
+                        }
+                      } catch (processError) {
+                        logger.warn('Erro ao iniciar processamento', { error: processError });
+                        // Não bloquear se o processamento falhar
+                      }
+                    }
+
+                    // Recarregar lista de documentos
+                    await loadDocuments();
+                  } catch (error) {
+                    logger.error('Erro ao fazer upload', error);
+                    showError(error instanceof Error ? error.message : 'Erro ao fazer upload');
+                    throw error;
+                  }
+                }}
+                multiple={false}
+              />
             </div>
         
         <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-6 mb-4">
@@ -825,6 +943,7 @@ ${newDocForm.order ? `order: ${parseInt(newDocForm.order) || 0}` : ''}
             }
             placeholder="Digite a senha para editar/deletar documentos"
             className="mb-2"
+            autoComplete="current-password"
           />
           <p className="text-xs text-slate-500">
             Necessária para editar ou deletar documentos
@@ -1100,6 +1219,19 @@ ${newDocForm.order ? `order: ${parseInt(newDocForm.order) || 0}` : ''}
           </section>
         </TabsContent>
 
+        {/* Templates Tab */}
+        <TabsContent value="templates" className="space-y-6">
+          <section>
+            <div className="mb-6">
+              <h2 className="text-2xl font-heading font-semibold mb-2">Gerenciamento de Templates</h2>
+              <p className="text-slate-600 dark:text-slate-400 text-sm">
+                Gerencie templates para Políticas, Procedimentos e Manuais. Templates padrão estão disponíveis automaticamente.
+              </p>
+            </div>
+            <TemplateManagementSection />
+          </section>
+        </TabsContent>
+
         {/* AI Tab */}
         <TabsContent value="ai" className="space-y-6">
           <section>
@@ -1181,6 +1313,7 @@ ${newDocForm.order ? `order: ${parseInt(newDocForm.order) || 0}` : ''}
           </section>
         </TabsContent>
       </Tabs>
+      </div>
     </div>
   );
 }

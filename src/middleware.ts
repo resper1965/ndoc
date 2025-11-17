@@ -62,7 +62,7 @@ export async function middleware(req: NextRequest) {
     if (!supabaseUrl || !supabaseAnonKey) {
       // Continuar sem Supabase se variáveis não estiverem disponíveis
       // Rotas que requerem autenticação
-      const protectedRoutes = ['/config'];
+      const protectedRoutes = ['/config', '/docs', '/admin'];
       const isProtectedRoute = protectedRoutes.some((route) => pathname.startsWith(route));
 
       // Se é rota protegida, redirecionar para login
@@ -116,7 +116,7 @@ export async function middleware(req: NextRequest) {
     }
 
     // Rotas que requerem autenticação
-    const protectedRoutes = ['/config'];
+    const protectedRoutes = ['/config', '/docs', '/admin'];
     const isProtectedRoute = protectedRoutes.some((route) => pathname.startsWith(route));
 
     // Se é rota protegida e usuário não está autenticado, redirecionar para login

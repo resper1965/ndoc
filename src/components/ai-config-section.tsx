@@ -487,6 +487,7 @@ export function AIConfigSection() {
                 }
                 placeholder="sk-..."
                 required
+                autoComplete="off"
               />
               <p className="text-xs text-slate-500 mt-1">
                 A chave será armazenada de forma segura

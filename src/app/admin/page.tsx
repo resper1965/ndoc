@@ -7,13 +7,18 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { AuthGuard } from '@/components/auth-guard';
 import { Button } from '@/components/button';
 import { Input } from '@/components/input';
 import { Label } from '@/components/label';
 import { showSuccess, showError } from '@/lib/toast';
-import { Plus, Trash2, Users, Building2 } from 'lucide-react';
+import { Plus, Trash2, Users, Building2, Home, Settings, FileText, ArrowLeft } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
+import { ModeToggle } from '@/components/mode-toggle';
+import { BrandingText } from '@/components/branding-text';
+import { getDisplayLogo } from '../../../config/branding';
+import Image from 'next/image';
 import {
   Dialog,
   DialogContent,
@@ -122,13 +127,73 @@ export default function AdminPage() {
 
   return (
     <AuthGuard requireSuperadmin>
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
-        <div className="mb-8">
-          <h1 className="text-3xl font-heading font-bold mb-2">Administração</h1>
-          <p className="text-slate-600 dark:text-slate-400">
-            Gerencie organizações e usuários do sistema
-          </p>
-        </div>
+      <div className="min-h-screen bg-white dark:bg-gray-950">
+        {/* Header com Navegação */}
+        <header className="sticky top-0 z-10 bg-white/90 dark:bg-gray-950/90 backdrop-blur-sm border-b border-gray-200 dark:border-gray-800">
+          <div className="container mx-auto px-4 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+                  {getDisplayLogo() ? (
+                    <Image
+                      alt="logo"
+                      className="h-8 w-auto dark:invert"
+                      width={32}
+                      height={32}
+                      src={getDisplayLogo()!}
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
+                  ) : null}
+                  <BrandingText className="text-lg" />
+                </Link>
+                <nav className="hidden md:flex items-center gap-1 ml-6">
+                  <Link href="/">
+                    <Button variant="none" size="sm" className="flex items-center gap-2">
+                      <Home className="h-4 w-4" />
+                      Início
+                    </Button>
+                  </Link>
+                  <Link href="/docs">
+                    <Button variant="none" size="sm" className="flex items-center gap-2">
+                      <FileText className="h-4 w-4" />
+                      Documentação
+                    </Button>
+                  </Link>
+                  <Link href="/config">
+                    <Button variant="none" size="sm" className="flex items-center gap-2">
+                      <Settings className="h-4 w-4" />
+                      Configurações
+                    </Button>
+                  </Link>
+                  <Button variant="none" size="sm" className="flex items-center gap-2 bg-primary/10 text-primary">
+                    <Building2 className="h-4 w-4" />
+                    Administração
+                  </Button>
+                </nav>
+              </div>
+              <div className="flex items-center gap-2">
+                <ModeToggle />
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Conteúdo Principal */}
+        <div className="container mx-auto px-4 py-8 max-w-6xl">
+          <div className="mb-8">
+            <Link href="/config">
+              <Button variant="none" size="sm" className="mb-4 flex items-center gap-2">
+                <ArrowLeft className="h-4 w-4" />
+                Voltar para Configurações
+              </Button>
+            </Link>
+            <h1 className="text-3xl font-heading font-bold mb-2">Administração</h1>
+            <p className="text-slate-600 dark:text-slate-400">
+              Gerencie organizações e usuários do sistema
+            </p>
+          </div>
 
         {/* Organizações */}
         <section className="mb-12">
@@ -236,6 +301,7 @@ export default function AdminPage() {
           </DialogContent>
           </Dialog>
         )}
+        </div>
       </div>
     </AuthGuard>
   );
