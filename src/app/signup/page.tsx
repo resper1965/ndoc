@@ -77,7 +77,7 @@ export default function SignupPage() {
           }
         } catch (orgError) {
           // Não bloquear o fluxo se falhar
-          logger.warn('Error creating organization:', orgError);
+          logger.warn('Error creating organization:', { error: orgError });
         }
 
         showSuccess('Conta criada com sucesso!');
