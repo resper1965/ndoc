@@ -2,17 +2,65 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 
 export async function middleware(req: NextRequest) {
+  const { pathname } = req.nextUrl;
+
+  // Permitir que a rota raiz passe sem processamento do Supabase primeiro
+  // Isso garante que a página inicial sempre carregue
+  if (pathname === '/') {
+    try {
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+      if (supabaseUrl && supabaseAnonKey) {
+        let supabaseResponse = NextResponse.next({
+          request: req,
+        });
+
+        const supabase = createServerClient(
+          supabaseUrl,
+          supabaseAnonKey,
+          {
+            cookies: {
+              getAll() {
+                return req.cookies.getAll();
+              },
+              setAll(cookiesToSet) {
+                cookiesToSet.forEach(({ name, value }) => {
+                  req.cookies.set(name, value);
+                });
+                supabaseResponse = NextResponse.next({
+                  request: req,
+                });
+                cookiesToSet.forEach(({ name, value, options }) => {
+                  supabaseResponse.cookies.set(name, value, options);
+                });
+              },
+            },
+          }
+        );
+
+        // Tentar atualizar sessão, mas não bloquear se falhar
+        try {
+          await supabase.auth.getUser();
+        } catch (error) {
+          // Ignorar erros de autenticação na rota raiz
+        }
+
+        return supabaseResponse;
+      }
+    } catch (error) {
+      // Se houver qualquer erro, apenas continuar
+    }
+    return NextResponse.next();
+  }
+
   try {
     // Verificar se as variáveis de ambiente estão disponíveis
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
     if (!supabaseUrl || !supabaseAnonKey) {
-      console.error('Middleware: Variáveis de ambiente do Supabase não configuradas');
       // Continuar sem Supabase se variáveis não estiverem disponíveis
-      // Isso permite que a aplicação funcione mesmo sem Supabase configurado
-      const { pathname } = req.nextUrl;
-      
       // Rotas que requerem autenticação
       const protectedRoutes = ['/config'];
       const isProtectedRoute = protectedRoutes.some((route) => pathname.startsWith(route));
@@ -74,8 +122,6 @@ export async function middleware(req: NextRequest) {
       console.error('Middleware: Erro ao buscar usuário:', error);
     }
 
-    const { pathname } = req.nextUrl;
-
     // Rotas que requerem autenticação
     const protectedRoutes = ['/config'];
     const isProtectedRoute = protectedRoutes.some((route) => pathname.startsWith(route));
@@ -116,6 +162,4 @@ export const config = {
      */
     '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
-  // Garantir que o middleware não bloqueie a rota raiz
-  runtime: 'edge',
 };
