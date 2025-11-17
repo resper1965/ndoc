@@ -42,13 +42,13 @@ export async function middleware(req: NextRequest) {
         // Tentar atualizar sessão, mas não bloquear se falhar
         try {
           await supabase.auth.getUser();
-        } catch (error) {
+        } catch {
           // Ignorar erros de autenticação na rota raiz
         }
 
         return supabaseResponse;
       }
-    } catch (error) {
+    } catch {
       // Se houver qualquer erro, apenas continuar
     }
     return NextResponse.next();
