@@ -29,6 +29,7 @@ import { Button } from '@/components/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { clientBranding, getDisplayName, getDisplayLogo } from '../../../config/branding';
 import { BrandingText } from '@/components/branding-text';
+import { DocsActions } from '@/components/docs-actions';
 
 export default function DocsLayout({
   children,
@@ -129,6 +130,7 @@ export default function DocsLayout({
               <h1 className="text-xl font-bold">Documentação</h1>
             </div>
             <div className="flex gap-2 items-center pr-0 lg:pr-8">
+              <DocsActions />
               <Link href="/">
                 <Button variant="none" className="flex items-center gap-2">
                   <Home className="h-4 w-4" />

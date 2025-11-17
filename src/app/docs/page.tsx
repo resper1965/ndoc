@@ -4,6 +4,7 @@ import { getIndexDocument, getAllDocuments } from '@/lib/supabase/documents';
 import Link from 'next/link';
 import { Button } from '@/components/button';
 import { FileText, Plus, Upload as UploadIcon, Sparkles } from 'lucide-react';
+import { DocumentActions } from '@/components/document-actions';
 
 export const dynamic = 'force-dynamic';
 export const dynamicParams = false;
@@ -133,7 +134,14 @@ export default async function DocsPage() {
 
   return (
     <div className="min-w-0 max-w-4xl">
-      <Breadcrumb path="/docs" />
+      <div className="flex items-center justify-between mb-4">
+        <Breadcrumb path="/docs" />
+        <DocumentActions
+          documentPath={doc.path || 'index'}
+          documentContent={mdxContent}
+          documentTitle={doc.title}
+        />
+      </div>
       <article className="prose prose-slate dark:prose-invert max-w-none">
         <h1>{doc.title}</h1>
         {doc.description && <p className="lead">{doc.description}</p>}

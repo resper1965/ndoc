@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import { MDXRenderer } from '@/components/mdx-renderer';
 import Breadcrumb from '@/components/bread-crumb';
 import { getDocumentByPath } from '@/lib/supabase/documents';
+import { DocumentActions } from '@/components/document-actions';
 
 type tParams = Promise<{ slug: string[] }>;
 
@@ -65,8 +66,15 @@ const DocsPage = async ({ params }: { params: tParams }) => {
   return (
     <div className={`grid xl:grid xl:grid-cols-[1fr_270px]`}>
       <article className="overflow-auto">
-        <div className="mb-8 text-center">
-          <Breadcrumb path={doc.url} />
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <Breadcrumb path={doc.url} />
+            <DocumentActions
+              documentPath={doc.path || path}
+              documentContent={mdxContent}
+              documentTitle={doc.title}
+            />
+          </div>
         </div>
         <MDXRenderer source={mdxContent} frontmatter={frontmatter} />
       </article>
