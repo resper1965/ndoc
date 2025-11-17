@@ -17,24 +17,33 @@ export default function SignupPage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  
+  // Validação de senha
+  const getPasswordStrength = (pwd: string) => {
+    if (pwd.length === 0) return { strength: 0, label: '', color: '' };
+    if (pwd.length < 6) return { strength: 1, label: 'Muito fraca', color: 'bg-red-500' };
+    if (pwd.length < 8) return { strength: 2, label: 'Fraca', color: 'bg-orange-500' };
+    if (!/[A-Z]/.test(pwd) || !/[0-9]/.test(pwd)) return { strength: 3, label: 'Média', color: 'bg-yellow-500' };
+    return { strength: 4, label: 'Forte', color: 'bg-green-500' };
+  };
+  
+  const passwordStrength = getPasswordStrength(password);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     // Validações
-    if (password !== confirmPassword) {
-      showError('As senhas não coincidem');
+    if (password.length < 8) {
+      showError('A senha deve ter pelo menos 8 caracteres');
       setLoading(false);
       return;
     }
 
-    if (password.length < 6) {
-      showError('A senha deve ter pelo menos 6 caracteres');
+    if (!/[A-Z]/.test(password) || !/[0-9]/.test(password)) {
+      showError('A senha deve conter pelo menos uma letra maiúscula e um número');
       setLoading(false);
       return;
     }
@@ -181,6 +190,7 @@ export default function SignupPage() {
                   required
                   className="pl-10 pr-10"
                   disabled={loading}
+                  autoComplete="new-password"
                 />
                 <button
                   type="button"
@@ -225,68 +235,32 @@ export default function SignupPage() {
                   )}
                 </button>
               </div>
-            </div>
-
-            {/* Confirmar Senha */}
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword" className="text-sm font-medium">
-                Confirmar senha
-              </Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
-                <Input
-                  id="confirmPassword"
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  placeholder="••••••••"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                  className="pl-10 pr-10"
-                  disabled={loading}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
-                  disabled={loading}
-                >
-                  {showConfirmPassword ? (
-                    <svg
-                      className="h-4 w-4"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
+              {/* Indicador de força da senha */}
+              {password && (
+                <div className="space-y-1">
+                  <div className="flex gap-1 h-1.5">
+                    {[1, 2, 3, 4].map((level) => (
+                      <div
+                        key={level}
+                        className={`flex-1 rounded-full ${
+                          level <= passwordStrength.strength
+                            ? passwordStrength.color
+                            : 'bg-slate-200 dark:bg-slate-700'
+                        }`}
                       />
-                    </svg>
-                  ) : (
-                    <svg
-                      className="h-4 w-4"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                      />
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                      />
-                    </svg>
-                  )}
-                </button>
-              </div>
+                    ))}
+                  </div>
+                  <p className={`text-xs ${
+                    passwordStrength.strength >= 3
+                      ? 'text-green-600 dark:text-green-400'
+                      : passwordStrength.strength >= 2
+                      ? 'text-yellow-600 dark:text-yellow-400'
+                      : 'text-red-600 dark:text-red-400'
+                  }`}>
+                    {passwordStrength.label || 'Mínimo 8 caracteres, 1 maiúscula e 1 número'}
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Botão de Cadastro */}

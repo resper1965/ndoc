@@ -8,11 +8,11 @@ import { Label } from '@/components/label';
 import { useAuth } from '@/hooks/use-auth';
 import { createClient } from '@/lib/supabase/client';
 import { showSuccess, showError } from '@/lib/toast';
-import { Check, ChevronRight, ChevronLeft, Sparkles, Users, FileText } from 'lucide-react';
+import { Check, ChevronRight, ChevronLeft, Sparkles, Users } from 'lucide-react';
 import { getDisplayName } from '../../../config/branding';
 import { BrandingText } from '@/components/branding-text';
 
-type Step = 1 | 2 | 3 | 4;
+type Step = 1 | 2;
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -25,9 +25,46 @@ export default function OnboardingPage() {
   const [orgName, setOrgName] = useState('');
   const [orgSlug, setOrgSlug] = useState('');
 
-  // Step 2: First document
-  const [docTitle, setDocTitle] = useState('');
-  const [docPath, setDocPath] = useState('');
+  // Carregar progresso salvo do localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('onboarding_progress');
+      if (saved) {
+        try {
+          const data = JSON.parse(saved);
+          setOrgName(data.orgName || '');
+          setOrgSlug(data.orgSlug || '');
+          setCurrentStep(data.step || 1);
+        } catch {
+          // Ignorar erros de parsing
+        }
+      }
+    }
+  }, []);
+
+  // Salvar progresso no localStorage
+  const saveProgress = () => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('onboarding_progress', JSON.stringify({
+        orgName,
+        orgSlug,
+        step: currentStep,
+      }));
+    }
+  };
+
+  // Auto-gerar slug a partir do nome
+  useEffect(() => {
+    if (orgName && !orgSlug) {
+      const generated = orgName
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+      setOrgSlug(generated);
+    }
+  }, [orgName, orgSlug]);
 
   // Check if user is authenticated
   useEffect(() => {
@@ -74,22 +111,32 @@ export default function OnboardingPage() {
   };
 
   const handleNext = () => {
-    if (currentStep < 4) {
+    if (currentStep < 2) {
+      saveProgress();
       setCurrentStep((currentStep + 1) as Step);
     }
   };
 
   const handlePrev = () => {
     if (currentStep > 1) {
+      saveProgress();
       setCurrentStep((currentStep - 1) as Step);
     }
   };
 
   const handleSkip = () => {
+    // Limpar progresso salvo
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('onboarding_progress');
+    }
     router.push('/docs');
   };
 
   const handleFinish = () => {
+    // Limpar progresso salvo
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('onboarding_progress');
+    }
     showSuccess('Onboarding concluído! Bem-vindo ao ' + getDisplayName());
     router.push('/docs');
   };
@@ -110,55 +157,11 @@ export default function OnboardingPage() {
         showError('Erro ao atualizar organização: ' + error.message);
       } else {
         showSuccess('Organização atualizada!');
-        handleNext();
+        saveProgress();
+        handleFinish();
       }
     } catch {
       showError('Erro ao atualizar organização');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleCreateFirstDocument = async () => {
-    setLoading(true);
-    try {
-      const content = `---
-title: ${docTitle}
-description: Meu primeiro documento
----
-
-# ${docTitle}
-
-Bem-vindo ao ${getDisplayName()}! Este é seu primeiro documento.
-
-## Próximos Passos
-
-- Edite este documento
-- Crie novos documentos
-- Convide sua equipe
-- Explore recursos de IA
-
-Divirta-se documentando!
-`;
-
-      const response = await fetch('/api/ingest', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          path: docPath,
-          content: content,
-        }),
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        showError(data.error || 'Erro ao criar documento');
-      } else {
-        showSuccess('Primeiro documento criado!');
-        handleNext();
-      }
-    } catch {
-      showError('Erro ao criar documento');
     } finally {
       setLoading(false);
     }
@@ -178,8 +181,6 @@ Divirta-se documentando!
   const steps = [
     { number: 1, title: 'Bem-vindo', icon: Sparkles },
     { number: 2, title: 'Organização', icon: Users },
-    { number: 3, title: 'Primeiro Documento', icon: FileText },
-    { number: 4, title: 'Concluído', icon: Check },
   ];
 
   return (
@@ -237,22 +238,18 @@ Divirta-se documentando!
                 <Sparkles className="w-16 h-16 mx-auto text-primary-600 mb-4" />
                 <h1 className="text-3xl font-bold mb-4">Bem-vindo ao <BrandingText className="text-3xl" />!</h1>
                 <p className="text-lg text-gray-600 dark:text-gray-400 mb-8">
-                  Vamos configurar sua conta em apenas alguns passos rápidos.
+                  Vamos configurar sua organização em apenas um passo rápido.
                 </p>
-                <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-6 mb-8">
-                  <h2 className="font-semibold mb-4">O que você vai configurar:</h2>
-                  <ul className="text-left space-y-2">
+                <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-6 mb-8 text-left">
+                  <h2 className="font-semibold mb-4">O que você vai fazer:</h2>
+                  <ul className="space-y-2">
                     <li className="flex items-start">
-                      <Check className="w-5 h-5 text-green-500 mr-2 mt-0.5" />
-                      <span>Personalizar sua organização</span>
+                      <Check className="w-5 h-5 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
+                      <span>Personalizar o nome da sua organização</span>
                     </li>
                     <li className="flex items-start">
-                      <Check className="w-5 h-5 text-green-500 mr-2 mt-0.5" />
-                      <span>Criar seu primeiro documento</span>
-                    </li>
-                    <li className="flex items-start">
-                      <Check className="w-5 h-5 text-green-500 mr-2 mt-0.5" />
-                      <span>Aprender sobre os recursos</span>
+                      <Check className="w-5 h-5 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
+                      <span>Começar a criar documentação imediatamente</span>
                     </li>
                   </ul>
                 </div>
@@ -275,19 +272,23 @@ Divirta-se documentando!
                 <Users className="w-16 h-16 mx-auto text-primary-600 mb-4" />
                 <h1 className="text-3xl font-bold mb-4 text-center">Configure sua Organização</h1>
                 <p className="text-center text-gray-600 dark:text-gray-400 mb-8">
-                  Personalize os detalhes da sua organização.
+                  Personalize o nome da sua organização. Você pode criar documentos depois.
                 </p>
 
                 <div className="space-y-6">
                   <div>
-                    <Label htmlFor="orgName">Nome da Organização</Label>
+                    <Label htmlFor="orgName">Nome da Organização *</Label>
                     <Input
                       id="orgName"
                       type="text"
                       value={orgName}
-                      onChange={(e) => setOrgName(e.target.value)}
+                      onChange={(e) => {
+                        setOrgName(e.target.value);
+                        saveProgress();
+                      }}
                       placeholder="Minha Empresa"
                       className="mt-2"
+                      autoFocus
                     />
                     <p className="text-sm text-gray-500 mt-1">
                       Este nome será exibido em toda a plataforma.
@@ -295,18 +296,27 @@ Divirta-se documentando!
                   </div>
 
                   <div>
-                    <Label htmlFor="orgSlug">Slug da Organização</Label>
-                    <Input
-                      id="orgSlug"
-                      type="text"
-                      value={orgSlug}
-                      onChange={(e) => setOrgSlug(e.target.value.toLowerCase())}
-                      placeholder="minha-empresa"
-                      className="mt-2"
-                    />
-                    <p className="text-sm text-gray-500 mt-1">
-                      URL amigável para sua organização (apenas letras minúsculas, números e hífens).
-                    </p>
+                    <Label htmlFor="orgSlug">URL da Organização (Slug)</Label>
+                    <div className="mt-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-gray-500">ndocs.com/</span>
+                        <Input
+                          id="orgSlug"
+                          type="text"
+                          value={orgSlug}
+                          onChange={(e) => {
+                            const value = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '');
+                            setOrgSlug(value);
+                            saveProgress();
+                          }}
+                          placeholder="minha-empresa"
+                          className="flex-1"
+                        />
+                      </div>
+                      <p className="text-sm text-gray-500 mt-1">
+                        Gerado automaticamente a partir do nome. Você pode editar.
+                      </p>
+                    </div>
                   </div>
                 </div>
 
@@ -320,107 +330,17 @@ Divirta-se documentando!
                     disabled={!orgName || !orgSlug || loading}
                     className="flex-1"
                   >
-                    {loading ? 'Salvando...' : 'Continuar'}
+                    {loading ? 'Salvando...' : 'Finalizar'}
                     <ChevronRight className="ml-2 w-5 h-5" />
                   </Button>
                 </div>
-              </div>
-            )}
-
-            {/* Step 3: First Document */}
-            {currentStep === 3 && (
-              <div>
-                <FileText className="w-16 h-16 mx-auto text-primary-600 mb-4" />
-                <h1 className="text-3xl font-bold mb-4 text-center">Crie seu Primeiro Documento</h1>
-                <p className="text-center text-gray-600 dark:text-gray-400 mb-8">
-                  Vamos criar um documento de exemplo para você começar.
-                </p>
-
-                <div className="space-y-6">
-                  <div>
-                    <Label htmlFor="docTitle">Título do Documento</Label>
-                    <Input
-                      id="docTitle"
-                      type="text"
-                      value={docTitle}
-                      onChange={(e) => setDocTitle(e.target.value)}
-                      placeholder="Bem-vindo à Documentação"
-                      className="mt-2"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="docPath">Caminho do Documento</Label>
-                    <Input
-                      id="docPath"
-                      type="text"
-                      value={docPath}
-                      onChange={(e) => setDocPath(e.target.value.toLowerCase())}
-                      placeholder="inicio/bem-vindo"
-                      className="mt-2"
-                    />
-                    <p className="text-sm text-gray-500 mt-1">
-                      Defina onde este documento aparecerá na navegação.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex gap-4 mt-8">
-                  <Button onClick={handlePrev} variant="outline" className="flex-1">
-                    <ChevronLeft className="mr-2 w-5 h-5" />
-                    Voltar
-                  </Button>
-                  <Button
-                    onClick={handleCreateFirstDocument}
-                    disabled={!docTitle || !docPath || loading}
-                    className="flex-1"
-                  >
-                    {loading ? 'Criando...' : 'Criar Documento'}
-                    <ChevronRight className="ml-2 w-5 h-5" />
-                  </Button>
-                </div>
-
+                
                 <button
-                  onClick={handleNext}
+                  onClick={handleSkip}
                   className="block mx-auto mt-4 text-sm text-gray-600 dark:text-gray-400 hover:underline"
                 >
-                  Pular esta etapa
+                  Pular e configurar depois
                 </button>
-              </div>
-            )}
-
-            {/* Step 4: Complete */}
-            {currentStep === 4 && (
-              <div className="text-center">
-                <div className="w-16 h-16 mx-auto bg-green-500 rounded-full flex items-center justify-center mb-4">
-                  <Check className="w-10 h-10 text-white" />
-                </div>
-                <h1 className="text-3xl font-bold mb-4">Tudo Pronto!</h1>
-                <p className="text-lg text-gray-600 dark:text-gray-400 mb-8">
-                  Sua conta está configurada e você está pronto para começar.
-                </p>
-
-                <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-6 mb-8">
-                  <h2 className="font-semibold mb-4">Próximos Passos:</h2>
-                  <ul className="text-left space-y-3">
-                    <li className="flex items-start">
-                      <FileText className="w-5 h-5 text-primary-600 mr-2 mt-0.5" />
-                      <span>Crie mais documentos e organize sua documentação</span>
-                    </li>
-                    <li className="flex items-start">
-                      <Users className="w-5 h-5 text-primary-600 mr-2 mt-0.5" />
-                      <span>Convide sua equipe para colaborar</span>
-                    </li>
-                    <li className="flex items-start">
-                      <Sparkles className="w-5 h-5 text-primary-600 mr-2 mt-0.5" />
-                      <span>Experimente os recursos de IA para gerar e melhorar conteúdo</span>
-                    </li>
-                  </ul>
-                </div>
-
-                <Button onClick={handleFinish} size="lg" className="px-8">
-                  Ir para a Documentação
-                </Button>
               </div>
             )}
           </div>
