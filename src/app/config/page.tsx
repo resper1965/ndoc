@@ -7,7 +7,8 @@ export const dynamic = 'force-dynamic';
 import { Button } from '@/components/button';
 import { Input } from '@/components/input';
 import { Label } from '@/components/label';
-import { Edit, X, AlertCircle, Plus } from 'lucide-react';
+import { Edit, X, AlertCircle, Plus, Lock, FileText, Sparkles, Users, Shield, Code } from 'lucide-react';
+import { Tabs, TabsList, Tab, TabsContent } from '@/components/tabs';
 import { validateMDX, type ValidationError } from '@/lib/validate-mdx';
 import { showSuccess, showError, showWarning } from '@/lib/toast';
 import { useConfirmDialog } from '@/components/confirm-dialog';
@@ -411,6 +412,8 @@ export default function ConfigPage() {
     }
   };
 
+  const [activeTab, setActiveTab] = useState('credentials');
+
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -420,7 +423,7 @@ export default function ConfigPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
+    <div className="container mx-auto px-4 py-8 max-w-7xl">
       {ConfirmDialogComponent}
       
       {/* Create Document Dialog */}
@@ -622,10 +625,14 @@ ${newDocForm.order ? `order: ${parseInt(newDocForm.order) || 0}` : ''}
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      <h1 className="text-4xl font-heading font-bold mb-2">Configuração do Sistema</h1>
-      <p className="text-slate-600 dark:text-slate-400 mb-8">
-        Gerencie credenciais e configurações do sistema
-      </p>
+
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="text-4xl font-heading font-bold mb-2">Configurações</h1>
+        <p className="text-slate-600 dark:text-slate-400">
+          Gerencie credenciais, documentos, IA, usuários e configurações do sistema
+        </p>
+      </div>
 
       {/* Aviso de Senha Padrão */}
       {showPasswordWarning && (
@@ -637,15 +644,14 @@ ${newDocForm.order ? `order: ${parseInt(newDocForm.order) || 0}` : ''}
                 Senha Padrão em Uso
               </h3>
               <p className="text-sm text-yellow-700 dark:text-yellow-300 mb-3">
-                Você está usando a senha padrão <strong>admin</strong>. Por segurança, é altamente recomendado alterá-la imediatamente após a primeira implantação.
+                Você está usando a senha padrão <strong>admin</strong>. Por segurança, é altamente recomendado alterá-la imediatamente.
               </p>
               <Button
                 variant="primary"
                 size="sm"
                 onClick={() => {
                   setShowPasswordWarning(false);
-                  // Scroll para o formulário de credenciais
-                  document.getElementById('credentials-form')?.scrollIntoView({ behavior: 'smooth' });
+                  setActiveTab('credentials');
                 }}
               >
                 Alterar Senha Agora
@@ -662,11 +668,46 @@ ${newDocForm.order ? `order: ${parseInt(newDocForm.order) || 0}` : ''}
         </div>
       )}
 
-      {/* Credentials Management */}
-      <section className="mb-12">
-        <h2 className="text-2xl font-heading font-semibold mb-4">Gestão de Credenciais</h2>
+      {/* Tabs Navigation */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} type="underline" className="w-full">
+        <TabsList className="w-full justify-start mb-6 bg-slate-50 dark:bg-slate-900 p-1 rounded-lg">
+          <Tab value="credentials" className="flex items-center gap-2">
+            <Lock className="h-4 w-4" />
+            Credenciais
+          </Tab>
+          <Tab value="documents" className="flex items-center gap-2">
+            <FileText className="h-4 w-4" />
+            Documentos
+          </Tab>
+          <Tab value="ai" className="flex items-center gap-2">
+            <Sparkles className="h-4 w-4" />
+            Inteligência Artificial
+          </Tab>
+          <Tab value="users" className="flex items-center gap-2">
+            <Users className="h-4 w-4" />
+            Usuários
+          </Tab>
+          <Tab value="admin" className="flex items-center gap-2">
+            <Shield className="h-4 w-4" />
+            Administração
+          </Tab>
+          <Tab value="api" className="flex items-center gap-2">
+            <Code className="h-4 w-4" />
+            API
+          </Tab>
+        </TabsList>
+
+        {/* Credentials Tab */}
+        <TabsContent value="credentials" className="space-y-6">
+          <section>
+            <div className="mb-6">
+              <h2 className="text-2xl font-heading font-semibold mb-2">Credenciais de Acesso</h2>
+              <p className="text-slate-600 dark:text-slate-400 text-sm">
+                Gerencie seu usuário e senha de acesso ao sistema
+              </p>
+            </div>
         
-        <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-6 mb-6">
+            <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-6 mb-6">
           <div className="mb-4">
             <Label className="text-sm font-medium text-slate-600 dark:text-slate-400">
               Usuário Atual
@@ -761,11 +802,18 @@ ${newDocForm.order ? `order: ${parseInt(newDocForm.order) || 0}` : ''}
             {saving ? 'Salvando...' : 'Atualizar Credenciais'}
           </Button>
         </form>
-      </section>
+          </section>
+        </TabsContent>
 
-      {/* Document Management */}
-      <section className="mb-12">
-        <h2 className="text-2xl font-heading font-semibold mb-4">Gerenciamento de Documentos</h2>
+        {/* Documents Tab */}
+        <TabsContent value="documents" className="space-y-6">
+          <section>
+            <div className="mb-6">
+              <h2 className="text-2xl font-heading font-semibold mb-2">Gerenciamento de Documentos</h2>
+              <p className="text-slate-600 dark:text-slate-400 text-sm">
+                Crie, edite e gerencie seus documentos MDX
+              </p>
+            </div>
         
         <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-6 mb-4">
           <Label className="text-sm font-medium mb-2 block">Senha para Operações</Label>
@@ -994,110 +1042,145 @@ ${newDocForm.order ? `order: ${parseInt(newDocForm.order) || 0}` : ''}
             )}
           </div>
         </div>
-      </section>
+          </section>
 
-      {/* Exportação de Documentos */}
-      <section className="mb-12">
-        <h2 className="text-2xl font-heading font-semibold mb-4">Exportação de Documentos</h2>
-        <p className="text-slate-600 dark:text-slate-400 mb-4">
-          Exporte todos os documentos ou um documento específico como arquivo ZIP.
-        </p>
-        <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-6">
-          <div className="flex gap-4">
-            <Button
-              variant="primary"
-              onClick={async () => {
-                if (!authForDocs.password) {
-                  showWarning('Por favor, informe a senha para exportar documentos');
-                  return;
-                }
-                try {
-                  const url = `/api/export?username=${encodeURIComponent(authForDocs.username)}&password=${encodeURIComponent(authForDocs.password)}`;
-                  window.open(url, '_blank');
-                  showSuccess('Exportação iniciada');
-                } catch {
-                  showError('Erro ao exportar documentos');
-                }
-              }}
-              disabled={!authForDocs.password}
-            >
-              Exportar Todos os Documentos
-            </Button>
-            {selectedDoc && (
+          {/* Export Section */}
+          <section className="border-t border-slate-200 dark:border-slate-800 pt-6">
+            <div className="mb-4">
+              <h3 className="text-lg font-heading font-semibold mb-2">Exportação</h3>
+              <p className="text-slate-600 dark:text-slate-400 text-sm mb-4">
+                Exporte documentos como arquivo ZIP
+              </p>
+            </div>
+            <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-6">
+              <div className="flex flex-wrap gap-4">
+                <Button
+                  variant="primary"
+                  onClick={async () => {
+                    if (!authForDocs.password) {
+                      showWarning('Por favor, informe a senha para exportar documentos');
+                      return;
+                    }
+                    try {
+                      const url = `/api/export?username=${encodeURIComponent(authForDocs.username)}&password=${encodeURIComponent(authForDocs.password)}`;
+                      window.open(url, '_blank');
+                      showSuccess('Exportação iniciada');
+                    } catch {
+                      showError('Erro ao exportar documentos');
+                    }
+                  }}
+                  disabled={!authForDocs.password}
+                >
+                  Exportar Todos os Documentos
+                </Button>
+                {selectedDoc && (
+                  <Button
+                    variant="outline"
+                    onClick={async () => {
+                      if (!authForDocs.password) {
+                        showWarning('Por favor, informe a senha para exportar documentos');
+                        return;
+                      }
+                      try {
+                        const path = selectedDoc.path.replace(/\.mdx$/, '');
+                        const url = `/api/export?path=${encodeURIComponent(path)}&username=${encodeURIComponent(authForDocs.username)}&password=${encodeURIComponent(authForDocs.password)}`;
+                        window.open(url, '_blank');
+                        showSuccess('Exportação iniciada');
+                      } catch {
+                        showError('Erro ao exportar documento');
+                      }
+                    }}
+                    disabled={!authForDocs.password}
+                  >
+                    Exportar Documento Selecionado
+                  </Button>
+                )}
+              </div>
+            </div>
+          </section>
+        </TabsContent>
+
+        {/* AI Tab */}
+        <TabsContent value="ai" className="space-y-6">
+          <section>
+            <div className="mb-6">
+              <h2 className="text-2xl font-heading font-semibold mb-2">Configuração de IA</h2>
+              <p className="text-slate-600 dark:text-slate-400 text-sm">
+                Configure temas e provedores de IA para geração e melhoria de documentos
+              </p>
+            </div>
+            <AIConfigSection />
+          </section>
+        </TabsContent>
+
+        {/* Users Tab */}
+        <TabsContent value="users" className="space-y-6">
+          <section>
+            <div className="mb-6">
+              <h2 className="text-2xl font-heading font-semibold mb-2">Gerenciamento de Usuários</h2>
+              <p className="text-slate-600 dark:text-slate-400 text-sm">
+                Gerencie membros da organização e permissões
+              </p>
+            </div>
+            <UserManagementSection />
+          </section>
+        </TabsContent>
+
+        {/* Admin Tab */}
+        <TabsContent value="admin" className="space-y-6">
+          <section>
+            <div className="mb-6">
+              <h2 className="text-2xl font-heading font-semibold mb-2">Administração</h2>
+              <p className="text-slate-600 dark:text-slate-400 text-sm">
+                Funcionalidades avançadas para super administradores
+              </p>
+            </div>
+            <SuperAdminSection />
+          </section>
+        </TabsContent>
+
+        {/* API Tab */}
+        <TabsContent value="api" className="space-y-6">
+          <section>
+            <div className="mb-6">
+              <h2 className="text-2xl font-heading font-semibold mb-2">API de Ingestão</h2>
+              <p className="text-slate-600 dark:text-slate-400 text-sm mb-4">
+                Use a API REST para gerenciar documentos programaticamente
+              </p>
+            </div>
+            <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div className="space-y-1">
+                  <Label className="text-sm font-medium">POST /api/ingest</Label>
+                  <p className="text-xs text-slate-500">Criar ou atualizar documento</p>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-sm font-medium">PUT /api/ingest</Label>
+                  <p className="text-xs text-slate-500">Atualizar documento</p>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-sm font-medium">DELETE /api/ingest</Label>
+                  <p className="text-xs text-slate-500">Deletar documento</p>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-sm font-medium">GET /api/ingest?list=true</Label>
+                  <p className="text-xs text-slate-500">Listar todos os documentos</p>
+                </div>
+                <div className="space-y-1 md:col-span-2">
+                  <Label className="text-sm font-medium">GET /api/ingest?path=xxx</Label>
+                  <p className="text-xs text-slate-500">Obter conteúdo de um documento</p>
+                </div>
+              </div>
               <Button
                 variant="outline"
-                onClick={async () => {
-                  if (!authForDocs.password) {
-                    showWarning('Por favor, informe a senha para exportar documentos');
-                    return;
-                  }
-                  try {
-                    const path = selectedDoc.path.replace(/\.mdx$/, '');
-                    const url = `/api/export?path=${encodeURIComponent(path)}&username=${encodeURIComponent(authForDocs.username)}&password=${encodeURIComponent(authForDocs.password)}`;
-                    window.open(url, '_blank');
-                    showSuccess('Exportação iniciada');
-                  } catch {
-                    showError('Erro ao exportar documento');
-                  }
-                }}
-                disabled={!authForDocs.password}
+                onClick={() => window.open('/api/ingest-docs', '_blank')}
               >
-                Exportar Documento Selecionado
+                Ver Documentação Completa da API
               </Button>
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* Configuração de IA */}
-      <section className="mb-12">
-        <h2 className="text-2xl font-heading font-semibold mb-4">Configuração de IA</h2>
-        <AIConfigSection />
-      </section>
-
-      {/* Gerenciamento de Usuários */}
-      <UserManagementSection />
-
-      {/* Document Ingestion API */}
-      <section className="mb-12">
-        <h2 className="text-2xl font-heading font-semibold mb-4">API de Ingestão</h2>
-        <p className="text-slate-600 dark:text-slate-400 mb-4">
-          Use a API REST para gerenciar documentos programaticamente.
-        </p>
-        <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-6">
-          <div className="mb-4 space-y-2">
-            <div>
-              <Label className="text-sm font-medium">POST /api/ingest</Label>
-              <div className="text-xs text-slate-500">Criar ou atualizar documento</div>
             </div>
-            <div>
-              <Label className="text-sm font-medium">PUT /api/ingest</Label>
-              <div className="text-xs text-slate-500">Atualizar documento</div>
-            </div>
-            <div>
-              <Label className="text-sm font-medium">DELETE /api/ingest</Label>
-              <div className="text-xs text-slate-500">Deletar documento</div>
-            </div>
-            <div>
-              <Label className="text-sm font-medium">GET /api/ingest?list=true</Label>
-              <div className="text-xs text-slate-500">Listar todos os documentos</div>
-            </div>
-            <div>
-              <Label className="text-sm font-medium">GET /api/ingest?path=xxx</Label>
-              <div className="text-xs text-slate-500">Obter conteúdo de um documento</div>
-            </div>
-          </div>
-          <Button
-            variant="outline"
-            onClick={() => window.open('/api/ingest-docs', '_blank')}
-          >
-            Ver Documentação Completa da API
-          </Button>
-        </div>
-      </section>
-
-      {/* Super Admin Section */}
-      <SuperAdminSection />
+          </section>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

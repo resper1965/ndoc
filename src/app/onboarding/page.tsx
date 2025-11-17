@@ -10,6 +10,7 @@ import { createClient } from '@/lib/supabase/client';
 import { showSuccess, showError } from '@/lib/toast';
 import { Check, ChevronRight, ChevronLeft, Sparkles, Users, FileText } from 'lucide-react';
 import { getDisplayName } from '../../../config/branding';
+import { BrandingText } from '@/components/branding-text';
 
 type Step = 1 | 2 | 3 | 4;
 
@@ -234,7 +235,7 @@ Divirta-se documentando!
             {currentStep === 1 && (
               <div className="text-center">
                 <Sparkles className="w-16 h-16 mx-auto text-primary-600 mb-4" />
-                <h1 className="text-3xl font-bold mb-4">Bem-vindo ao {getDisplayName()}!</h1>
+                <h1 className="text-3xl font-bold mb-4">Bem-vindo ao <BrandingText className="text-3xl" />!</h1>
                 <p className="text-lg text-gray-600 dark:text-gray-400 mb-8">
                   Vamos configurar sua conta em apenas alguns passos rápidos.
                 </p>

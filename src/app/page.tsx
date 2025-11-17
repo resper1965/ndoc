@@ -5,7 +5,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/button';
 import { motion } from 'framer-motion';
-import { clientBranding, producerBranding, getDisplayName, getDisplayLogo } from '../../config/branding';
+import { clientBranding, getDisplayLogo } from '../../config/branding';
+import { BrandingText } from '@/components/branding-text';
 
 export default function Home() {
 
@@ -27,7 +28,7 @@ export default function Home() {
                 }}
               />
             ) : null}
-            <span className="text-lg font-semibold">{getDisplayName()}</span>
+            <BrandingText className="text-lg" />
           </div>
           <nav className="hidden md:flex items-center gap-6">
             <a href="#recursos" className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100">
@@ -243,13 +244,13 @@ export default function Home() {
                     }}
                   />
                 ) : null}
-                <span className="font-semibold">{getDisplayName()}</span>
+                <BrandingText className="font-semibold" />
               </div>
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                 Plataforma de documentação inteligente para equipes modernas.
               </p>
               <p className="text-xs text-gray-500 dark:text-gray-500">
-                {producerBranding.footerText}
+                powered by <BrandingText variant="producer" className="text-xs" />
               </p>
             </div>
             <div>
@@ -284,7 +285,7 @@ export default function Home() {
             </div>
           </div>
           <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-800 text-center text-sm text-gray-500 dark:text-gray-500">
-            <p>© {new Date().getFullYear()} {getDisplayName()}. Todos os direitos reservados.</p>
+            <p>© {new Date().getFullYear()} <BrandingText className="text-sm" />. Todos os direitos reservados.</p>
           </div>
         </div>
       </footer>

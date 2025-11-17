@@ -28,6 +28,7 @@ import { ModeToggle } from '@/components/mode-toggle';
 import { Button } from '@/components/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { clientBranding, getDisplayName, getDisplayLogo } from '../../../config/branding';
+import { BrandingText } from '@/components/branding-text';
 
 export default function DocsLayout({
   children,
@@ -112,9 +113,7 @@ export default function DocsLayout({
                    )}
                  </UserAvatar>
             <div className="flex flex-col">
-              <span className="text-sm font-medium text-gray-900 dark:text-white font-heading">
-                {getDisplayName()}
-              </span>
+              <BrandingText className="text-sm" />
               <span className="text-xs text-gray-500 dark:text-gray-400">
                 {clientBranding.tagline || 'Documentação'}
               </span>
