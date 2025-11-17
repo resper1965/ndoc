@@ -17,6 +17,7 @@ export interface UserPermissions {
 
 /**
  * Verifica se o usuário é superadmin
+ * Usa função RPC que bypassa RLS para evitar problemas de recursão
  */
 export async function isSuperadmin(): Promise<boolean> {
   const supabase = await createClient();
@@ -29,13 +30,21 @@ export async function isSuperadmin(): Promise<boolean> {
     return false;
   }
 
-  const { data, error } = await supabase
-    .from('superadmins')
-    .select('id')
-    .eq('user_id', user.id)
-    .single();
+  // Usar função RPC que bypassa RLS
+  const { data, error } = await supabase.rpc('is_superadmin');
 
-  return !error && !!data;
+  if (error) {
+    // Se a função RPC falhar, tentar método direto como fallback
+    const { data: fallbackData, error: fallbackError } = await supabase
+      .from('superadmins')
+      .select('id')
+      .eq('user_id', user.id)
+      .single();
+    
+    return !fallbackError && !!fallbackData;
+  }
+
+  return data === true;
 }
 
 /**

@@ -40,6 +40,11 @@ GRANT EXECUTE ON FUNCTION public.accept_invite(text, uuid) TO service_role;
 GRANT EXECUTE ON FUNCTION public.cancel_invite(uuid, uuid) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.cancel_invite(uuid, uuid) TO service_role;
 
+-- Função: is_superadmin
+GRANT EXECUTE ON FUNCTION public.is_superadmin() TO authenticated;
+GRANT EXECUTE ON FUNCTION public.is_superadmin() TO service_role;
+GRANT EXECUTE ON FUNCTION public.is_superadmin() TO anon;
+
 -- ============================================
 -- COMMENTS
 -- ============================================

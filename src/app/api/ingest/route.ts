@@ -341,15 +341,26 @@ export async function GET(request: NextRequest) {
 
       let query = supabase
         .from('documents')
-        .select('id, path, title, description, status, created_at, updated_at')
-        .eq('status', 'published'); // Apenas documentos publicados
+        .select('id, path, title, description, status, created_at, updated_at');
 
-      // Se autenticado, mostrar também documentos da organização do usuário
+      // Se autenticado, mostrar documentos da organização do usuário + publicados
       if (user) {
         const organizationId = await getUserOrganization();
-        if (organizationId) {
+        const isSuper = await isSuperadmin();
+        
+        if (isSuper) {
+          // Superadmin vê todos os documentos
+          // Não aplicar filtro de status
+        } else if (organizationId) {
+          // Usuário autenticado: documentos da sua organização + publicados
           query = query.or(`organization_id.eq.${organizationId},status.eq.published`);
+        } else {
+          // Usuário sem organização: apenas publicados
+          query = query.eq('status', 'published');
         }
+      } else {
+        // Não autenticado: apenas documentos publicados
+        query = query.eq('status', 'published');
       }
 
       const { data: documents, error } = await query.order('order_index', { ascending: true });
