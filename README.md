@@ -1,15 +1,15 @@
-# 📚 n.doc - Plataforma SaaS de Documentação Inteligente
+# 📚 ndocs - Plataforma SaaS de Documentação Inteligente
 
 **Versão**: 2.0.0
 **Status**: ✅ **SaaS 100% Funcional**
 
-**n.doc** é uma plataforma SaaS completa e moderna para criação, gerenciamento e publicação de documentação técnica. Desenvolvida pela **ness.**, oferece recursos profissionais como planos de assinatura, limites configuráveis, geração e melhoria de documentos usando IA, editor avançado, autenticação robusta, multi-tenancy com isolamento total e compliance LGPD.
+**ndocs** é uma plataforma SaaS completa e moderna para criação, gerenciamento e publicação de documentação técnica. Desenvolvida pela **ness.**, oferece recursos profissionais como planos de assinatura, limites configuráveis, geração e melhoria de documentos usando IA, editor avançado, autenticação robusta, multi-tenancy com isolamento total e compliance LGPD.
 
 ---
 
 ## 🎯 Visão Geral
 
-**n.doc** é uma plataforma de documentação desenvolvida pela **ness.** que combina:
+**ndocs** é uma plataforma de documentação desenvolvida pela **ness.** que combina:
 
 - ✨ **Editor avançado** com CodeMirror 6 e preview em tempo real
 - 🤖 **Geração e melhoria de documentos** usando IA (OpenAI/Anthropic)
