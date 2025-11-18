@@ -92,17 +92,36 @@
 ### 2.1 Busca Semântica na Interface
 **Prioridade**: 🟡 Média  
 **Estimativa**: 2 horas  
-**Status**: Pendente
+**Status**: ✅ Concluído
+
+**Implementado**:
+- Filtros avançados (tipo de documento, similaridade mínima, máximo de resultados)
+- Destaque de termos da busca nos snippets
+- Interface melhorada com painel de filtros expansível
 
 ### 2.2 RAG na Interface (Chat)
 **Prioridade**: 🟡 Média  
 **Estimativa**: 3-4 horas  
-**Status**: Pendente
+**Status**: ✅ Concluído
+
+**Implementado**:
+- Página `/app/chat` com interface de chat completa
+- Integração com API `/api/rag/query` para geração de respostas
+- Exibição de fontes e citações com links para documentos
+- Interface responsiva com scroll automático
+- Mensagem de boas-vindas e tratamento de erros
 
 ### 2.3 Gerenciamento de Templates
 **Prioridade**: 🟡 Média  
 **Estimativa**: 2-3 horas  
-**Status**: Pendente
+**Status**: ✅ Concluído
+
+**Implementado**:
+- Busca de templates por nome e descrição
+- Filtro por tipo de documento (política, procedimento, manual)
+- Contador de resultados filtrados
+- Botão para limpar filtros
+- Interface melhorada com feedback visual
 
 ---
 
@@ -130,9 +149,9 @@
 | Fase | Tarefas | Concluídas | Progresso |
 |------|---------|------------|-----------|
 | Fase 1 | 4 | 4 | 100% ✅ |
-| Fase 2 | 3 | 0 | 0% |
+| Fase 2 | 3 | 3 | 100% ✅ |
 | Fase 3 | 3 | 0 | 0% |
-| **TOTAL** | **10** | **4** | **40%** |
+| **TOTAL** | **10** | **7** | **70%** |
 
 ---
 
