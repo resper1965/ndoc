@@ -2,7 +2,7 @@
  * Testes para Pipeline de Vetorização
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { chunkDocument } from '@/lib/vectorization/chunk-document';
 import { estimateTokens } from '@/lib/vectorization/token-estimator';
 
