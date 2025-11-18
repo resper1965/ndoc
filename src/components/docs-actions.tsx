@@ -17,6 +17,7 @@ import { Input } from './input';
 import { Label } from './label';
 import { MDXEditorWithPreview } from './mdx-editor-with-preview';
 import { ProcessingStatus } from './processing-status';
+import { reloadSidebar } from './dynamic-sidebar';
 
 interface DocsActionsProps {
   onDocumentCreated?: () => void;
@@ -80,6 +81,7 @@ ${newDocForm.content.split('---').slice(2).join('---').trim() || '# ' + newDocFo
           description: '',
           content: '',
         });
+        reloadSidebar(); // Recarregar sidebar
         if (onDocumentCreated) {
           onDocumentCreated();
         } else {
@@ -110,6 +112,7 @@ ${newDocForm.content.split('---').slice(2).join('---').trim() || '# ' + newDocFo
 
       const result = await response.json();
       showSuccess('Documento enviado com sucesso! Processando...');
+      reloadSidebar(); // Recarregar sidebar
       
       // Manter dialog aberto para mostrar status de processamento
       if (result.document?.id) {
@@ -124,6 +127,73 @@ ${newDocForm.content.split('---').slice(2).join('---').trim() || '# ' + newDocFo
       }
     } catch (error) {
       throw error;
+    }
+  };
+
+  const handleUploadMultiple = async (files: File[]) => {
+    const BATCH_SIZE = 3; // Processar 3 arquivos por vez
+    const results: Array<{ file: string; success: boolean; documentId?: string; error?: string }> = [];
+    
+    try {
+      for (let i = 0; i < files.length; i += BATCH_SIZE) {
+        const batch = files.slice(i, i + BATCH_SIZE);
+        const batchPromises = batch.map(async (file) => {
+          try {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const response = await fetch('/api/ingest/upload', {
+              method: 'POST',
+              body: formData,
+            });
+
+            if (!response.ok) {
+              const errorData = await response.json();
+              throw new Error(errorData.error || 'Erro ao fazer upload');
+            }
+
+            const result = await response.json();
+            return {
+              file: file.name,
+              success: true,
+              documentId: result.document?.id,
+            };
+          } catch (error) {
+            return {
+              file: file.name,
+              success: false,
+              error: error instanceof Error ? error.message : 'Erro desconhecido',
+            };
+          }
+        });
+
+        const batchResults = await Promise.all(batchPromises);
+        results.push(...batchResults);
+      }
+
+      const successCount = results.filter(r => r.success).length;
+      const errorCount = results.filter(r => !r.success).length;
+
+      if (successCount > 0) {
+        showSuccess(`${successCount} documento(s) enviado(s) com sucesso!${errorCount > 0 ? ` ${errorCount} falharam.` : ''}`);
+        reloadSidebar(); // Recarregar sidebar
+        
+        // Se houver apenas um arquivo e foi bem-sucedido, mostrar status de processamento
+        if (results.length === 1 && results[0].success && results[0].documentId) {
+          setUploadedDocumentId(results[0].documentId);
+        } else {
+          setShowUploadDialog(false);
+          if (onDocumentCreated) {
+            onDocumentCreated();
+          } else {
+            router.refresh();
+          }
+        }
+      } else {
+        showError('Nenhum documento foi enviado com sucesso.');
+      }
+    } catch (error) {
+      showError(error instanceof Error ? error.message : 'Erro ao fazer upload em lote');
     }
   };
 
@@ -297,7 +367,8 @@ ${newDocForm.content.split('---').slice(2).join('---').trim() || '# ' + newDocFo
           ) : (
             <DocumentUpload
               onUpload={handleUpload}
-              multiple={false}
+              onUploadMultiple={handleUploadMultiple}
+              multiple={true}
             />
           )}
         </DialogContent>

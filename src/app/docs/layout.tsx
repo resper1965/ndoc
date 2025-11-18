@@ -4,7 +4,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { SemanticSearchDialog } from '@/components/semantic-search-dialog';
-import { sidebarNav } from 'config/sidebar';
+import { DynamicSidebar } from '@/components/dynamic-sidebar';
 import Image from 'next/image';
 import {
   SidebarProvider,
@@ -14,12 +14,10 @@ import {
   SidebarHeader,
   SidebarContent,
   SidebarFooter,
-  SidebarMenuItem,
   SidebarTrigger,
   SidebarHeaderLogo,
   SidebarHeaderTitle,
   UserAvatar,
-  NestedLink,
 } from '@/components/sidebar';
 import { Github, Home, Settings, Shield } from 'lucide-react';
 
@@ -78,22 +76,7 @@ export default function DocsLayout({
             </Link>
           </SidebarHeader>
           <SidebarContent>
-            {sidebarNav.map((section) => (
-              <SidebarMenuItem
-                isCollapsable={section.pages && section.pages.length > 0}
-                key={section.title}
-                label={section.title}
-                href={section.href}
-                icon={section.icon}
-                defaultOpen={section.defaultOpen}
-              >
-                {section.pages?.map((page) => (
-                  <NestedLink key={page.href} href={page.href}>
-                    {page.title}
-                  </NestedLink>
-                ))}
-              </SidebarMenuItem>
-            ))}
+            <DynamicSidebar />
           </SidebarContent>
 
           <SidebarFooter>

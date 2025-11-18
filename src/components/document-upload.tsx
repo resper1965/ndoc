@@ -7,6 +7,7 @@ import { detectDocumentType, isSupportedDocumentType, SUPPORTED_DOCUMENT_TYPES }
 
 interface DocumentUploadProps {
   onUpload: (file: File) => Promise<void>;
+  onUploadMultiple?: (files: File[]) => Promise<void>;
   maxSize?: number; // em bytes
   multiple?: boolean;
   acceptedTypes?: string[];
@@ -14,6 +15,7 @@ interface DocumentUploadProps {
 
 export function DocumentUpload({
   onUpload,
+  onUploadMultiple,
   maxSize = 50 * 1024 * 1024, // 50MB padrão
   multiple = false,
   acceptedTypes,
@@ -86,19 +88,83 @@ export function DocumentUpload({
     [onUpload, maxSize, acceptedTypes]
   );
 
+  const handleFiles = useCallback(
+    async (files: File[]) => {
+      if (!onUploadMultiple) {
+        // Fallback para upload individual se onUploadMultiple não estiver disponível
+        for (const file of files) {
+          await handleFile(file);
+        }
+        return;
+      }
+
+      // Validar todos os arquivos primeiro
+      const validFiles: File[] = [];
+      const invalidFiles: Array<{ file: File; error: string }> = [];
+
+      files.forEach((file) => {
+        const error = validateFile(file);
+        if (error) {
+          invalidFiles.push({ file, error });
+          setUploadedFiles((prev) => [
+            ...prev,
+            { file, status: 'error', error },
+          ]);
+        } else {
+          validFiles.push(file);
+          setUploadedFiles((prev) => [...prev, { file, status: 'uploading' }]);
+        }
+      });
+
+      if (validFiles.length === 0) {
+        return;
+      }
+
+      setUploading(true);
+
+      try {
+        await onUploadMultiple(validFiles);
+        // Atualizar status dos arquivos válidos
+        setUploadedFiles((prev) =>
+          prev.map((f) =>
+            validFiles.includes(f.file) ? { ...f, status: 'success' } : f
+          )
+        );
+      } catch (err) {
+        // Atualizar status dos arquivos com erro
+        setUploadedFiles((prev) =>
+          prev.map((f) =>
+            validFiles.includes(f.file)
+              ? {
+                  ...f,
+                  status: 'error',
+                  error: err instanceof Error ? err.message : 'Erro ao fazer upload',
+                }
+              : f
+          )
+        );
+      } finally {
+        setUploading(false);
+      }
+    },
+    [onUploadMultiple, handleFile, maxSize, acceptedTypes]
+  );
+
   const handleDrop = useCallback(
     (e: React.DragEvent<HTMLDivElement>) => {
       e.preventDefault();
       setIsDragging(false);
 
       const files = Array.from(e.dataTransfer.files);
-      if (multiple) {
+      if (multiple && onUploadMultiple) {
+        handleFiles(files);
+      } else if (multiple) {
         files.forEach(handleFile);
       } else {
         handleFile(files[0]);
       }
     },
-    [handleFile, multiple]
+    [handleFile, handleFiles, multiple, onUploadMultiple]
   );
 
   const handleDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
@@ -114,7 +180,9 @@ export function DocumentUpload({
   const handleFileInput = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const files = Array.from(e.target.files || []);
-      if (multiple) {
+      if (multiple && onUploadMultiple) {
+        handleFiles(files);
+      } else if (multiple) {
         files.forEach(handleFile);
       } else {
         handleFile(files[0]);
@@ -122,7 +190,7 @@ export function DocumentUpload({
       // Reset input
       e.target.value = '';
     },
-    [handleFile, multiple]
+    [handleFile, handleFiles, multiple, onUploadMultiple]
   );
 
   const removeFile = (file: File) => {

@@ -12,8 +12,13 @@
 -- ============================================
 
 -- Versão com parâmetros (para webhook)
+-- SECURITY DEFINER permite que a função execute com privilégios do criador
+-- Isso é necessário para contornar RLS ao criar organizações
 CREATE OR REPLACE FUNCTION handle_new_user(user_id UUID, user_email TEXT, user_metadata JSONB)
-RETURNS JSONB AS $$
+RETURNS JSONB
+SECURITY DEFINER
+SET search_path = public
+AS $$
 DECLARE
   new_org_id UUID;
   org_slug TEXT;
