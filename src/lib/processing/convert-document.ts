@@ -155,10 +155,11 @@ async function convertRTFToMarkdown(
 ): Promise<ConversionResult> {
   try {
     // Tentar usar rtf-parser se disponível
-    const rtfParser = await import('rtf-parser').catch(() => null);
+    const rtfParser = await import('rtf-parser').catch(() => null) as any;
     
     if (rtfParser) {
-      const parser = new rtfParser.default();
+      const Parser = rtfParser.default || rtfParser;
+      const parser = new Parser();
       const doc = await parser.parse(buffer.toString('utf-8'));
       
       // Extrair texto do documento RTF
@@ -330,9 +331,10 @@ async function convertODTToMarkdown(
   } catch (error) {
     // Se falhar, tentar usar odt2md se disponível
     try {
-      const odt2md = await import('odt2md').catch(() => null);
+      const odt2md = await import('odt2md').catch(() => null) as any;
       if (odt2md) {
-        const markdown = await odt2md.default(buffer);
+        const converter = odt2md.default || odt2md;
+        const markdown = await converter(buffer);
         return {
           content: markdown,
           metadata: { originalFormat: 'odt' },
