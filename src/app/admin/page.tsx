@@ -126,7 +126,7 @@ export default function AdminPage() {
   };
 
   return (
-    <AuthGuard requireSuperadmin>
+    <AuthGuard>
       <div className="min-h-screen bg-white dark:bg-gray-950">
         {/* Header com Navegação */}
         <header className="sticky top-0 z-10 bg-white/90 dark:bg-gray-950/90 backdrop-blur-sm border-b border-gray-200 dark:border-gray-800">

@@ -23,7 +23,7 @@ export default function LoginPage() {
 
   // Verificar parâmetro redirect da URL
   const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
-  const redirectTo = searchParams?.get('redirect') || '/docs';
+  const redirectTo = searchParams?.get('redirect') || '/app';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
