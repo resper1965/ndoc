@@ -153,36 +153,202 @@ async function convertRTFToMarkdown(
   buffer: Buffer,
   _options: ConversionOptions
 ): Promise<ConversionResult> {
-  // RTF requer parser especializado
-  // Por enquanto, extrair texto básico removendo tags RTF
+  try {
+    // Tentar usar rtf-parser se disponível
+    const rtfParser = await import('rtf-parser').catch(() => null);
+    
+    if (rtfParser) {
+      const parser = new rtfParser.default();
+      const doc = await parser.parse(buffer.toString('utf-8'));
+      
+      // Extrair texto do documento RTF
+      let text = '';
+      const extractText = (node: any) => {
+        if (typeof node === 'string') {
+          text += node;
+        } else if (node && typeof node === 'object') {
+          if (node.content) {
+            node.content.forEach(extractText);
+          } else if (node.text) {
+            text += node.text;
+          }
+        }
+      };
+      
+      if (doc.content) {
+        doc.content.forEach(extractText);
+      }
+      
+      return {
+        content: text.trim() || '> **Nota**: Não foi possível extrair texto do arquivo RTF.',
+        metadata: { originalFormat: 'rtf' },
+        originalType: 'rtf',
+      };
+    }
+  } catch {
+    // Fallback: extração básica de texto
+  }
+  
+  // Fallback: extrair texto básico removendo tags RTF
   let text = buffer.toString('utf-8');
   
-  // Remover tags RTF básicas
+  // Remover tags RTF mais complexas
   text = text
+    // Remover comandos RTF
     .replace(/\\[a-z]+\d*\s?/gi, ' ')
+    // Remover grupos vazios
     .replace(/\{[^}]*\}/g, ' ')
+    // Remover caracteres de controle
+    .replace(/[\x00-\x1F\x7F]/g, ' ')
+    // Normalizar espaços
     .replace(/\s+/g, ' ')
     .trim();
   
+  // Tentar extrair texto entre chaves (conteúdo real do RTF)
+  const textMatches = text.match(/\{([^}]+)\}/g);
+  if (textMatches && textMatches.length > 0) {
+    text = textMatches
+      .map(match => match.replace(/[{}]/g, '').trim())
+      .filter(t => t.length > 0)
+      .join('\n\n');
+  }
+  
   return {
-    content: text,
+    content: text || '> **Nota**: Conversão de RTF tem suporte limitado. Considere converter para DOCX ou MD para melhor resultado.',
     metadata: { originalFormat: 'rtf', warning: 'Conversão básica' },
     originalType: 'rtf',
   };
 }
 
 async function convertODTToMarkdown(
-  _buffer: Buffer,
+  buffer: Buffer,
   _options: ConversionOptions
 ): Promise<ConversionResult> {
-  // ODT é um arquivo ZIP com XML dentro
-  // Por enquanto, retornar mensagem informativa
-  // TODO: Implementar parser ODT completo
-  return {
-    content: `> **Nota**: Conversão de arquivos .ODT (OpenDocument) será implementada em breve.\n> Considere converter para .DOCX ou .MD para melhor resultado.`,
-    metadata: { originalFormat: 'odt', warning: 'Conversão não implementada' },
-    originalType: 'odt',
-  };
+  try {
+    // ODT é um arquivo ZIP com XML dentro
+    // Extrair conteúdo do content.xml
+    const AdmZip = (await import('adm-zip')).default;
+    const zip = new AdmZip(buffer);
+    
+    // Buscar content.xml que contém o texto do documento
+    const contentEntry = zip.getEntry('content.xml');
+    if (!contentEntry) {
+      throw new Error('content.xml não encontrado no arquivo ODT');
+    }
+    
+    const contentXml = contentEntry.getData().toString('utf-8');
+    
+    // Extrair texto do XML de forma mais robusta
+    // Primeiro, decodificar entidades XML
+    let text = contentXml
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&amp;/g, '&')
+      .replace(/&quot;/g, '"')
+      .replace(/&apos;/g, "'")
+      .replace(/&nbsp;/g, ' ');
+    
+    // Extrair texto de parágrafos
+    const paragraphs: string[] = [];
+    const paraMatches = text.match(/<text:p[^>]*>([\s\S]*?)<\/text:p>/gi);
+    if (paraMatches) {
+      paraMatches.forEach(match => {
+        const paraText = match
+          .replace(/<text:p[^>]*>/gi, '')
+          .replace(/<\/text:p>/gi, '')
+          .replace(/<text:span[^>]*>/gi, '')
+          .replace(/<\/text:span>/gi, '')
+          .replace(/<[^>]+>/g, '')
+          .trim();
+        if (paraText) paragraphs.push(paraText);
+      });
+    }
+    
+    // Extrair títulos
+    const headings: Array<{ level: number; text: string }> = [];
+    const headingMatches = text.match(/<text:h[^>]*outline-level="(\d+)"[^>]*>([\s\S]*?)<\/text:h>/gi);
+    if (headingMatches) {
+      headingMatches.forEach(match => {
+        const levelMatch = match.match(/outline-level="(\d+)"/);
+        const level = levelMatch ? parseInt(levelMatch[1]) : 1;
+        const headingText = match
+          .replace(/<text:h[^>]*>/gi, '')
+          .replace(/<\/text:h>/gi, '')
+          .replace(/<[^>]+>/g, '')
+          .trim();
+        if (headingText) headings.push({ level, text: headingText });
+      });
+    }
+    
+    // Construir markdown
+    let markdown = '';
+    
+    // Adicionar títulos
+    headings.forEach(heading => {
+      markdown += '#'.repeat(heading.level + 1) + ' ' + heading.text + '\n\n';
+    });
+    
+    // Adicionar parágrafos
+    paragraphs.forEach(para => {
+      markdown += para + '\n\n';
+    });
+    
+    // Se não encontrou parágrafos ou títulos, fazer extração básica
+    if (!markdown.trim()) {
+      text = text
+        .replace(/<text:p[^>]*>/gi, '\n\n')
+        .replace(/<text:h[^>]*>/gi, '\n\n## ')
+        .replace(/<text:span[^>]*>/gi, '')
+        .replace(/<\/text:[^>]+>/gi, '')
+        .replace(/<[^>]+>/g, ' ')
+        .replace(/\n{3,}/g, '\n\n')
+        .replace(/[ \t]+/g, ' ')
+        .trim();
+      markdown = text;
+    }
+    
+    // Extrair metadados do meta.xml se disponível
+    const metaEntry = zip.getEntry('meta.xml');
+    const metadata: Record<string, any> = { originalFormat: 'odt' };
+    
+    if (metaEntry) {
+      const metaXml = metaEntry.getData().toString('utf-8');
+      const titleMatch = metaXml.match(/<dc:title[^>]*>([^<]+)<\/dc:title>/i);
+      const creatorMatch = metaXml.match(/<dc:creator[^>]*>([^<]+)<\/dc:creator>/i);
+      const dateMatch = metaXml.match(/<dc:date[^>]*>([^<]+)<\/dc:date>/i);
+      
+      if (titleMatch) metadata.title = titleMatch[1];
+      if (creatorMatch) metadata.creator = creatorMatch[1];
+      if (dateMatch) metadata.date = dateMatch[1];
+    }
+    
+    return {
+      content: markdown.trim() || '> **Nota**: Não foi possível extrair conteúdo do arquivo ODT.',
+      metadata,
+      originalType: 'odt',
+    };
+  } catch (error) {
+    // Se falhar, tentar usar odt2md se disponível
+    try {
+      const odt2md = await import('odt2md').catch(() => null);
+      if (odt2md) {
+        const markdown = await odt2md.default(buffer);
+        return {
+          content: markdown,
+          metadata: { originalFormat: 'odt' },
+          originalType: 'odt',
+        };
+      }
+    } catch {
+      // Continuar com fallback
+    }
+    
+    return {
+      content: `> **Nota**: Conversão de arquivos .ODT (OpenDocument) teve problemas.\n> Considere converter para .DOCX ou .MD para melhor resultado.\n\nErro: ${error instanceof Error ? error.message : 'Erro desconhecido'}`,
+      metadata: { originalFormat: 'odt', warning: 'Conversão com limitações' },
+      originalType: 'odt',
+    };
+  }
 }
 
 async function convertTXTToMarkdown(
@@ -202,10 +368,31 @@ async function validateMarkdown(
   _options: ConversionOptions
 ): Promise<ConversionResult> {
   const content = buffer.toString('utf-8');
-  // TODO: Validar e sanitizar Markdown
+  
+  // Validação básica de Markdown
+  // Verificar se tem frontmatter válido (opcional)
+  const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---\n/);
+  const metadata: Record<string, any> = {};
+  
+  if (frontmatterMatch) {
+    const frontmatter = frontmatterMatch[1];
+    // Extrair campos básicos do frontmatter
+    const titleMatch = frontmatter.match(/^title:\s*(.+)$/m);
+    const descMatch = frontmatter.match(/^description:\s*(.+)$/m);
+    
+    if (titleMatch) metadata.title = titleMatch[1].trim().replace(/^["']|["']$/g, '');
+    if (descMatch) metadata.description = descMatch[1].trim().replace(/^["']|["']$/g, '');
+  }
+  
+  // Sanitizar: remover scripts e tags HTML perigosas (se houver)
+  const sanitized = content
+    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+    .replace(/<iframe[^>]*>[\s\S]*?<\/iframe>/gi, '')
+    .replace(/on\w+\s*=\s*["'][^"']*["']/gi, ''); // Remover event handlers
+  
   return {
-    content,
-    metadata: {},
+    content: sanitized,
+    metadata,
     originalType: 'md',
   };
 }
@@ -379,27 +566,91 @@ async function convertPPTXToMarkdown(
       slides: presentation.slides?.length || 0,
     };
     
+    // Extrair título da apresentação se disponível
+    if (presentation.title) {
+      markdown += `# ${presentation.title}\n\n`;
+      metadata.title = presentation.title;
+    }
+    
     // Converter cada slide
-    if (presentation.slides) {
+    if (presentation.slides && presentation.slides.length > 0) {
       for (let i = 0; i < presentation.slides.length; i++) {
         const slide = presentation.slides[i];
-        markdown += `## Slide ${i + 1}\n\n`;
+        markdown += `## Slide ${i + 1}`;
         
-        if (slide.text) {
-          markdown += slide.text + '\n\n';
+        // Adicionar título do slide se disponível
+        if (slide.title) {
+          markdown += `: ${slide.title}`;
         }
+        markdown += '\n\n';
+        
+        // Extrair texto do slide
+        if (slide.text) {
+          // Se for array, juntar
+          const slideText = Array.isArray(slide.text) 
+            ? slide.text.join('\n\n') 
+            : slide.text;
+          markdown += slideText + '\n\n';
+        }
+        
+        // Extrair notas do slide se disponíveis
+        if (slide.notes) {
+          markdown += `> **Notas**: ${slide.notes}\n\n`;
+        }
+        
+        // Adicionar separador entre slides (exceto no último)
+        if (i < presentation.slides.length - 1) {
+          markdown += '---\n\n';
+        }
+      }
+    } else {
+      // Tentar método alternativo de extração
+      if (presentation.text) {
+        markdown += presentation.text;
       }
     }
     
     return {
-      content: markdown.trim(),
+      content: markdown.trim() || '> **Nota**: Não foi possível extrair conteúdo do arquivo PPTX.',
       metadata,
       originalType: 'pptx',
     };
-  } catch {
-    // Fallback se pptx-parser não funcionar como esperado
+  } catch (error) {
+    // Fallback: tentar extrair texto básico do ZIP
+    try {
+      const AdmZip = (await import('adm-zip')).default;
+      const zip = new AdmZip(buffer);
+      const entries = zip.getEntries();
+      
+      let text = '';
+      // Buscar arquivos XML que podem conter texto
+      for (const entry of entries) {
+        if (entry.entryName.includes('slide') && entry.entryName.endsWith('.xml')) {
+          const xml = entry.getData().toString('utf-8');
+          // Extrair texto básico do XML
+          const textMatches = xml.match(/<a:t[^>]*>([^<]+)<\/a:t>/g);
+          if (textMatches) {
+            textMatches.forEach(match => {
+              const content = match.replace(/<[^>]+>/g, '').trim();
+              if (content) text += content + '\n';
+            });
+          }
+        }
+      }
+      
+      if (text.trim()) {
+        return {
+          content: text.trim(),
+          metadata: { originalFormat: 'pptx', warning: 'Conversão básica via ZIP' },
+          originalType: 'pptx',
+        };
+      }
+    } catch {
+      // Continuar com fallback final
+    }
+    
     return {
-      content: `> **Nota**: Conversão de arquivos .PPTX (PowerPoint) está em desenvolvimento.\n> O conteúdo pode não ser extraído completamente.`,
+      content: `> **Nota**: Conversão de arquivos .PPTX (PowerPoint) teve problemas.\n> O conteúdo pode não ser extraído completamente.\n\nErro: ${error instanceof Error ? error.message : 'Erro desconhecido'}`,
       metadata: { originalFormat: 'pptx', warning: 'Conversão limitada' },
       originalType: 'pptx',
     };
