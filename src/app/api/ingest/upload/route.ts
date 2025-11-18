@@ -4,6 +4,43 @@ import { convertDocument } from '@/lib/processing/convert-document';
 import { applyTemplate } from '@/lib/processing/apply-template';
 import { logger } from '@/lib/logger';
 import { getUserOrganization } from '@/lib/supabase/utils';
+import { processDocument } from '@/lib/vectorization/process-document';
+
+// Função assíncrona para processar documento em background
+async function processDocumentAsync(documentId: string, organizationId: string) {
+  try {
+    await processDocument({
+      documentId,
+      organizationId,
+      chunkingStrategy: 'paragraph',
+      updateProgress: async (progress, stage) => {
+        // Atualizar progresso no job
+        const supabase = await createClient();
+        await supabase
+          .from('document_processing_jobs')
+          .update({
+            status: 'processing',
+            stage,
+            progress_percentage: progress,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('document_id', documentId);
+      },
+    });
+  } catch (error) {
+    logger.error('Erro ao processar documento', error);
+    // Atualizar job com erro
+    const supabase = await createClient();
+    await supabase
+      .from('document_processing_jobs')
+      .update({
+        status: 'failed',
+        error_message: error instanceof Error ? error.message : 'Erro desconhecido',
+        updated_at: new Date().toISOString(),
+      })
+      .eq('document_id', documentId);
+  }
+}
 
 export const runtime = 'nodejs'; // Necessário para processamento de arquivos
 export const maxDuration = 60; // 60 segundos para conversão
@@ -156,12 +193,8 @@ export async function POST(request: NextRequest) {
     });
 
     // Iniciar processamento de vetorização em background (não bloquear resposta)
-    fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/process/document/${document.id}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    }).catch((error) => {
+    // Usar processamento assíncrono para não bloquear a resposta
+    processDocumentAsync(document.id, organizationId).catch((error) => {
       logger.warn('Erro ao iniciar processamento de vetorização (não crítico)', error);
     });
 

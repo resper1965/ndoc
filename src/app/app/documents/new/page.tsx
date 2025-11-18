@@ -7,6 +7,7 @@ import { Tabs, TabsList, Tab, TabsContent } from '@/components/tabs';
 import { FileText, Upload, Sparkles } from 'lucide-react';
 import { DocumentUpload } from '@/components/document-upload';
 import { MDXEditorWithPreview } from '@/components/mdx-editor-with-preview';
+import { AIDocumentGenerator } from '@/components/ai-document-generator';
 import { Input } from '@/components/input';
 import { showSuccess, showError } from '@/lib/toast';
 import { ProcessingStatus } from '@/components/processing-status';
@@ -87,7 +88,23 @@ ${newDocForm.content.split('---').slice(2).join('---').trim() || '# ' + newDocFo
 
       const result = await response.json();
       if (result.document?.id) {
-        setUploadedDocumentId(result.document.id);
+        // Iniciar processamento automaticamente
+        try {
+          const processResponse = await fetch(`/api/process/document/${result.document.id}`, {
+            method: 'POST',
+          });
+          if (processResponse.ok) {
+            setUploadedDocumentId(result.document.id);
+          } else {
+            // Se falhar ao iniciar processamento, ainda mostrar sucesso
+            showSuccess('Upload realizado com sucesso! O processamento será iniciado em breve.');
+            router.push('/app/documents');
+          }
+        } catch {
+          // Se falhar, ainda mostrar sucesso
+          showSuccess('Upload realizado com sucesso!');
+          router.push('/app/documents');
+        }
       } else {
         showSuccess('Upload realizado com sucesso!');
         router.push('/app/documents');
@@ -141,9 +158,9 @@ ${newDocForm.content.split('---').slice(2).join('---').trim() || '# ' + newDocFo
             <Upload className="h-4 w-4 mr-2" />
             Upload
           </Tab>
-          <Tab value="ai" disabled>
+          <Tab value="ai">
             <Sparkles className="h-4 w-4 mr-2" />
-            IA (Em breve)
+            IA
           </Tab>
         </TabsList>
 
@@ -217,6 +234,39 @@ ${newDocForm.content.split('---').slice(2).join('---').trim() || '# ' + newDocFo
                 multiple={true}
               />
             )}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="ai" className="mt-6">
+          <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 p-6">
+            <AIDocumentGenerator
+              onContentGenerated={(content, path, title) => {
+                // Parse frontmatter para extrair título e descrição
+                const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
+                let extractedTitle = title;
+                let extractedDescription = '';
+                
+                if (frontmatterMatch) {
+                  const frontmatter = frontmatterMatch[1];
+                  const titleMatch = frontmatter.match(/title:\s*(.+)/);
+                  const descMatch = frontmatter.match(/description:\s*(.+)/);
+                  if (titleMatch) extractedTitle = titleMatch[1].trim().replace(/^["']|["']$/g, '');
+                  if (descMatch) extractedDescription = descMatch[1].trim().replace(/^["']|["']$/g, '');
+                }
+
+                // Preencher o formulário com o conteúdo gerado
+                setNewDocForm({
+                  path: path,
+                  title: extractedTitle,
+                  description: extractedDescription,
+                  content: content,
+                });
+                
+                // Mudar para a tab de edição
+                setActiveTab('create');
+              }}
+              onCancel={() => setActiveTab('create')}
+            />
           </div>
         </TabsContent>
       </Tabs>

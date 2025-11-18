@@ -12,7 +12,8 @@ import {
   Users, 
   Settings, 
   LayoutDashboard,
-  BookOpen
+  BookOpen,
+  RefreshCw
 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 
@@ -23,6 +24,7 @@ export function AppHeader() {
   const navItems = [
     { href: '/app', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/app/documents', label: 'Documentos', icon: FileText },
+    { href: '/app/processing', label: 'Processamento', icon: RefreshCw },
     { href: '/app/team', label: 'Equipe', icon: Users },
     { href: '/app/settings', label: 'Configurações', icon: Settings },
   ];
