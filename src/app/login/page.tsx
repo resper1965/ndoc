@@ -104,6 +104,7 @@ export default function LoginPage() {
                   required
                   className="pl-10"
                   disabled={loading}
+                  autoComplete="username"
                 />
               </div>
             </div>
