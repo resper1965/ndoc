@@ -37,9 +37,6 @@ export default function Home() {
             <a href="#precos" className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100">
               Preços
             </a>
-            <Link href="/docs" className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100">
-              Documentação
-            </Link>
           </nav>
           <div className="flex items-center gap-3">
             <Link href="/login">
@@ -123,15 +120,6 @@ export default function Home() {
                 Começar Grátis
               </Button>
             </Link>
-            <Link href="/docs">
-              <Button
-                className="px-8 py-6 text-lg"
-                variant={'outline'}
-                size={'lg'}
-              >
-                Ver Documentação
-              </Button>
-            </Link>
           </motion.div>
           
           {/* Trust indicators */}
@@ -165,7 +153,7 @@ export default function Home() {
             <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
               <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">Editor Avançado</h3>
               <p className="text-gray-600 dark:text-gray-400">
-                Editor MDX com preview em tempo real e suporte a componentes React
+                Crie e edite documentos com um editor moderno e intuitivo
               </p>
             </div>
             <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
@@ -268,7 +256,6 @@ export default function Home() {
               <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
                 <li><a href="#recursos" className="hover:text-gray-900 dark:hover:text-gray-100">Recursos</a></li>
                 <li><a href="#precos" className="hover:text-gray-900 dark:hover:text-gray-100">Preços</a></li>
-                <li><Link href="/docs" className="hover:text-gray-900 dark:hover:text-gray-100">Documentação</Link></li>
                 <li><a href="/signup" className="hover:text-gray-900 dark:hover:text-gray-100">Começar Grátis</a></li>
               </ul>
             </div>
