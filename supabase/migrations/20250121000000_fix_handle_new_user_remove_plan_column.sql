@@ -1,6 +1,24 @@
--- Fix: Atualizar função handle_new_user para não depender de plans
--- A tabela plans foi removida, então a função não deve referenciá-la
+-- Fix: Remover referência à coluna plan na função handle_new_user
+-- A coluna plan pode não existir ou não ser mais necessária
 
+-- Primeiro, verificar se a coluna plan existe e removê-la se necessário
+DO $$
+BEGIN
+  -- Remover coluna plan se existir
+  IF EXISTS (
+    SELECT 1 
+    FROM information_schema.columns 
+    WHERE table_name = 'organizations' 
+    AND column_name = 'plan'
+  ) THEN
+    ALTER TABLE organizations DROP COLUMN plan;
+    RAISE NOTICE 'Coluna plan removida da tabela organizations';
+  ELSE
+    RAISE NOTICE 'Coluna plan não existe na tabela organizations';
+  END IF;
+END $$;
+
+-- Atualizar função handle_new_user para não usar coluna plan
 CREATE OR REPLACE FUNCTION handle_new_user(user_id UUID, user_email TEXT, user_metadata JSONB)
 RETURNS JSONB
 LANGUAGE plpgsql
@@ -40,7 +58,7 @@ BEGIN
     SPLIT_PART(user_email, '@', 1)
   );
 
-  -- Criar organização pessoal (sem referência a plans)
+  -- Criar organização pessoal (sem coluna plan)
   INSERT INTO organizations (name, slug, settings)
   VALUES (
     user_name || '''s Organization',
@@ -77,5 +95,5 @@ EXCEPTION
 END;
 $$;
 
-COMMENT ON FUNCTION handle_new_user(UUID, TEXT, JSONB) IS 'Cria automaticamente uma organização pessoal quando um usuário se cadastra (sem dependência de plans)';
+COMMENT ON FUNCTION handle_new_user(UUID, TEXT, JSONB) IS 'Cria automaticamente uma organização pessoal quando um usuário se cadastra (sem coluna plan)';
 

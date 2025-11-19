@@ -138,7 +138,8 @@ async function convertDOCToMarkdown(
 ): Promise<ConversionResult> {
   // DOC (Word antigo) requer biblioteca especializada
   // Por enquanto, tentar extrair texto básico
-  // TODO: Implementar com textract ou similar quando disponível
+  // NOTA: Implementação completa requer biblioteca especializada (ex: textract)
+  // Feature futura: suporte completo para arquivos .doc
   const text = buffer.toString('utf-8', 0, Math.min(buffer.length, 10000));
   
   // Extração básica de texto (limitado)

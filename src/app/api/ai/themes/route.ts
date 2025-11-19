@@ -25,7 +25,10 @@ export async function GET() {
     const organizationId = await getUserOrganization();
     if (!organizationId) {
       return NextResponse.json(
-        { error: 'Usuário não pertence a nenhuma organização' },
+        { 
+          error: 'Usuário não pertence a nenhuma organização',
+          redirectTo: '/onboarding'
+        },
         { status: 403 }
       );
     }
@@ -93,7 +96,10 @@ export async function POST(request: NextRequest) {
     const organizationId = await getUserOrganization();
     if (!organizationId) {
       return NextResponse.json(
-        { error: 'Usuário não pertence a nenhuma organização' },
+        { 
+          error: 'Usuário não pertence a nenhuma organização',
+          redirectTo: '/onboarding'
+        },
         { status: 403 }
       );
     }

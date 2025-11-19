@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
+import { logger } from '@/lib/logger';
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
@@ -112,7 +113,7 @@ export async function middleware(req: NextRequest) {
       user = authUser;
     } catch (error) {
       // Se houver erro ao buscar usuário, continuar sem autenticação
-      console.error('Middleware: Erro ao buscar usuário:', error);
+      logger.error('Middleware: Erro ao buscar usuário', error);
     }
 
     // Rotas que requerem autenticação
@@ -133,7 +134,7 @@ export async function middleware(req: NextRequest) {
     return supabaseResponse;
   } catch (error) {
     // Em caso de erro no middleware, logar e continuar
-    console.error('Middleware error:', error);
+    logger.error('Middleware error', error);
     return NextResponse.next();
   }
 }

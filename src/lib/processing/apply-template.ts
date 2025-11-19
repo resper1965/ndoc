@@ -21,8 +21,8 @@ export async function applyTemplate(
     return content;
   }
 
-  // TODO: Buscar template do banco de dados
-  // Por enquanto, usar templates padrão
+  // NOTA: Buscar template do banco de dados quando implementado
+  // Por enquanto, usar templates padrão da função getDefaultTemplate
   const template = getDefaultTemplate(
     metadata.document_type as 'policy' | 'procedure' | 'manual'
   );

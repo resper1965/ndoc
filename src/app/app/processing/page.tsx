@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { showSuccess, showError } from '@/lib/toast';
+import { logger } from '@/lib/logger';
 
 interface ProcessingJob {
   id: string;
@@ -51,7 +52,7 @@ export default function ProcessingPage() {
         .from('organization_members')
         .select('organization_id')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
       if (!memberData) return;
 
@@ -89,7 +90,7 @@ export default function ProcessingPage() {
 
       setJobs(mappedJobs);
     } catch (error) {
-      console.error('Erro ao carregar jobs:', error);
+      logger.error('Erro ao carregar jobs', error);
       showError('Erro ao carregar jobs de processamento');
     } finally {
       setLoading(false);

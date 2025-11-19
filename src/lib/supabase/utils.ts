@@ -29,8 +29,18 @@ export async function getUserOrganization(): Promise<string | null> {
     .limit(1)
     .maybeSingle();
 
-  // Se houver erro ou não houver dados, retornar null
-  if (error || !members) {
+  // Se houver erro, logar mas não falhar (pode ser RLS ou usuário sem org)
+  if (error) {
+    // Erro 406 pode ser causado por RLS quando usuário não tem acesso
+    // Erro 404 pode ser causado por tabela não encontrada (improvável)
+    if (error.code !== 'PGRST116' && error.code !== 'PGRST301') {
+      console.warn('Error fetching user organization:', error.message);
+    }
+    return null;
+  }
+
+  // Se não houver dados, retornar null
+  if (!members) {
     return null;
   }
 

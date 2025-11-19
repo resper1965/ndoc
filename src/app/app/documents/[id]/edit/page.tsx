@@ -34,9 +34,14 @@ export default function EditDocumentPage() {
         .from('documents')
         .select('id, title, path, description, content')
         .eq('id', documentId)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
+      if (!data) {
+        showError('Documento não encontrado');
+        router.push('/app/documents');
+        return;
+      }
       setDocument(data);
     } catch (error: any) {
       showError(error.message || 'Erro ao carregar documento');

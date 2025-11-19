@@ -52,35 +52,36 @@ export interface LimitCheckResult {
 
 /**
  * Busca informações do plano da organização
+ * Retorna plano padrão (free) já que não há mais sistema de planos
+ * @param _organizationId - ID da organização (mantido para compatibilidade com interface)
  */
-export async function getOrganizationPlan(organizationId: string): Promise<Plan | null> {
-  const supabase = await createServerClient();
-
-  const { data: subscription } = await supabase
-    .from('subscriptions')
-    .select(`
-      plan_id,
-      plans (
-        id,
-        name,
-        slug,
-        description,
-        price_monthly,
-        price_yearly,
-        limits,
-        features,
-        is_active,
-        sort_order
-      )
-    `)
-    .eq('organization_id', organizationId)
-    .single();
-
-  if (!subscription || !subscription.plans) {
-    return null;
-  }
-
-  return subscription.plans as unknown as Plan;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export async function getOrganizationPlan(_organizationId: string): Promise<Plan | null> {
+  // Retornar plano padrão (free) com limites ilimitados
+  return {
+    id: 'free',
+    name: 'Free',
+    slug: 'free',
+    description: 'Plano gratuito com recursos básicos',
+    price_monthly: 0,
+    price_yearly: 0,
+    limits: {
+      documents: -1, // Ilimitado
+      users: -1, // Ilimitado
+      storage_mb: -1, // Ilimitado
+      ai_requests_per_month: -1, // Ilimitado
+    },
+    features: {
+      ai_generation: true,
+      ai_improvement: true,
+      custom_branding: false,
+      api_access: true,
+      priority_support: false,
+      custom_domain: false,
+    },
+    is_active: true,
+    sort_order: 0,
+  };
 }
 
 /**
@@ -273,22 +274,84 @@ export async function incrementAIUsage(organizationId: string): Promise<void> {
 
 /**
  * Busca todos os planos disponíveis (para pricing page)
+ * Retorna planos padrão já que não há mais sistema de planos
  */
 export async function getAllPlans(): Promise<Plan[]> {
-  const supabase = await createServerClient();
-
-  const { data, error } = await supabase
-    .from('plans')
-    .select('*')
-    .eq('is_active', true)
-    .order('sort_order', { ascending: true });
-
-  if (error) {
-    console.error('Error fetching plans:', error);
-    return [];
-  }
-
-  return (data as Plan[]) || [];
+  // Retornar planos padrão
+  return [
+    {
+      id: 'free',
+      name: 'Grátis',
+      slug: 'free',
+      description: 'Plano gratuito com recursos básicos',
+      price_monthly: 0,
+      price_yearly: 0,
+      limits: {
+        documents: 10,
+        users: 1,
+        storage_mb: 100,
+        ai_requests_per_month: 10,
+      },
+      features: {
+        ai_generation: false,
+        ai_improvement: false,
+        custom_branding: false,
+        api_access: false,
+        priority_support: false,
+        custom_domain: false,
+      },
+      is_active: true,
+      sort_order: 0,
+    },
+    {
+      id: 'pro',
+      name: 'Pro',
+      slug: 'pro',
+      description: 'Plano profissional com recursos avançados',
+      price_monthly: 49,
+      price_yearly: 490,
+      limits: {
+        documents: -1, // Ilimitado
+        users: 10,
+        storage_mb: 10240, // 10GB
+        ai_requests_per_month: -1, // Ilimitado
+      },
+      features: {
+        ai_generation: true,
+        ai_improvement: true,
+        custom_branding: false,
+        api_access: true,
+        priority_support: false,
+        custom_domain: false,
+      },
+      is_active: true,
+      sort_order: 1,
+    },
+    {
+      id: 'enterprise',
+      name: 'Enterprise',
+      slug: 'enterprise',
+      description: 'Plano empresarial com todos os recursos',
+      price_monthly: 0, // Custom
+      price_yearly: 0, // Custom
+      limits: {
+        documents: -1, // Ilimitado
+        users: -1, // Ilimitado
+        storage_mb: -1, // Ilimitado
+        ai_requests_per_month: -1, // Ilimitado
+      },
+      features: {
+        ai_generation: true,
+        ai_improvement: true,
+        custom_branding: true,
+        api_access: true,
+        priority_support: true,
+        custom_domain: true,
+      },
+      is_active: true,
+      sort_order: 2,
+    },
+  ];
 }
 
 /**

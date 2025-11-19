@@ -36,7 +36,7 @@ export async function POST(
       .from('documents')
       .select('id, organization_id, is_vectorized')
       .eq('id', documentId)
-      .single();
+      .maybeSingle();
 
     if (docError || !document) {
       return NextResponse.json(
@@ -92,7 +92,7 @@ export async function POST(
       .from('document_processing_jobs')
       .select('id')
       .eq('document_id', documentId)
-      .single();
+      .maybeSingle();
 
     let jobId: string;
 
@@ -219,7 +219,7 @@ export async function GET(
       .eq('document_id', documentId)
       .order('created_at', { ascending: false })
       .limit(1)
-      .single();
+      .maybeSingle();
 
     if (jobError || !job) {
       return NextResponse.json(

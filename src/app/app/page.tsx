@@ -17,6 +17,7 @@ import {
   Loader2 as LoaderIcon
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
+import { logger } from '@/lib/logger';
 import { Loader2 } from 'lucide-react';
 
 interface DashboardStats {
@@ -82,7 +83,7 @@ export default function DashboardPage() {
         .from('organization_members')
         .select('organization_id')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
       if (!memberData) return;
 
@@ -93,7 +94,7 @@ export default function DashboardPage() {
         .from('organizations')
         .select('name')
         .eq('id', orgId)
-        .single();
+        .maybeSingle();
 
       // Buscar estatísticas
       const thirtyDaysAgo = new Date();
@@ -185,7 +186,7 @@ export default function DashboardPage() {
         organizationName: orgData?.name || 'Sua Organização',
       });
     } catch (error) {
-      console.error('Erro ao carregar dados do dashboard:', error);
+      logger.error('Erro ao carregar dados do dashboard', error);
     } finally {
       setLoading(false);
     }

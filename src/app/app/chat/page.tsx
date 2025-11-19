@@ -6,6 +6,7 @@ import { Input } from '@/components/input';
 import { Card, CardContent } from '@/components/card';
 import { MessageCircle, Send, Loader2, FileText, Sparkles } from 'lucide-react';
 import { showError } from '@/lib/toast';
+import { logger } from '@/lib/logger';
 import Link from 'next/link';
 
 interface Message {
@@ -94,7 +95,7 @@ export default function ChatPage() {
 
       setMessages((prev) => [...prev, assistantMessage]);
     } catch (error) {
-      console.error('Erro ao enviar mensagem:', error);
+      logger.error('Erro ao enviar mensagem', error);
       showError(error instanceof Error ? error.message : 'Erro ao processar pergunta');
 
       const errorMessage: Message = {

@@ -6,6 +6,7 @@ import { Input } from './input';
 import { Label } from './label';
 import { Sparkles, Loader2 } from 'lucide-react';
 import { showSuccess, showError } from '@/lib/toast';
+import { logger } from '@/lib/logger';
 import {
   Select,
   SelectContent,
@@ -58,10 +59,10 @@ export function AIDocumentGenerator({
         const errorData = await response.json();
         throw new Error(errorData.error || 'Erro ao carregar temas');
       }
-    } catch (error: any) {
-      console.error('Erro ao carregar temas:', error);
-      showError(error.message || 'Erro ao carregar temas de IA');
-    } finally {
+          } catch (error: any) {
+            logger.error('Erro ao carregar temas', error);
+            showError(error.message || 'Erro ao carregar temas de IA');
+          } finally {
       setLoadingThemes(false);
     }
   };
@@ -84,12 +85,12 @@ export function AIDocumentGenerator({
         }),
       });
 
-      if (!response.ok) {
-        const data = await response.json();
-        const errorMsg = data.error || 'Erro ao gerar documento';
-        console.error('Erro na API:', data);
-        throw new Error(errorMsg);
-      }
+            if (!response.ok) {
+              const data = await response.json();
+              const errorMsg = data.error || 'Erro ao gerar documento';
+              logger.error('Erro na API ao gerar documento', data);
+              throw new Error(errorMsg);
+            }
 
       const result = await response.json();
       
@@ -103,10 +104,10 @@ export function AIDocumentGenerator({
       // O conteúdo já vem formatado com frontmatter
       onContentGenerated(result.content, formData.path, title);
       showSuccess('Documento gerado com sucesso! Revise e ajuste o conteúdo antes de salvar.');
-    } catch (error: any) {
-      console.error('Erro ao gerar documento:', error);
-      showError(error.message || 'Erro ao gerar documento com IA. Verifique se a API de IA está configurada.');
-    } finally {
+          } catch (error: any) {
+            logger.error('Erro ao gerar documento', error);
+            showError(error.message || 'Erro ao gerar documento com IA. Verifique se a API de IA está configurada.');
+          } finally {
       setLoading(false);
     }
   };

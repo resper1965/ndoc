@@ -45,7 +45,11 @@ export async function PUT(
     }
 
     // Se API key não foi fornecida, não atualizar
-    const updateData: any = {
+    const updateData: {
+      provider: string;
+      model: string;
+      api_key?: string;
+    } = {
       provider: validation.data.provider,
       model: validation.data.model,
     };
@@ -60,7 +64,7 @@ export async function PUT(
       .eq('id', id)
       .eq('organization_id', organizationId)
       .select('id, provider, model, organization_id')
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
 

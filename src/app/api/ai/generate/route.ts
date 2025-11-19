@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
         .select('*')
         .eq('id', theme_id)
         .eq('organization_id', organizationId)
-        .single();
+        .maybeSingle();
 
       if (themeError || !themeData) {
         return NextResponse.json(
@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
       .select('*')
       .eq('organization_id', organizationId)
       .eq('is_active', true)
-      .single();
+      .maybeSingle();
 
     if (provider?.api_key_encrypted) {
       apiKey = provider.api_key_encrypted;

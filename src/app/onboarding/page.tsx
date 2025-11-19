@@ -8,6 +8,7 @@ import { Label } from '@/components/label';
 import { useAuth } from '@/hooks/use-auth';
 import { createClient } from '@/lib/supabase/client';
 import { showSuccess, showError } from '@/lib/toast';
+import { logger } from '@/lib/logger';
 import { Check, ChevronRight, ChevronLeft, Sparkles, Users } from 'lucide-react';
 import { getDisplayName } from '../../../config/branding';
 import { BrandingText } from '@/components/branding-text';
@@ -169,7 +170,9 @@ export default function OnboardingPage() {
             newOrgId = result.organization_id || result.id || null;
           }
         } catch (apiError) {
-          console.warn('Erro ao criar organização via API, tentando criar diretamente:', apiError);
+          logger.warn('Erro ao criar organização via API, tentando criar diretamente', {
+            error: apiError instanceof Error ? apiError.message : String(apiError),
+          });
         }
 
         // Se a API não retornou ID, criar diretamente
@@ -199,7 +202,7 @@ export default function OnboardingPage() {
             });
 
           if (memberError) {
-            console.error('Erro ao adicionar membro:', memberError);
+            logger.error('Erro ao adicionar membro', memberError as Error);
             // Não falhar se já existir
           }
         } else {
@@ -213,7 +216,9 @@ export default function OnboardingPage() {
             .eq('id', newOrgId);
 
           if (updateError) {
-            console.warn('Erro ao atualizar organização criada via API:', updateError);
+            logger.warn('Erro ao atualizar organização criada via API', {
+              error: updateError.message || String(updateError),
+            });
             // Não falhar, a organização já existe
           }
         }
@@ -247,7 +252,7 @@ export default function OnboardingPage() {
       saveProgress();
       handleFinish();
     } catch (error: any) {
-      console.error('Erro ao salvar organização:', error);
+      logger.error('Erro ao salvar organização', error instanceof Error ? error : new Error(String(error)));
       showError('Erro ao salvar organização: ' + (error.message || 'Erro desconhecido'));
     } finally {
       setLoading(false);

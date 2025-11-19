@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/logger';
 
 /**
  * API Route: Criar organização automaticamente após signup
@@ -48,10 +49,11 @@ export async function POST() {
     });
 
     if (error) {
-      console.error('Error calling handle_new_user:', error);
-      console.error('Error details:', JSON.stringify(error, null, 2));
-      console.error('Error code:', error.code);
-      console.error('Error message:', error.message);
+      logger.error('Error calling handle_new_user', {
+        error: error.message,
+        code: error.code,
+        details: error,
+      });
       
       // Se for erro 404 (PGRST116), a função pode não estar exposta pelo PostgREST
       if (error.code === 'PGRST116' || error.message?.includes('NOT_FOUND') || error.message?.includes('404')) {
@@ -77,7 +79,7 @@ export async function POST() {
       ...data,
     });
   } catch (error: any) {
-    console.error('Error in create organization API:', error);
+    logger.error('Error in create organization API', error);
     return NextResponse.json(
       { error: error.message || 'Erro inesperado' },
       { status: 500 }

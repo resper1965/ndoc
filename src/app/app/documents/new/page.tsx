@@ -184,7 +184,12 @@ ${newDocForm.content.split('---').slice(2).join('---').trim() || '# ' + newDocFo
         </p>
       </div>
 
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
+      <Tabs value={activeTab} onValueChange={(v) => {
+        const tab = v as 'create' | 'upload' | 'ai';
+        if (tab === 'create' || tab === 'upload' || tab === 'ai') {
+          setActiveTab(tab);
+        }
+      }}>
         <TabsList>
           <Tab value="create">
             <FileText className="h-4 w-4 mr-2" />

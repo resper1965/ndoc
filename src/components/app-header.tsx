@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { Button } from '@/components/button';
 import { ModeToggle } from '@/components/mode-toggle';
 import { BrandingText } from '@/components/branding-text';
@@ -20,6 +20,7 @@ import { useAuth } from '@/hooks/use-auth';
 
 export function AppHeader() {
   const pathname = usePathname();
+  const router = useRouter();
   const { user, signOut } = useAuth();
 
   const navItems = [
@@ -112,7 +113,10 @@ export function AppHeader() {
                 <Button
                   variant="none"
                   size="sm"
-                  onClick={() => signOut()}
+                  onClick={async () => {
+                    await signOut();
+                    router.push('/');
+                  }}
                   className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100"
                 >
                   Sair

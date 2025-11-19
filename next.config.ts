@@ -54,6 +54,8 @@ const nextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
+              // 'unsafe-eval' necessário para CodeMirror funcionar corretamente
+              // Considerar alternativas no futuro para melhorar segurança
               "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://vercel.live",
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: https: blob:",

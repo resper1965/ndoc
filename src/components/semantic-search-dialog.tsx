@@ -81,7 +81,12 @@ export const SemanticSearchDialog = React.forwardRef<
     setError(null);
 
     try {
-      const requestBody: any = {
+      const requestBody: {
+        query: string;
+        matchCount: number;
+        matchThreshold: number;
+        documentType?: string;
+      } = {
         query: searchQuery,
         matchCount: filters.matchCount,
         matchThreshold: filters.matchThreshold,
@@ -169,6 +174,19 @@ export const SemanticSearchDialog = React.forwardRef<
     }
   };
 
+  const sanitizeHtml = (html: string): string => {
+    // Sanitização básica: remover tags e atributos perigosos
+    // Permitir apenas tags <mark> com atributo class
+    return html
+      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+      .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
+      .replace(/on\w+="[^"]*"/gi, '')
+      .replace(/on\w+='[^']*'/gi, '')
+      .replace(/javascript:/gi, '')
+      .replace(/<mark\s+class="[^"]*">/gi, '<mark class="bg-yellow-200 dark:bg-yellow-900">')
+      .replace(/<mark>/gi, '<mark class="bg-yellow-200 dark:bg-yellow-900">');
+  };
+
   const highlightSnippet = (text: string, query: string, maxLength: number = 200) => {
     if (!query.trim()) return text.substring(0, maxLength);
     
@@ -245,9 +263,13 @@ export const SemanticSearchDialog = React.forwardRef<
                 <Label htmlFor="filter-type" className="text-xs">Tipo de Documento</Label>
                 <Select
                   value={filters.documentType}
-                  onSelect={(value) =>
-                    setFilters({ ...filters, documentType: value as any || '' })
-                  }
+                  onSelect={(value) => {
+                    const val = Array.isArray(value) ? value[0] : value;
+                    setFilters({ 
+                      ...filters, 
+                      documentType: (val || '') as '' | 'policy' | 'procedure' | 'manual' | 'other'
+                    });
+                  }}
                 >
                   <SelectValue placeholder="Todos" />
                   <SelectContent>
@@ -365,7 +387,7 @@ export const SemanticSearchDialog = React.forwardRef<
                   <p
                     className="text-sm text-slate-700 dark:text-slate-300 line-clamp-3"
                     dangerouslySetInnerHTML={{
-                      __html: highlightSnippet(result.content, query),
+                      __html: sanitizeHtml(highlightSnippet(result.content, query)),
                     }}
                   />
                 </div>

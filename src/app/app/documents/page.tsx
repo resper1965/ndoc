@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { showSuccess, showError } from '@/lib/toast';
+import { logger } from '@/lib/logger';
 
 interface Document {
   id: string;
@@ -44,7 +45,7 @@ export default function DocumentsPage() {
         .from('organization_members')
         .select('organization_id')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
       if (!memberData) return;
 
@@ -57,7 +58,7 @@ export default function DocumentsPage() {
       if (error) throw error;
       setDocuments(data || []);
     } catch (error) {
-      console.error('Erro ao carregar documentos:', error);
+      logger.error('Erro ao carregar documentos', error);
       showError('Erro ao carregar documentos');
     } finally {
       setLoading(false);

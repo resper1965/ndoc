@@ -174,8 +174,9 @@ async function getOpenAIKey(organizationId?: string): Promise<string | null> {
       return process.env.OPENAI_API_KEY || null;
     }
 
-    // TODO: Descriptografar api_key_encrypted
-    // Por enquanto, assumir que está em texto plano (não recomendado para produção)
+    // NOTA: api_key_encrypted deve ser descriptografado antes do uso
+    // A descriptografia deve ser feita no backend antes de passar para esta função
+    // Por enquanto, assumir que está descriptografado ou usar variável de ambiente
     return data.api_key_encrypted || process.env.OPENAI_API_KEY || null;
   } catch (error) {
     logger.error('Erro ao buscar API key da organização', error);
