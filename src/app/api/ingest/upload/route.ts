@@ -58,6 +58,7 @@ export async function POST(request: NextRequest) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
+      logger.error('Erro de autenticação no upload', authError);
       return NextResponse.json(
         { error: 'Não autenticado' },
         { status: 401 }
@@ -65,7 +66,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Obter organização do usuário ou criar automaticamente
-    let organizationId = await getUserOrganization();
+    let organizationId: string | null = null;
+    try {
+      organizationId = await getUserOrganization();
+    } catch (orgError) {
+      logger.error('Erro ao buscar organização do usuário', orgError);
+      // Continuar para tentar criar organização
+    }
     
     if (!organizationId) {
       // Tentar criar organização automaticamente usando RPC
@@ -126,7 +133,17 @@ export async function POST(request: NextRequest) {
     }
 
     // Obter arquivo do FormData
-    const formData = await request.formData();
+    let formData: FormData;
+    try {
+      formData = await request.formData();
+    } catch (formError) {
+      logger.error('Erro ao processar FormData', formError);
+      return NextResponse.json(
+        { error: 'Erro ao processar dados do formulário' },
+        { status: 400 }
+      );
+    }
+    
     const file = formData.get('file') as File;
     const templateId = formData.get('templateId') as string | null;
     const documentType = formData.get('documentType') as
@@ -160,23 +177,39 @@ export async function POST(request: NextRequest) {
     });
 
     // Converter documento para Markdown
-    const conversionResult = await convertDocument(file, {
-      extractMetadata: true,
-      preserveFormatting: true,
-      templateId: templateId || undefined,
-    });
+    let conversionResult;
+    try {
+      conversionResult = await convertDocument(file, {
+        extractMetadata: true,
+        preserveFormatting: true,
+        templateId: templateId || undefined,
+      });
+    } catch (conversionError) {
+      logger.error('Erro ao converter documento', conversionError);
+      return NextResponse.json(
+        { error: 'Erro ao converter documento', details: conversionError instanceof Error ? conversionError.message : 'Erro desconhecido' },
+        { status: 500 }
+      );
+    }
 
     // Aplicar template se especificado
     let finalContent = conversionResult.content;
     if (templateId) {
-      finalContent = await applyTemplate(
-        conversionResult.content,
-        templateId,
-        {
-          document_type: documentType || 'other',
-          ...conversionResult.metadata,
-        }
-      );
+      try {
+        finalContent = await applyTemplate(
+          conversionResult.content,
+          templateId,
+          {
+            document_type: documentType || 'other',
+            ...conversionResult.metadata,
+          }
+        );
+      } catch (templateError) {
+        logger.warn('Erro ao aplicar template, usando conteúdo original', {
+          error: templateError instanceof Error ? templateError.message : String(templateError),
+        });
+        // Continuar com conteúdo original se template falhar
+      }
     }
 
     // Gerar path se não fornecido

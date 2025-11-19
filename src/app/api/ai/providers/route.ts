@@ -72,7 +72,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
     }
 
-    const organizationId = await getUserOrganization();
+    let organizationId: string | null = null;
+    try {
+      organizationId = await getUserOrganization();
+    } catch (orgError) {
+      logger.error('Erro ao buscar organização do usuário', orgError);
+      return NextResponse.json(
+        { 
+          error: 'Erro ao buscar organização do usuário',
+          redirectTo: '/onboarding'
+        },
+        { status: 500 }
+      );
+    }
+    
     if (!organizationId) {
       return NextResponse.json(
         { 
@@ -83,7 +96,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const body = await request.json();
+    let body: any;
+    try {
+      body = await request.json();
+    } catch (jsonError) {
+      logger.error('Erro ao processar JSON do request', jsonError);
+      return NextResponse.json(
+        { error: 'Erro ao processar dados da requisição' },
+        { status: 400 }
+      );
+    }
     const validation = providerSchema.safeParse(body);
 
     if (!validation.success) {

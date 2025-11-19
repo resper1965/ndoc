@@ -5,6 +5,7 @@
  */
 
 import { createClient } from './server';
+import { logger } from '@/lib/logger';
 
 /**
  * Obtém a organização do usuário autenticado
@@ -33,8 +34,15 @@ export async function getUserOrganization(): Promise<string | null> {
   if (error) {
     // Erro 406 pode ser causado por RLS quando usuário não tem acesso
     // Erro 404 pode ser causado por tabela não encontrada (improvável)
+    // PGRST116 = no rows returned (normal se usuário não tem org)
+    // PGRST301 = not found (normal se usuário não tem org)
     if (error.code !== 'PGRST116' && error.code !== 'PGRST301') {
-      console.warn('Error fetching user organization:', error.message);
+      logger.warn('Error fetching user organization', { 
+        code: error.code, 
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+      });
     }
     return null;
   }

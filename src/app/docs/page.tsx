@@ -34,13 +34,13 @@ export default async function DocsPage() {
                 </p>
                 
                 <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-                  <Link href="/config">
+                  <Link href="/app/documents/new">
                     <Button variant="primary" size="lg" className="inline-flex items-center gap-2 w-full sm:w-auto">
                       <Plus className="h-5 w-5" />
                       Criar Primeiro Documento
                     </Button>
                   </Link>
-                  <Link href="/config?tab=documents">
+                  <Link href="/app/documents/new">
                     <Button variant="outline" size="lg" className="inline-flex items-center gap-2 w-full sm:w-auto">
                       <UploadIcon className="h-5 w-5" />
                       Fazer Upload
