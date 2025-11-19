@@ -22,14 +22,19 @@ export async function getUserOrganization(): Promise<string | null> {
   }
 
   // Buscar primeira organização do usuário
-  const { data: members } = await supabase
+  const { data: members, error } = await supabase
     .from('organization_members')
     .select('organization_id')
     .eq('user_id', user.id)
     .limit(1)
-    .single();
+    .maybeSingle();
 
-  return members?.organization_id || null;
+  // Se houver erro ou não houver dados, retornar null
+  if (error || !members) {
+    return null;
+  }
+
+  return members.organization_id || null;
 }
 
 /**

@@ -24,14 +24,14 @@ export async function POST() {
     }
 
     // Verificar se usuário já tem organização
-    const { data: existingOrgs } = await supabase
+    const { data: existingOrgs, error: checkError } = await supabase
       .from('organization_members')
       .select('organization_id')
       .eq('user_id', user.id)
       .limit(1)
-      .single();
+      .maybeSingle();
 
-    if (existingOrgs) {
+    if (existingOrgs && !checkError) {
       return NextResponse.json({
         success: true,
         message: 'Usuário já possui organização',
