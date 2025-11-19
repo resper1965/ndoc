@@ -111,7 +111,7 @@ const SearchDialog = forwardRef<SearchDialogHandle, SearchDialogProps>(
         <DialogTrigger className='hidden sm:block'>
           <SearchButton
             size="sm"
-            placeholder="Search documentation.."
+            placeholder="Buscar documentação.."
           />
         </DialogTrigger>
         <DialogContent className="fixed h-auto sm:max-w-xl bg-muted p-2 top-40">
@@ -125,14 +125,14 @@ const SearchDialog = forwardRef<SearchDialogHandle, SearchDialogProps>(
           </button>
         </DialogCloseTrigger> */}
           {/* <DialogHeader>
-            <DialogTitle>Search Documentation</DialogTitle>
-            <DialogDescription>Type below to search your docs.</DialogDescription>
+            <DialogTitle>Buscar Documentação</DialogTitle>
+            <DialogDescription>Digite abaixo para buscar na documentação.</DialogDescription>
           </DialogHeader> */}
           <div className="relative">
             <Input
               type="text"
               className="w-full bg-transparent focus:outline-none rounded-none border-t-0 border-x-0 border-border pl-10 pr-4 py-2"
-              placeholder="Search the docs..."
+              placeholder="Buscar na documentação..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
@@ -166,7 +166,7 @@ const SearchDialog = forwardRef<SearchDialogHandle, SearchDialogProps>(
               </ul>
             ) : (
               <p className="text-sm text-center">
-                {query.length > 0 ? 'No results found.' : 'Type to search'}
+                {query.length > 0 ? 'Nenhum resultado encontrado.' : 'Digite para buscar'}
               </p>
             )}
           </div>

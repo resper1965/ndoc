@@ -83,7 +83,7 @@ export default function OnboardingPage() {
   const fetchOrganization = async () => {
     try {
       const supabase = createClient();
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('organization_members')
         .select(`
           organization_id,
@@ -95,18 +95,21 @@ export default function OnboardingPage() {
         `)
         .eq('user_id', user?.id)
         .limit(1)
-        .single();
+        .maybeSingle();
 
-      if (data && data.organizations) {
+      // Se não houver erro e houver dados
+      if (!error && data && data.organizations) {
         const org = Array.isArray(data.organizations) ? data.organizations[0] : data.organizations;
-        if (org) {
+        if (org && org.id) {
           setOrganizationData(org);
-          setOrgName(org.name);
-          setOrgSlug(org.slug);
+          setOrgName(org.name || '');
+          setOrgSlug(org.slug || '');
         }
       }
+      // Se não houver organização, não fazer nada (vai criar no handleUpdateOrganization)
     } catch (error) {
       console.error('Error fetching organization:', error);
+      // Não mostrar erro, apenas logar - é normal não ter organização ainda
     }
   };
 
@@ -153,34 +156,79 @@ export default function OnboardingPage() {
       
       // Se não há organização, criar uma nova
       if (!organizationData || !organizationData.id) {
-        const response = await fetch('/api/organization/create', {
-          method: 'POST',
-        });
+        // Primeiro, tentar criar via API
+        let newOrgId: string | null = null;
+        
+        try {
+          const response = await fetch('/api/organization/create', {
+            method: 'POST',
+          });
 
-        if (!response.ok) {
-          const data = await response.json();
-          throw new Error(data.error || 'Erro ao criar organização');
+          if (response.ok) {
+            const result = await response.json();
+            newOrgId = result.organization_id || result.id || null;
+          }
+        } catch (apiError) {
+          console.warn('Erro ao criar organização via API, tentando criar diretamente:', apiError);
         }
 
-        const result = await response.json();
-        const newOrgId = result.organization_id || result.id;
+        // Se a API não retornou ID, criar diretamente
+        if (!newOrgId) {
+          const { data: newOrg, error: createError } = await supabase
+            .from('organizations')
+            .insert({
+              name: orgName,
+              slug: orgSlug,
+            })
+            .select()
+            .single();
 
-        // Atualizar a organização recém-criada
-        const { error: updateError } = await supabase
-          .from('organizations')
-          .update({
-            name: orgName,
-            slug: orgSlug,
-          })
-          .eq('id', newOrgId);
+          if (createError || !newOrg) {
+            throw new Error(createError?.message || 'Erro ao criar organização');
+          }
 
-        if (updateError) {
-          throw new Error(updateError.message);
+          newOrgId = newOrg.id;
+
+          // Adicionar usuário como owner
+          const { error: memberError } = await supabase
+            .from('organization_members')
+            .insert({
+              organization_id: newOrgId,
+              user_id: user?.id,
+              role: 'owner',
+            });
+
+          if (memberError) {
+            console.error('Erro ao adicionar membro:', memberError);
+            // Não falhar se já existir
+          }
+        } else {
+          // Se a API criou, atualizar nome e slug
+          const { error: updateError } = await supabase
+            .from('organizations')
+            .update({
+              name: orgName,
+              slug: orgSlug,
+            })
+            .eq('id', newOrgId);
+
+          if (updateError) {
+            console.warn('Erro ao atualizar organização criada via API:', updateError);
+            // Não falhar, a organização já existe
+          }
+        }
+
+        if (!newOrgId) {
+          throw new Error('Não foi possível criar a organização');
         }
 
         showSuccess('Organização criada com sucesso!');
       } else {
         // Atualizar organização existente
+        if (!organizationData.id) {
+          throw new Error('ID da organização inválido');
+        }
+
         const { error } = await supabase
           .from('organizations')
           .update({

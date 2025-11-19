@@ -43,7 +43,7 @@ const sizeMapping = {
 const SearchButton = React.forwardRef<HTMLButtonElement, SearchButtonProps>(
   (
     {
-      placeholder = 'Search Documentation..',
+      placeholder = 'Buscar documentação..',
       size = 'sm',
       className,
       ...props
