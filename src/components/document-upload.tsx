@@ -240,13 +240,18 @@ export function DocumentUpload({
           onChange={handleFileInput}
           className="hidden"
           id="file-upload"
+          disabled={uploading}
         />
-        <label htmlFor="file-upload">
+        <label htmlFor="file-upload" className="cursor-pointer">
           <Button
             type="button"
             variant="outline"
             className="mt-4"
             disabled={uploading}
+            onClick={(e) => {
+              e.preventDefault();
+              document.getElementById('file-upload')?.click();
+            }}
           >
             Selecionar Arquivos
           </Button>

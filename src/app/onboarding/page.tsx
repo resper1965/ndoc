@@ -142,26 +142,65 @@ export default function OnboardingPage() {
   };
 
   const handleUpdateOrganization = async () => {
+    if (!orgName || !orgSlug) {
+      showError('Preencha o nome e o slug da organização');
+      return;
+    }
+
     setLoading(true);
     try {
       const supabase = createClient();
-      const { error } = await supabase
-        .from('organizations')
-        .update({
-          name: orgName,
-          slug: orgSlug,
-        })
-        .eq('id', organizationData.id);
+      
+      // Se não há organização, criar uma nova
+      if (!organizationData || !organizationData.id) {
+        const response = await fetch('/api/organization/create', {
+          method: 'POST',
+        });
 
-      if (error) {
-        showError('Erro ao atualizar organização: ' + error.message);
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.error || 'Erro ao criar organização');
+        }
+
+        const result = await response.json();
+        const newOrgId = result.organization_id || result.id;
+
+        // Atualizar a organização recém-criada
+        const { error: updateError } = await supabase
+          .from('organizations')
+          .update({
+            name: orgName,
+            slug: orgSlug,
+          })
+          .eq('id', newOrgId);
+
+        if (updateError) {
+          throw new Error(updateError.message);
+        }
+
+        showSuccess('Organização criada com sucesso!');
       } else {
+        // Atualizar organização existente
+        const { error } = await supabase
+          .from('organizations')
+          .update({
+            name: orgName,
+            slug: orgSlug,
+          })
+          .eq('id', organizationData.id);
+
+        if (error) {
+          throw new Error(error.message);
+        }
+
         showSuccess('Organização atualizada!');
-        saveProgress();
-        handleFinish();
       }
-    } catch {
-      showError('Erro ao atualizar organização');
+
+      saveProgress();
+      handleFinish();
+    } catch (error: any) {
+      console.error('Erro ao salvar organização:', error);
+      showError('Erro ao salvar organização: ' + (error.message || 'Erro desconhecido'));
     } finally {
       setLoading(false);
     }
@@ -184,8 +223,8 @@ export default function OnboardingPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900">
-      <div className="container mx-auto px-4 py-12">
+    <div className="min-h-screen bg-white dark:bg-slate-950">
+      <div className="container mx-auto px-4 py-12 max-w-4xl">
         {/* Progress Steps */}
         <div className="max-w-3xl mx-auto mb-12">
           <div className="flex justify-between items-center">
@@ -231,7 +270,7 @@ export default function OnboardingPage() {
 
         {/* Content */}
         <div className="max-w-2xl mx-auto">
-          <div className="bg-white dark:bg-slate-900 rounded-lg shadow-xl p-8">
+          <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 p-8">
             {/* Step 1: Welcome */}
             {currentStep === 1 && (
               <div className="text-center">

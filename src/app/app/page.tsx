@@ -350,8 +350,8 @@ export default function DashboardPage() {
               <div className="flex items-center gap-3">
                 <FileText className="h-5 w-5" />
                 <div className="text-left">
-                  <div className="font-medium">Ver Documentos</div>
-                  <div className="text-xs text-slate-500">Gerenciar documentos</div>
+                  <div className="font-medium">Gerenciar Documentos</div>
+                  <div className="text-xs text-slate-500">Criar, editar e organizar</div>
                 </div>
               </div>
             </Button>
@@ -361,8 +361,8 @@ export default function DashboardPage() {
               <div className="flex items-center gap-3">
                 <BookOpen className="h-5 w-5" />
                 <div className="text-left">
-                  <div className="font-medium">Ver Documentação</div>
-                  <div className="text-xs text-slate-500">Acessar docs publicados</div>
+                  <div className="font-medium">Visualizar Documentação</div>
+                  <div className="text-xs text-slate-500">Ler documentação publicada</div>
                 </div>
               </div>
             </Button>

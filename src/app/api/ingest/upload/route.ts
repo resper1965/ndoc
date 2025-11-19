@@ -64,13 +64,65 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Obter organização do usuário
-    const organizationId = await getUserOrganization();
+    // Obter organização do usuário ou criar automaticamente
+    let organizationId = await getUserOrganization();
+    
     if (!organizationId) {
-      return NextResponse.json(
-        { error: 'Usuário não pertence a uma organização' },
-        { status: 403 }
-      );
+      // Tentar criar organização automaticamente usando RPC
+      try {
+        const { data: rpcData, error: rpcError } = await supabase.rpc('handle_new_user', {
+          user_id: user.id,
+          user_email: user.email || '',
+          user_metadata: user.user_metadata || {},
+        });
+
+        if (!rpcError && rpcData) {
+          organizationId = rpcData.organization_id || rpcData.id;
+        } else {
+          // Se RPC falhar, criar organização manualmente
+          const orgName = user.email?.split('@')[0] || 'Minha Organização';
+          const orgSlug = orgName.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+          
+          const { data: newOrg, error: createError } = await supabase
+            .from('organizations')
+            .insert({
+              name: orgName,
+              slug: orgSlug,
+            })
+            .select()
+            .single();
+
+          if (!createError && newOrg) {
+            // Adicionar usuário como owner
+            const { error: memberError } = await supabase
+              .from('organization_members')
+              .insert({
+                organization_id: newOrg.id,
+                user_id: user.id,
+                role: 'owner',
+              });
+
+            if (!memberError) {
+              organizationId = newOrg.id;
+            }
+          }
+        }
+      } catch (error) {
+        logger.warn('Erro ao criar organização automaticamente', {
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+
+      // Se ainda não tiver organização, retornar erro
+      if (!organizationId) {
+        return NextResponse.json(
+          { 
+            error: 'Usuário não pertence a uma organização. Por favor, complete o onboarding primeiro.',
+            redirectTo: '/onboarding'
+          },
+          { status: 403 }
+        );
+      }
     }
 
     // Obter arquivo do FormData

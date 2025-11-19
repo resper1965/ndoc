@@ -42,18 +42,25 @@ export function AIDocumentGenerator({
   }, []);
 
   const loadThemes = async () => {
+    setLoadingThemes(true);
     try {
       const response = await fetch('/api/ai/themes');
       if (response.ok) {
         const data = await response.json();
-        setThemes(data.themes || []);
-        if (data.themes && data.themes.length > 0) {
-          setFormData((prev) => ({ ...prev, themeId: data.themes[0].id }));
+        const themesList = data.themes || [];
+        setThemes(themesList);
+        if (themesList.length > 0) {
+          setFormData((prev) => ({ ...prev, themeId: themesList[0].id }));
+        } else {
+          showError('Nenhum tema de IA disponível. Configure temas em Configurações > IA.');
         }
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Erro ao carregar temas');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao carregar temas:', error);
-      showError('Erro ao carregar temas de IA');
+      showError(error.message || 'Erro ao carregar temas de IA');
     } finally {
       setLoadingThemes(false);
     }
@@ -79,19 +86,26 @@ export function AIDocumentGenerator({
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || 'Erro ao gerar documento');
+        const errorMsg = data.error || 'Erro ao gerar documento';
+        console.error('Erro na API:', data);
+        throw new Error(errorMsg);
       }
 
       const result = await response.json();
       
-      // Extrair título do tópico ou do conteúdo gerado
-      const title = formData.topic;
+      if (!result.content) {
+        throw new Error('Resposta da API não contém conteúdo');
+      }
+      
+      // Extrair título do resultado ou usar o tópico
+      const title = result.title || formData.topic;
       
       // O conteúdo já vem formatado com frontmatter
       onContentGenerated(result.content, formData.path, title);
-      showSuccess('Documento gerado com sucesso!');
+      showSuccess('Documento gerado com sucesso! Revise e ajuste o conteúdo antes de salvar.');
     } catch (error: any) {
-      showError(error.message || 'Erro ao gerar documento com IA');
+      console.error('Erro ao gerar documento:', error);
+      showError(error.message || 'Erro ao gerar documento com IA. Verifique se a API de IA está configurada.');
     } finally {
       setLoading(false);
     }

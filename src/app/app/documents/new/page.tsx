@@ -110,7 +110,17 @@ ${newDocForm.content.split('---').slice(2).join('---').trim() || '# ' + newDocFo
         router.push('/app/documents');
       }
     } catch (error: any) {
-      showError(error.message || 'Erro ao fazer upload');
+      const errorMessage = error.message || 'Erro ao fazer upload';
+      
+      // Se o erro for sobre organização, redirecionar para onboarding
+      if (errorMessage.includes('organização') || errorMessage.includes('onboarding')) {
+        showError('Você precisa completar o onboarding primeiro. Redirecionando...');
+        setTimeout(() => {
+          router.push('/onboarding');
+        }, 2000);
+      } else {
+        showError(errorMessage);
+      }
     }
   };
 
@@ -129,13 +139,39 @@ ${newDocForm.content.split('---').slice(2).join('---').trim() || '# ' + newDocFo
       const errors = results.filter((r) => !r.ok);
 
       if (errors.length > 0) {
+        // Verificar se algum erro é sobre organização
+        const orgErrors = await Promise.all(
+          errors.map(async (r) => {
+            const data = await r.json();
+            return data.error?.includes('organização') || data.error?.includes('onboarding');
+          })
+        );
+        
+        if (orgErrors.some(Boolean)) {
+          showError('Você precisa completar o onboarding primeiro. Redirecionando...');
+          setTimeout(() => {
+            router.push('/onboarding');
+          }, 2000);
+          return;
+        }
+        
         showError(`${errors.length} arquivo(s) falharam no upload`);
       } else {
         showSuccess(`${files.length} arquivo(s) enviados com sucesso!`);
         router.push('/app/documents');
       }
     } catch (error: any) {
-      showError(error.message || 'Erro ao fazer upload em lote');
+      const errorMessage = error.message || 'Erro ao fazer upload em lote';
+      
+      // Se o erro for sobre organização, redirecionar para onboarding
+      if (errorMessage.includes('organização') || errorMessage.includes('onboarding')) {
+        showError('Você precisa completar o onboarding primeiro. Redirecionando...');
+        setTimeout(() => {
+          router.push('/onboarding');
+        }, 2000);
+      } else {
+        showError(errorMessage);
+      }
     }
   };
 

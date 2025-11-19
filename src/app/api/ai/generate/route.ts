@@ -57,73 +57,131 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Buscar tema
-    const { data: theme, error: themeError } = await supabase
-      .from('ai_themes')
-      .select('*')
-      .eq('id', theme_id)
-      .eq('organization_id', organizationId)
-      .single();
+    // Buscar tema (pode ser tema padrão ou da organização)
+    let theme: any = null;
+    
+    // Se for tema padrão (não UUID), usar prompt padrão
+    if (theme_id.startsWith('default-')) {
+      const defaultPrompts: Record<string, string> = {
+        'default-technical': 'Você é um especialista em documentação técnica. Crie documentação clara, precisa e bem estruturada com exemplos de código quando apropriado.',
+        'default-guide': 'Você é um especialista em criar guias de usuário. Crie conteúdo didático, passo a passo, fácil de seguir e bem organizado.',
+        'default-policy': 'Você é um especialista em documentação organizacional. Crie políticas e procedimentos claros, profissionais e bem estruturados.',
+      };
+      
+      theme = {
+        system_prompt: defaultPrompts[theme_id] || defaultPrompts['default-technical'],
+      };
+    } else {
+      // Buscar tema do banco
+      const { data: themeData, error: themeError } = await supabase
+        .from('ai_themes')
+        .select('*')
+        .eq('id', theme_id)
+        .eq('organization_id', organizationId)
+        .single();
 
-    if (themeError || !theme) {
-      return NextResponse.json(
-        { error: 'Tema não encontrado' },
-        { status: 404 }
-      );
+      if (themeError || !themeData) {
+        return NextResponse.json(
+          { error: 'Tema não encontrado' },
+          { status: 404 }
+        );
+      }
+      
+      theme = themeData;
     }
 
-    // Buscar provedor
-    const { data: provider, error: providerError } = await supabase
+    // Buscar provedor ou usar OpenAI direto
+    let apiKey: string | null = null;
+    let model = 'gpt-4o-mini';
+    
+    const { data: provider } = await supabase
       .from('ai_provider_config')
       .select('*')
       .eq('organization_id', organizationId)
-      .limit(1)
+      .eq('is_active', true)
       .single();
 
-    if (providerError || !provider) {
+    if (provider?.api_key_encrypted) {
+      apiKey = provider.api_key_encrypted;
+      if (provider.model) model = provider.model;
+    } else {
+      // Fallback para variável de ambiente
+      apiKey = process.env.OPENAI_API_KEY || null;
+    }
+
+    if (!apiKey) {
       return NextResponse.json(
-        { error: 'Nenhum provedor de IA configurado' },
+        { error: 'Nenhuma chave de API de IA configurada. Configure em Configurações > IA.' },
         { status: 400 }
       );
     }
 
-    // Chamar Edge Function para gerar conteúdo
-    const { data: functionData, error: functionError } = await supabase.functions.invoke(
-      'generate-document',
-      {
-        body: {
-          topic,
-          system_prompt: theme.system_prompt,
-          provider: provider.provider,
-          api_key: provider.api_key,
-          model: provider.model,
-        },
+    // Gerar documento usando OpenAI diretamente
+    try {
+      const OpenAI = (await import('openai')).default;
+      const openai = new OpenAI({ apiKey });
+
+      const systemPrompt = theme.system_prompt || theme.prompt_base || 'Você é um assistente especializado em criar documentação clara e bem estruturada.';
+      
+      const userPrompt = `Crie um documento completo sobre: ${topic}
+
+O documento deve incluir:
+- Frontmatter YAML com título e descrição
+- Conteúdo em Markdown bem formatado
+- Seções apropriadas
+- Exemplos quando relevante
+
+Formato esperado:
+---
+title: [Título do Documento]
+description: [Descrição breve]
+---
+
+# [Título]
+
+[Conteúdo do documento em Markdown]`;
+
+      const response = await openai.chat.completions.create({
+        model,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt },
+        ],
+        temperature: 0.7,
+        max_tokens: 2000,
+      });
+
+      const generatedContent = response.choices[0]?.message?.content || '';
+      
+      // Extrair título e descrição do frontmatter se existir
+      let title = topic;
+      let description = '';
+      const frontmatterMatch = generatedContent.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
+      
+      if (frontmatterMatch) {
+        const frontmatter = frontmatterMatch[1];
+        const titleMatch = frontmatter.match(/title:\s*(.+)/);
+        const descMatch = frontmatter.match(/description:\s*(.+)/);
+        
+        if (titleMatch) title = titleMatch[1].trim().replace(/^["']|["']$/g, '');
+        if (descMatch) description = descMatch[1].trim().replace(/^["']|["']$/g, '');
       }
-    );
 
-    if (functionError || !functionData) {
-      logger.error('Error calling generate function', functionError);
+      // Incrementar contador de uso de IA
+      await incrementAIUsage(organizationId);
+
+      return NextResponse.json({
+        content: generatedContent,
+        title,
+        description,
+      });
+    } catch (error: any) {
+      logger.error('Error generating document with OpenAI', error);
       return NextResponse.json(
-        { error: 'Erro ao gerar documento. Verifique se a Edge Function está configurada.' },
+        { error: error.message || 'Erro ao gerar documento com IA' },
         { status: 500 }
       );
     }
-
-    if (functionData.error) {
-      return NextResponse.json(
-        { error: functionData.error },
-        { status: 500 }
-      );
-    }
-
-    // Incrementar contador de uso de IA
-    await incrementAIUsage(organizationId);
-
-    return NextResponse.json({
-      content: functionData.content,
-      title: functionData.title || topic,
-      description: functionData.description || '',
-    });
   } catch (error) {
     logger.error('Error generating document', error);
     return NextResponse.json(
