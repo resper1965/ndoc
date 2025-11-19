@@ -8,6 +8,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { AuthGuard } from '@/components/auth-guard';
 import { Button } from '@/components/button';
 import { Input } from '@/components/input';
@@ -37,6 +38,7 @@ interface Organization {
 }
 
 export default function AdminPage() {
+  const router = useRouter();
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -239,7 +241,7 @@ export default function AdminPage() {
                   <div className="flex gap-2">
                     <Button
                       variant="outline"
-                      onClick={() => window.location.href = `/admin/organizations/${org.id}`}
+                      onClick={() => router.push(`/admin/organizations/${org.id}`)}
                     >
                       <Users className="h-4 w-4 mr-2" />
                       Usuários
