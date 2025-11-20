@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createAdminClient as createServiceRoleClient } from '@/lib/supabase/server';
 import { createClient as createAdminClient } from '@supabase/supabase-js';
 import { logger } from '@/lib/logger';
 
@@ -24,8 +24,11 @@ export async function GET(
       );
     }
 
+    // Usar service role client para buscar membros (bypass RLS)
+    const serviceSupabase = await createServiceRoleClient();
+    
     // Buscar membros da organização
-    const { data: members, error: membersError } = await supabase
+    const { data: members, error: membersError } = await serviceSupabase
       .from('organization_members')
       .select('id, user_id, organization_id, role')
       .eq('organization_id', organizationId)
@@ -187,8 +190,11 @@ export async function POST(
       );
     }
 
+    // Usar service role client para bypass RLS
+    const serviceSupabase = await createServiceRoleClient();
+
     // Verificar se já é membro
-    const { data: existingMember } = await supabase
+    const { data: existingMember } = await serviceSupabase
       .from('organization_members')
       .select('id')
       .eq('organization_id', organizationId)
@@ -202,22 +208,40 @@ export async function POST(
       );
     }
 
-    // Adicionar membro
-    const { error: insertError } = await supabase
+    // Adicionar membro usando service role (bypass RLS)
+    const { data: newMember, error: insertError } = await serviceSupabase
       .from('organization_members')
       .insert({
         organization_id: organizationId,
         user_id: targetUser.id,
         role: role,
-      });
+      })
+      .select()
+      .single();
 
     if (insertError) {
-      logger.error('Error adding member', insertError);
+      logger.error('Error adding member', insertError, {
+        organizationId,
+        userId: targetUser.id,
+        role,
+        errorCode: insertError.code,
+        errorMessage: insertError.message,
+      });
       return NextResponse.json(
-        { error: 'Erro ao adicionar membro' },
+        { 
+          error: 'Erro ao adicionar membro',
+          details: insertError.message,
+        },
         { status: 500 }
       );
     }
+
+    logger.info('Member added successfully', {
+      memberId: newMember?.id,
+      organizationId,
+      userId: targetUser.id,
+      role,
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {
@@ -259,8 +283,11 @@ export async function DELETE(
       );
     }
 
+    // Usar service role client para remover membro (bypass RLS)
+    const serviceSupabase = await createServiceRoleClient();
+    
     // Remover membro
-    const { error: deleteError } = await supabase
+    const { error: deleteError } = await serviceSupabase
       .from('organization_members')
       .delete()
       .eq('id', memberId)
@@ -316,8 +343,11 @@ export async function PATCH(
       );
     }
 
+    // Usar service role client para atualizar permissão (bypass RLS)
+    const serviceSupabase = await createServiceRoleClient();
+    
     // Atualizar permissão
-    const { error: updateError } = await supabase
+    const { error: updateError } = await serviceSupabase
       .from('organization_members')
       .update({ role })
       .eq('id', memberId)

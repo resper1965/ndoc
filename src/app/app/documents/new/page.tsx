@@ -81,12 +81,37 @@ ${newDocForm.content.split('---').slice(2).join('---').trim() || '# ' + newDocFo
         body: formData,
       });
 
+      // Verificar se a resposta tem conteúdo antes de tentar parsear JSON
+      const contentType = response.headers.get('content-type');
+      const text = await response.text();
+      
       if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || 'Erro ao fazer upload');
+        let errorMessage = 'Erro ao fazer upload';
+        try {
+          if (contentType?.includes('application/json') && text) {
+            const data = JSON.parse(text);
+            errorMessage = data.error || errorMessage;
+          } else if (text) {
+            errorMessage = text;
+          }
+        } catch {
+          // Se não conseguir parsear, usar mensagem padrão
+          errorMessage = `Erro ${response.status}: ${response.statusText}`;
+        }
+        throw new Error(errorMessage);
       }
 
-      const result = await response.json();
+      // Parsear JSON apenas se o conteúdo for JSON válido
+      let result;
+      try {
+        if (contentType?.includes('application/json') && text) {
+          result = JSON.parse(text);
+        } else {
+          throw new Error('Resposta não é JSON válido');
+        }
+      } catch {
+        throw new Error('Erro ao processar resposta do servidor');
+      }
       if (result.document?.id) {
         // Iniciar processamento automaticamente
         try {
