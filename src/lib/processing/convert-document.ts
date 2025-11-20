@@ -9,6 +9,7 @@ import {
   isSupportedDocumentType,
   type DocumentType,
 } from './document-types';
+import { logger } from '@/lib/logger';
 
 export interface ConversionResult {
   content: string;
@@ -136,16 +137,139 @@ async function convertDOCToMarkdown(
   buffer: Buffer,
   _options: ConversionOptions
 ): Promise<ConversionResult> {
-  // DOC (Word antigo) requer biblioteca especializada
-  // Por enquanto, tentar extrair texto básico
-  // NOTA: Implementação completa requer biblioteca especializada (ex: textract)
-  // Feature futura: suporte completo para arquivos .doc
-  const text = buffer.toString('utf-8', 0, Math.min(buffer.length, 10000));
+  // DOC (Word antigo) é um formato binário complexo
+  // Tentar múltiplas estratégias de conversão
   
-  // Extração básica de texto (limitado)
+  // Estratégia 1: Tentar usar biblioteca especializada se disponível
+  // Nota: docx-parser não está instalado, mas deixamos o código preparado
+  // para futura instalação se necessário
+  try {
+    // Tentar importar biblioteca dinamicamente (se disponível)
+    const docxParserModule = await (async () => {
+      try {
+        // Usar import dinâmico - pode não estar disponível
+        // @ts-expect-error - docx-parser pode não estar instalado
+        return await import('docx-parser').catch(() => null);
+      } catch {
+        return null;
+      }
+    })();
+    
+    if (docxParserModule) {
+      try {
+        const parser = (docxParserModule as any).default || docxParserModule;
+        const result = await parser(buffer);
+        if (result && result.text) {
+          return {
+            content: result.text,
+            metadata: { originalFormat: 'doc', method: 'docx-parser' },
+            originalType: 'doc',
+          };
+        }
+      } catch {
+        // Continuar com outras estratégias
+      }
+    }
+  } catch {
+    // Continuar com outras estratégias
+  }
+
+  // Estratégia 2: Extração melhorada de texto do formato binário .doc
+  // O formato .doc (OLE2) contém texto em blocos específicos
+  let extractedText = '';
+  
+  try {
+    // Procurar por sequências de texto legível no buffer
+    // O formato .doc armazena texto em blocos de caracteres ASCII/UTF-8
+    const textPatterns: string[] = [];
+    
+    // Procurar por strings de texto legível (mínimo 3 caracteres alfanuméricos)
+    let currentText = '';
+    for (let i = 0; i < buffer.length; i++) {
+      const byte = buffer[i];
+      // Caracteres ASCII imprimíveis (32-126) e alguns caracteres especiais
+      if ((byte >= 32 && byte <= 126) || byte === 9 || byte === 10 || byte === 13) {
+        currentText += String.fromCharCode(byte);
+      } else {
+        if (currentText.length >= 3) {
+          // Filtrar strings que parecem ser texto real (não apenas símbolos)
+          const hasLetters = /[a-zA-Z\u00C0-\u017F]/.test(currentText);
+          if (hasLetters) {
+            textPatterns.push(currentText.trim());
+          }
+        }
+        currentText = '';
+      }
+    }
+    
+    // Adicionar último texto se houver
+    if (currentText.length >= 3) {
+      const hasLetters = /[a-zA-Z\u00C0-\u017F]/.test(currentText);
+      if (hasLetters) {
+        textPatterns.push(currentText.trim());
+      }
+    }
+    
+    // Juntar padrões de texto encontrados
+    extractedText = textPatterns
+      .filter((text, index, arr) => {
+        // Remover duplicatas próximas
+        if (index > 0 && text === arr[index - 1]) return false;
+        // Remover strings muito curtas ou muito longas (provavelmente não são texto real)
+        if (text.length < 3 || text.length > 1000) return false;
+        return true;
+      })
+      .join('\n\n')
+      .replace(/\n{3,}/g, '\n\n') // Normalizar quebras de linha
+      .trim();
+    
+    // Se encontrou texto significativo, retornar
+    if (extractedText.length > 50) {
+      return {
+        content: extractedText,
+        metadata: {
+          originalFormat: 'doc',
+          method: 'binary-extraction',
+          warning: 'Conversão básica - formatação pode estar perdida',
+        },
+        originalType: 'doc',
+      };
+    }
+  } catch (error) {
+    logger.warn('Erro na extração binária de .doc', { error });
+  }
+
+  // Estratégia 3: Tentar converter para RTF primeiro (alguns .doc são RTF)
+  try {
+    // Verificar se o arquivo começa com header RTF
+    const header = buffer.slice(0, 10).toString('utf-8');
+    if (header.includes('{\\rtf') || header.includes('{\rtf')) {
+      // Tentar converter como RTF
+      const rtfResult = await convertRTFToMarkdown(buffer, _options);
+      if (rtfResult.content && rtfResult.content.length > 50) {
+        return {
+          ...rtfResult,
+          originalType: 'doc',
+          metadata: {
+            ...rtfResult.metadata,
+            method: 'rtf-conversion',
+            warning: 'Arquivo .doc convertido via RTF',
+          },
+        };
+      }
+    }
+  } catch {
+    // Continuar com fallback
+  }
+
+  // Fallback: Mensagem informativa
   return {
-    content: `> **Nota**: Conversão de arquivos .DOC (Word antigo) tem suporte limitado.\n> Considere converter para .DOCX para melhor resultado.\n\n${text}`,
-    metadata: { originalFormat: 'doc', warning: 'Conversão limitada' },
+    content: `> **Nota**: Conversão de arquivos .DOC (Word antigo) tem suporte limitado.\n> \n> **Recomendações:**\n> - Converta o arquivo para .DOCX usando Microsoft Word ou LibreOffice\n> - Ou salve como .RTF e tente novamente\n> - Ou copie o conteúdo para um arquivo .TXT ou .MD\n> \n> O formato .DOC é um formato binário proprietário antigo que requer bibliotecas especializadas para conversão completa.`,
+    metadata: {
+      originalFormat: 'doc',
+      warning: 'Conversão não suportada - arquivo muito complexo ou corrompido',
+      fileSize: buffer.length,
+    },
     originalType: 'doc',
   };
 }
