@@ -41,7 +41,14 @@ export function ProcessingStatus({
 
   const fetchStatus = async () => {
     try {
-      const response = await fetch(`/api/process/document/${documentId}`);
+      // Tentar buscar pelo jobId primeiro (formato: doc-{documentId})
+      const jobId = `doc-${documentId}`;
+      let response = await fetch(`/api/progress/${jobId}`);
+      
+      // Se não encontrar, tentar buscar pelo documentId diretamente
+      if (!response.ok && response.status === 404) {
+        response = await fetch(`/api/process/document/${documentId}`);
+      }
       
       if (!response.ok) {
         if (response.status === 404) {
@@ -53,15 +60,26 @@ export function ProcessingStatus({
       }
 
       const data = await response.json();
-      setJob(data);
+      
+      // Normalizar dados da API de progresso
+      const normalizedJob: ProcessingJob = {
+        status: data.status || 'unknown',
+        stage: data.stage || undefined,
+        progress: data.progress || data.progress_percentage || undefined,
+        error: data.error || data.error_message || undefined,
+        startedAt: data.startedAt || data.started_at || undefined,
+        completedAt: data.completedAt || data.completed_at || undefined,
+      };
+      
+      setJob(normalizedJob);
       setError(null);
       setLoading(false);
 
       // Callbacks
-      if (data.status === 'completed' && onComplete) {
+      if (normalizedJob.status === 'completed' && onComplete) {
         onComplete();
-      } else if (data.status === 'failed' && onError) {
-        onError(data.error || 'Erro desconhecido');
+      } else if (normalizedJob.status === 'failed' && onError) {
+        onError(normalizedJob.error || 'Erro desconhecido');
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido';

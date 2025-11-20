@@ -60,7 +60,7 @@ export async function processDocument(
 
     // 2. Chunking
     await updateProgress?.(20, 'Dividindo documento em chunks');
-    const chunks = chunkDocument(document.content, {
+    const chunks = await chunkDocument(document.content, {
       strategy: chunkingStrategy,
       chunkSize,
       chunkOverlap,

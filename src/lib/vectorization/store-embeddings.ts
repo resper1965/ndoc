@@ -6,6 +6,7 @@
 import { createAdminClient } from '@/lib/supabase/server';
 import { logger } from '@/lib/logger';
 import type { EmbeddingResult } from './generate-embeddings';
+import { validateEmbeddingDimension } from './embedding-dimensions';
 
 export interface StoreEmbeddingsOptions {
   documentId: string;
@@ -49,6 +50,10 @@ export async function storeEmbeddings(
     });
   }
 
+  // Validar dimensões de embeddings antes de armazenar
+  const model = embeddings[0]?.model || 'text-embedding-3-small';
+  const invalidEmbeddings: Array<{ index: number; error: string }> = [];
+
   // Mapear embeddings para chunks do banco
   const embeddingsToInsert = embeddings
     .map((embedding, index) => {
@@ -57,6 +62,24 @@ export async function storeEmbeddings(
         logger.warn('Chunk não encontrado para embedding', {
           chunkIndex: index,
           chunkId: embedding.chunkId,
+        });
+        return null;
+      }
+
+      // Validar dimensão do embedding
+      const validation = validateEmbeddingDimension(embedding.embedding, embedding.model || model);
+      if (!validation.valid) {
+        invalidEmbeddings.push({
+          index,
+          error: validation.error || 'Dimensão inválida',
+        });
+        logger.error('Embedding com dimensão inválida', {
+          chunkIndex: index,
+          chunkId: embedding.chunkId,
+          model: embedding.model,
+          expected: validation.expected,
+          actual: validation.actual,
+          error: validation.error,
         });
         return null;
       }
@@ -70,6 +93,16 @@ export async function storeEmbeddings(
       };
     })
     .filter((item): item is NonNullable<typeof item> => item !== null);
+
+  // Se houver embeddings inválidos, logar aviso
+  if (invalidEmbeddings.length > 0) {
+    logger.warn('Alguns embeddings foram rejeitados devido a dimensões inválidas', {
+      documentId,
+      invalidCount: invalidEmbeddings.length,
+      totalCount: embeddings.length,
+      errors: invalidEmbeddings,
+    });
+  }
 
   if (embeddingsToInsert.length === 0) {
     logger.warn('Nenhum embedding válido para inserir', { documentId });
