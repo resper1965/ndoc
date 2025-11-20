@@ -58,8 +58,20 @@ ${newDocForm.content.split('---').slice(2).join('---').trim() || '# ' + newDocFo
       });
 
       if (!response.ok) {
-        const data = await response.json();
-        showError(data.error || 'Erro ao criar documento');
+        const contentType = response.headers.get('content-type');
+        const text = await response.text();
+        let errorMessage = 'Erro ao criar documento';
+        try {
+          if (contentType?.includes('application/json') && text) {
+            const data = JSON.parse(text);
+            errorMessage = data.error || errorMessage;
+          } else if (text) {
+            errorMessage = text;
+          }
+        } catch {
+          errorMessage = `Erro ${response.status}: ${response.statusText}`;
+        }
+        showError(errorMessage);
       } else {
         showSuccess('Documento criado com sucesso!');
         router.push('/app/documents');
@@ -167,8 +179,17 @@ ${newDocForm.content.split('---').slice(2).join('---').trim() || '# ' + newDocFo
         // Verificar se algum erro é sobre organização
         const orgErrors = await Promise.all(
           errors.map(async (r) => {
-            const data = await r.json();
-            return data.error?.includes('organização') || data.error?.includes('onboarding');
+            try {
+              const contentType = r.headers.get('content-type');
+              const text = await r.text();
+              if (contentType?.includes('application/json') && text) {
+                const data = JSON.parse(text);
+                return data.error?.includes('organização') || data.error?.includes('onboarding');
+              }
+              return false;
+            } catch {
+              return false;
+            }
           })
         );
         
