@@ -4,43 +4,10 @@ import { convertDocument } from '@/lib/processing/convert-document';
 import { applyTemplate } from '@/lib/processing/apply-template';
 import { logger } from '@/lib/logger';
 import { getUserOrganization } from '@/lib/supabase/utils';
-import { processDocument } from '@/lib/vectorization/process-document';
-
-// Função assíncrona para processar documento em background
-async function processDocumentAsync(documentId: string, organizationId: string) {
-  try {
-    await processDocument({
-      documentId,
-      organizationId,
-      chunkingStrategy: 'paragraph',
-      updateProgress: async (progress, stage) => {
-        // Atualizar progresso no job
-        const supabase = await createClient();
-        await supabase
-          .from('document_processing_jobs')
-          .update({
-            status: 'processing',
-            stage,
-            progress_percentage: progress,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('document_id', documentId);
-      },
-    });
-  } catch (error) {
-    logger.error('Erro ao processar documento', error);
-    // Atualizar job com erro
-    const supabase = await createClient();
-    await supabase
-      .from('document_processing_jobs')
-      .update({
-        status: 'failed',
-        error_message: error instanceof Error ? error.message : 'Erro desconhecido',
-        updated_at: new Date().toISOString(),
-      })
-      .eq('document_id', documentId);
-  }
-}
+import { addDocumentProcessingJob } from '@/lib/queue/document-queue';
+import { initializeDocumentWorker } from '@/lib/queue/job-processor';
+import { validateFileType } from '@/lib/validation/file-type-validator';
+import { validateConvertedContent } from '@/lib/validation/content-validator';
 
 export const runtime = 'nodejs'; // Necessário para processamento de arquivos
 export const maxDuration = 60; // 60 segundos para conversão
@@ -170,6 +137,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validar tipo real do arquivo (prevenir arquivos maliciosos com extensão falsa)
+    const fileValidation = await validateFileType(file, { strict: true });
+    if (!fileValidation.valid) {
+      logger.warn('Tentativa de upload de arquivo inválido', {
+        filename: file.name,
+        detectedMimeType: fileValidation.detectedMimeType,
+        expectedMimeType: fileValidation.expectedMimeType,
+        error: fileValidation.error,
+      });
+      return NextResponse.json(
+        { error: fileValidation.error || 'Tipo de arquivo inválido' },
+        { status: 400 }
+      );
+    }
+
     logger.info('Iniciando conversão de documento', {
       filename: file.name,
       size: file.size,
@@ -190,6 +172,32 @@ export async function POST(request: NextRequest) {
         { error: 'Erro ao converter documento', details: conversionError instanceof Error ? conversionError.message : 'Erro desconhecido' },
         { status: 500 }
       );
+    }
+
+    // Validar conteúdo convertido
+    const contentValidation = validateConvertedContent(conversionResult.content, {
+      minLength: 10,
+      requireText: true,
+    });
+
+    if (!contentValidation.valid) {
+      logger.warn('Conteúdo convertido inválido', {
+        filename: file.name,
+        contentLength: conversionResult.content.length,
+        error: contentValidation.error,
+      });
+      return NextResponse.json(
+        { error: contentValidation.error || 'Conteúdo convertido inválido' },
+        { status: 400 }
+      );
+    }
+
+    // Logar avisos se houver
+    if (contentValidation.warnings && contentValidation.warnings.length > 0) {
+      logger.warn('Avisos na validação de conteúdo', {
+        filename: file.name,
+        warnings: contentValidation.warnings,
+      });
     }
 
     // Aplicar template se especificado
@@ -277,11 +285,36 @@ export async function POST(request: NextRequest) {
       path: documentPath,
     });
 
-    // Iniciar processamento de vetorização em background (não bloquear resposta)
-    // Usar processamento assíncrono para não bloquear a resposta
-    processDocumentAsync(document.id, organizationId).catch((error) => {
-      logger.warn('Erro ao iniciar processamento de vetorização (não crítico)', error);
-    });
+    // Inicializar worker se ainda não estiver rodando
+    // Em produção, o worker deve rodar em processo separado ou via Vercel Cron
+    try {
+      initializeDocumentWorker();
+    } catch (error) {
+      logger.warn('Worker já inicializado ou erro ao inicializar', {
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+
+    // Adicionar job de processamento à fila (persistente)
+    try {
+      const jobId = await addDocumentProcessingJob({
+        documentId: document.id,
+        organizationId,
+        chunkingStrategy: 'paragraph',
+        chunkSize: 500,
+        chunkOverlap: 50,
+      });
+
+      logger.info('Job de processamento adicionado à fila', {
+        jobId,
+        documentId: document.id,
+        organizationId,
+      });
+    } catch (error) {
+      logger.error('Erro ao adicionar job à fila', error);
+      // Não falhar o upload se a fila não estiver disponível
+      // O processamento pode ser iniciado manualmente depois
+    }
 
     return NextResponse.json({
       success: true,

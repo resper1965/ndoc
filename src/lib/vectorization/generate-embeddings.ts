@@ -6,6 +6,7 @@
 import { logger } from '@/lib/logger';
 import { createClient } from '@/lib/supabase/server';
 import { getUserOrganization } from '@/lib/supabase/utils';
+import { decryptApiKey } from '@/lib/encryption/api-keys';
 import type { DocumentChunk } from './chunk-document';
 
 export interface EmbeddingResult {
@@ -174,10 +175,20 @@ async function getOpenAIKey(organizationId?: string): Promise<string | null> {
       return process.env.OPENAI_API_KEY || null;
     }
 
-    // NOTA: api_key_encrypted deve ser descriptografado antes do uso
-    // A descriptografia deve ser feita no backend antes de passar para esta função
-    // Por enquanto, assumir que está descriptografado ou usar variável de ambiente
-    return data.api_key_encrypted || process.env.OPENAI_API_KEY || null;
+    // Descriptografar API key antes de usar
+    if (data.api_key_encrypted) {
+      try {
+        const decryptedKey = decryptApiKey(data.api_key_encrypted);
+        return decryptedKey;
+      } catch (error) {
+        logger.error('Erro ao descriptografar API key da organização', error);
+        // Fallback para global se descriptografia falhar
+        return process.env.OPENAI_API_KEY || null;
+      }
+    }
+
+    // Fallback para global se não houver chave configurada
+    return process.env.OPENAI_API_KEY || null;
   } catch (error) {
     logger.error('Erro ao buscar API key da organização', error);
     return process.env.OPENAI_API_KEY || null;

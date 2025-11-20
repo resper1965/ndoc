@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { getUserOrganization } from '@/lib/supabase/utils';
 import { logger } from '@/lib/logger';
 import { z } from 'zod';
+import { encryptApiKey, validateApiKeyFormat } from '@/lib/encryption/api-keys';
 
 const providerSchema = z.object({
   provider: z.enum(['openai', 'anthropic']),
@@ -35,7 +36,7 @@ export async function GET() {
 
     const { data: providers, error } = await supabase
       .from('ai_provider_config')
-      .select('id, provider, model, organization_id, api_key')
+      .select('id, provider, model, organization_id, api_key_encrypted')
       .eq('organization_id', organizationId)
       .order('provider');
 
@@ -115,10 +116,36 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const { provider, api_key, model } = validation.data;
+
+    // Validar formato da API key
+    if (api_key && !validateApiKeyFormat(api_key, provider)) {
+      return NextResponse.json(
+        { error: 'Formato de API key inválido para o provedor selecionado' },
+        { status: 400 }
+      );
+    }
+
+    // Criptografar API key antes de salvar
+    let encryptedKey: string | undefined;
+    if (api_key) {
+      try {
+        encryptedKey = encryptApiKey(api_key);
+      } catch (error) {
+        logger.error('Erro ao criptografar API key', error);
+        return NextResponse.json(
+          { error: 'Erro ao processar API key' },
+          { status: 500 }
+        );
+      }
+    }
+
     const { data, error } = await supabase
       .from('ai_provider_config')
       .insert({
-        ...validation.data,
+        provider,
+        model,
+        api_key_encrypted: encryptedKey,
         organization_id: organizationId,
       })
       .select('id, provider, model, organization_id')

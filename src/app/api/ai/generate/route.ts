@@ -102,7 +102,15 @@ export async function POST(request: NextRequest) {
       .maybeSingle();
 
     if (provider?.api_key_encrypted) {
-      apiKey = provider.api_key_encrypted;
+      // Descriptografar API key antes de usar
+      try {
+        const { decryptApiKey } = await import('@/lib/encryption/api-keys');
+        apiKey = decryptApiKey(provider.api_key_encrypted);
+      } catch (error) {
+        logger.error('Erro ao descriptografar API key', error);
+        // Fallback para variável de ambiente se descriptografia falhar
+        apiKey = process.env.OPENAI_API_KEY || null;
+      }
       if (provider.model) model = provider.model;
     } else {
       // Fallback para variável de ambiente
