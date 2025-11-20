@@ -3,7 +3,7 @@
  * Usa pgvector para armazenamento eficiente
  */
 
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/server';
 import { logger } from '@/lib/logger';
 import type { EmbeddingResult } from './generate-embeddings';
 
@@ -26,7 +26,8 @@ export async function storeEmbeddings(
     return;
   }
 
-  const supabase = await createClient();
+  // Usar service role para bypass RLS durante processamento
+  const supabase = createAdminClient();
 
   // Buscar chunks do documento para mapear chunkId -> chunk database ID
   const { data: chunks, error: chunksError } = await supabase
@@ -76,10 +77,8 @@ export async function storeEmbeddings(
   }
 
   // Inserir embeddings em batch
-  // Usar service_role para bypass RLS
-  const serviceSupabase = await createServiceRoleClient();
-
-  const { error: insertError } = await serviceSupabase
+  // Usar service_role para bypass RLS (já estamos usando createAdminClient)
+  const { error: insertError } = await supabase
     .from('document_embeddings')
     .upsert(embeddingsToInsert, {
       onConflict: 'chunk_id',
@@ -103,7 +102,8 @@ export async function storeEmbeddings(
 export async function removeDocumentEmbeddings(
   documentId: string
 ): Promise<void> {
-  const supabase = await createClient();
+  // Usar service role para bypass RLS durante processamento
+  const supabase = createAdminClient();
 
   // Buscar chunks do documento
   const { data: chunks, error: chunksError } = await supabase
@@ -122,10 +122,8 @@ export async function removeDocumentEmbeddings(
 
   const chunkIds = chunks.map((chunk) => chunk.id);
 
-  // Usar service_role para bypass RLS
-  const serviceSupabase = await createServiceRoleClient();
-
-  const { error: deleteError } = await serviceSupabase
+  // Usar service_role para bypass RLS (já estamos usando createAdminClient)
+  const { error: deleteError } = await supabase
     .from('document_embeddings')
     .delete()
     .in('chunk_id', chunkIds);
@@ -138,27 +136,6 @@ export async function removeDocumentEmbeddings(
   logger.info('Embeddings removidos com sucesso', {
     documentId,
     count: chunkIds.length,
-  });
-}
-
-/**
- * Cria cliente Supabase com service_role para operações administrativas
- */
-async function createServiceRoleClient() {
-  const { createClient: createSupabaseClient } = await import('@supabase/supabase-js');
-  
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-  if (!supabaseUrl || !supabaseServiceKey) {
-    throw new Error('Variáveis de ambiente do Supabase não configuradas');
-  }
-
-  return createSupabaseClient(supabaseUrl, supabaseServiceKey, {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
-    },
   });
 }
 

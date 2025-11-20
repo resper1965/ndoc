@@ -152,6 +152,9 @@ importers:
       tailwindcss-animated:
         specifier: ^2.0.0
         version: 2.0.0(tailwindcss@4.1.4)
+      tiktoken:
+        specifier: ^1.0.22
+        version: 1.0.22
       turndown:
         specifier: ^7.2.2
         version: 7.2.2
@@ -5953,6 +5956,9 @@ packages:
 
   through2@3.0.2:
     resolution: {integrity: sha512-enaDQ4MUyP2W6ZyT6EsMzqBPZaM/avg8iuo+l2d3QCs0J+6RaqkHV/2/lOwDTueBHeJ/2LG9lrLW3d5rWPucuQ==}
+
+  tiktoken@1.0.22:
+    resolution: {integrity: sha512-PKvy1rVF1RibfF3JlXBSP0Jrcw2uq3yXdgcEXtKTYn3QJ/cBRBHDnrJ5jHky+MENZ6DIPwNUGWpkVx+7joCpNA==}
 
   tinybench@2.9.0:
     resolution: {integrity: sha512-0+DUvqWMValLmha6lr4kD8iAMK1HzV0/aKnCtWb9v9641TnP/MFb7Pc2bxoxQjTXAErryXVgUOfv2YqNllqGeg==}
@@ -13515,6 +13521,8 @@ snapshots:
     dependencies:
       inherits: 2.0.4
       readable-stream: 3.6.2
+
+  tiktoken@1.0.22: {}
 
   tinybench@2.9.0: {}
 

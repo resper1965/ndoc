@@ -8,6 +8,7 @@ import { addDocumentProcessingJob } from '@/lib/queue/document-queue';
 import { initializeDocumentWorker } from '@/lib/queue/job-processor';
 import { validateFileType } from '@/lib/validation/file-type-validator';
 import { validateConvertedContent } from '@/lib/validation/content-validator';
+import { checkDuplicateDocument, calculateFileHash, calculateContentHash } from '@/lib/validation/duplicate-validator';
 
 export const runtime = 'nodejs'; // Necessário para processamento de arquivos
 export const maxDuration = 60; // 60 segundos para conversão
@@ -200,6 +201,36 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    // Calcular hashes para verificação de duplicatas
+    const fileBuffer = Buffer.from(await file.arrayBuffer());
+    const fileHash = calculateFileHash(fileBuffer);
+    const contentHash = calculateContentHash(conversionResult.content);
+
+    // Verificar duplicatas antes de criar documento
+    const duplicateCheck = await checkDuplicateDocument({
+      organizationId,
+      filename: file.name,
+      fileHash,
+      contentHash,
+    });
+
+    if (duplicateCheck.isDuplicate) {
+      logger.warn('Tentativa de upload de documento duplicado', {
+        filename: file.name,
+        existingDocumentId: duplicateCheck.existingDocumentId,
+        matchType: duplicateCheck.matchType,
+      });
+      return NextResponse.json(
+        {
+          error: duplicateCheck.message || 'Documento duplicado',
+          duplicate: true,
+          existingDocumentId: duplicateCheck.existingDocumentId,
+          matchType: duplicateCheck.matchType,
+        },
+        { status: 409 } // 409 Conflict
+      );
+    }
+
     // Aplicar template se especificado
     let finalContent = conversionResult.content;
     if (templateId) {
@@ -242,6 +273,7 @@ export async function POST(request: NextRequest) {
         organization_id: organizationId,
         path: documentPath,
         title,
+        filename: file.name, // Armazenar nome do arquivo original
         description: conversionResult.metadata.description || '',
         content: finalContent,
         frontmatter: conversionResult.metadata,
@@ -249,6 +281,8 @@ export async function POST(request: NextRequest) {
         template_id: templateId || null,
         status: 'draft',
         created_by: user.id,
+        file_hash: fileHash, // Armazenar hash do arquivo
+        content_hash: contentHash, // Armazenar hash do conteúdo convertido
       })
       .select()
       .single();

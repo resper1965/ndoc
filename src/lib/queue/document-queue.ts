@@ -126,8 +126,90 @@ export async function retryJob(jobId: string): Promise<void> {
     throw new Error(`Job ${jobId} não encontrado`);
   }
 
+  const state = await job.getState();
+  if (state !== 'failed') {
+    throw new Error(`Job ${jobId} não está em estado falhado (estado atual: ${state})`);
+  }
+
   await job.retry();
   logger.info('Job reprocessado', { jobId });
+}
+
+/**
+ * Lista jobs falhados
+ */
+export async function getFailedJobs(limit: number = 100) {
+  const queue = getDocumentQueue();
+  const failedJobs = await queue.getFailed(0, limit - 1);
+
+  return failedJobs.map((job) => ({
+    id: job.id,
+    documentId: job.data.documentId,
+    organizationId: job.data.organizationId,
+    failedReason: job.failedReason,
+    attemptsMade: job.attemptsMade,
+    timestamp: job.timestamp,
+    processedOn: job.processedOn,
+    finishedOn: job.finishedOn,
+  }));
+}
+
+/**
+ * Retenta jobs falhados automaticamente (com limite de tentativas)
+ * Útil para retentar jobs que falharam por erros transitórios
+ */
+export async function retryFailedJobs(
+  options: {
+    maxRetries?: number; // Máximo de tentativas totais (padrão: 5)
+    maxJobs?: number; // Máximo de jobs para retentar (padrão: 10)
+    filter?: (job: { attemptsMade: number; failedReason?: string }) => boolean; // Filtro customizado
+  } = {}
+): Promise<{ retried: number; skipped: number; errors: number }> {
+  const { maxRetries = 5, maxJobs = 10, filter } = options;
+  const queue = getDocumentQueue();
+  const failedJobs = await queue.getFailed(0, maxJobs - 1);
+
+  let retried = 0;
+  let skipped = 0;
+  let errors = 0;
+
+  for (const job of failedJobs) {
+    try {
+      // Verificar se já excedeu o limite de tentativas
+      if (job.attemptsMade >= maxRetries) {
+        skipped++;
+        logger.warn('Job excedeu limite de tentativas, pulando', {
+          jobId: job.id,
+          attemptsMade: job.attemptsMade,
+          maxRetries,
+        });
+        continue;
+      }
+
+      // Aplicar filtro customizado se fornecido
+      if (filter && !filter({ attemptsMade: job.attemptsMade, failedReason: job.failedReason })) {
+        skipped++;
+        continue;
+      }
+
+      // Retentar job
+      await job.retry();
+      retried++;
+      logger.info('Job retentado automaticamente', {
+        jobId: job.id,
+        documentId: job.data.documentId,
+        attemptsMade: job.attemptsMade,
+      });
+    } catch (error) {
+      errors++;
+      logger.error('Erro ao retentar job', error, {
+        jobId: job.id,
+        documentId: job.data.documentId,
+      });
+    }
+  }
+
+  return { retried, skipped, errors };
 }
 
 /**
