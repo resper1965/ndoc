@@ -9,6 +9,7 @@ import {
   isSupportedDocumentType,
   type DocumentType,
 } from './document-types';
+import { getCachedConversionByFile, setCachedConversionByFile } from '../cache/conversion-cache';
 import { logger } from '@/lib/logger';
 
 export interface ConversionResult {
@@ -46,7 +47,28 @@ export async function convertDocument(
   const arrayBuffer = await file.arrayBuffer();
   const buffer = Buffer.from(arrayBuffer);
 
+  // Tentar buscar do cache primeiro
+  try {
+    const cached = await getCachedConversionByFile(buffer);
+    if (cached) {
+      logger.info('Conversão encontrada no cache', {
+        filename: file.name,
+        originalType: cached.originalType,
+      });
+      return {
+        content: cached.content,
+        metadata: cached.metadata,
+        originalType: cached.originalType as DocumentType,
+      };
+    }
+  } catch (error) {
+    logger.warn('Erro ao buscar conversão do cache, continuando com conversão', {
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
+
   // Converter baseado no tipo
+  let result: ConversionResult;
   switch (documentType) {
     case 'pdf':
       return await convertPDFToMarkdown(buffer, options);
@@ -74,10 +96,32 @@ export async function convertDocument(
     case 'xlsx':
       return await convertXLSXToMarkdown(buffer, options);
     case 'pptx':
-      return await convertPPTXToMarkdown(buffer, options);
+      result = await convertPPTXToMarkdown(buffer, options);
+      break;
     default:
       throw new Error(`Conversor não implementado para: ${documentType}`);
   }
+
+  // Armazenar no cache após conversão bem-sucedida
+  try {
+    await setCachedConversionByFile(
+      buffer,
+      result.content,
+      result.metadata,
+      result.originalType
+    );
+    logger.debug('Conversão armazenada no cache', {
+      filename: file.name,
+      originalType: result.originalType,
+    });
+  } catch (error) {
+    logger.warn('Erro ao armazenar conversão no cache (não crítico)', {
+      error: error instanceof Error ? error.message : String(error),
+    });
+    // Não falhar se cache não funcionar
+  }
+
+  return result;
 }
 
 // Conversores específicos (serão implementados)

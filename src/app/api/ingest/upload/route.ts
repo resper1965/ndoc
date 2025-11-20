@@ -9,6 +9,7 @@ import { initializeDocumentWorker } from '@/lib/queue/job-processor';
 import { validateFileType } from '@/lib/validation/file-type-validator';
 import { validateConvertedContent } from '@/lib/validation/content-validator';
 import { checkDuplicateDocument, calculateFileHash, calculateContentHash } from '@/lib/validation/duplicate-validator';
+import { sanitizeContent } from '@/lib/security/sanitize-content';
 
 export const runtime = 'nodejs'; // Necessário para processamento de arquivos
 export const maxDuration = 60; // 60 segundos para conversão
@@ -241,7 +242,8 @@ export async function POST(request: NextRequest) {
           {
             document_type: documentType || 'other',
             ...conversionResult.metadata,
-          }
+          },
+          organizationId || undefined
         );
       } catch (templateError) {
         logger.warn('Erro ao aplicar template, usando conteúdo original', {
@@ -250,6 +252,12 @@ export async function POST(request: NextRequest) {
         // Continuar com conteúdo original se template falhar
       }
     }
+
+    // Sanitizar conteúdo antes de armazenar (prevenir XSS)
+    finalContent = sanitizeContent(finalContent, {
+      allowHTML: true, // Permitir HTML válido no Markdown
+      strict: false, // Não remover todo HTML, apenas elementos perigosos
+    });
 
     // Gerar path se não fornecido
     const documentPath =
