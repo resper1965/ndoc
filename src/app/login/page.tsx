@@ -23,7 +23,7 @@ export default function LoginPage() {
 
   // Verificar parâmetro redirect da URL
   const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
-  const redirectTo = searchParams?.get('redirect') || '/docs';
+  const redirectTo = searchParams?.get('redirect') || '/app';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,10 +63,6 @@ export default function LoginPage() {
                 className="h-12 w-auto"
                 onError={(e) => {
                   e.currentTarget.style.display = 'none';
-                  const fallback = document.createElement('div');
-                  fallback.className = 'w-12 h-12 rounded-full bg-primary-500 flex items-center justify-center';
-                  fallback.innerHTML = `<span class="text-xl font-bold text-white">${getDisplayName().charAt(0).toUpperCase()}</span>`;
-                  e.currentTarget.parentElement?.appendChild(fallback);
                 }}
               />
             ) : (

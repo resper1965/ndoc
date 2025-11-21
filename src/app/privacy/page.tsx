@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { getDisplayName } from '../../../config/branding';
+import { BrandingText } from '@/components/branding-text';
 
 export default function PrivacyPage() {
   return (
@@ -17,7 +17,7 @@ export default function PrivacyPage() {
           <section className="mb-8">
             <h2 className="text-2xl font-semibold mb-4">1. Introdução</h2>
             <p>
-              Esta Política de Privacidade descreve como {getDisplayName()} coleta, usa, armazena e protege suas
+              Esta Política de Privacidade descreve como <BrandingText /> coleta, usa, armazena e protege suas
               informações pessoais. Levamos sua privacidade a sério e estamos comprometidos em proteger seus dados.
             </p>
           </section>
@@ -191,10 +191,30 @@ export default function PrivacyPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4">12. Contato</h2>
-            <p>
+            <h2 className="text-2xl font-semibold mb-4">12. Contato e DPO (Delegado de Proteção de Dados)</h2>
+            <p className="mb-4">
               Para questões sobre privacidade, proteção de dados ou exercer seus direitos, entre em contato através
               do suporte da plataforma ou email de privacidade.
+            </p>
+            
+            <h3 className="text-xl font-semibold mb-2 mt-4">12.1 Delegado de Proteção de Dados (DPO)</h3>
+            <p className="mb-2">
+              Conforme a Lei Geral de Proteção de Dados (LGPD), nossa organização possui um Delegado de Proteção de Dados (DPO) responsável por:
+            </p>
+            <ul className="list-disc pl-6 mt-2 mb-4">
+              <li>Orientar funcionários sobre práticas de proteção de dados</li>
+              <li>Receber comunicações de titulares de dados e da Autoridade Nacional de Proteção de Dados (ANPD)</li>
+              <li>Executar outras atribuições determinadas pelo controlador ou estabelecidas em normas complementares</li>
+            </ul>
+            <p className="mb-2">
+              <strong>Contato do DPO:</strong>
+            </p>
+            <ul className="list-none pl-0 mt-2 mb-4">
+              <li>Email: dpo@ndocs.com</li>
+              <li>Ou através do suporte da plataforma mencionando "DPO" no assunto</li>
+            </ul>
+            <p>
+              O DPO está disponível para esclarecer dúvidas sobre o tratamento de dados pessoais e para receber comunicações relacionadas à proteção de dados.
             </p>
           </section>
         </div>

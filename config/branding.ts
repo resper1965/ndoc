@@ -1,7 +1,7 @@
 /**
  * Configuração de Branding
  * 
- * ndocs - Aplicação de documentação
+ * n.docs - Aplicação de documentação
  * Produtor: ness.
  * 
  * O cliente pode configurar seus dados aqui para personalizar o cabeçalho e branding.
@@ -43,7 +43,7 @@ export interface ClientBranding {
  */
 export const clientBranding: ClientBranding = {
   // Configure aqui os dados do cliente
-  name: "ndocs", // Nome padrão, pode ser alterado pelo cliente
+  name: "n.docs", // Nome padrão, pode ser alterado pelo cliente
   // logo: "/logos/client-logo.svg", // Descomente e configure o logo
   // website: "https://exemplo.com",
   // email: "contato@exemplo.com",
@@ -69,18 +69,18 @@ export const producerBranding = {
 } as const;
 
 /**
- * Branding da Aplicação (ndocs)
+ * Branding da Aplicação (n.docs)
  */
 export const appBranding = {
-  name: "ndocs",
-  fullName: "ndocs",
+  name: "n.docs",
+  fullName: "n.docs",
   description: "Plataforma de documentação desenvolvida pela ness.",
   version: "0.1.0",
 } as const;
 
 /**
  * Helper para obter o nome a ser exibido
- * Se o cliente configurou um nome, usa o do cliente, senão usa "ndocs"
+ * Se o cliente configurou um nome, usa o do cliente, senão usa "n.docs"
  */
 export function getDisplayName(): string {
   return clientBranding.name || appBranding.name;

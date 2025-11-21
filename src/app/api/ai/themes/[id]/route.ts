@@ -50,7 +50,7 @@ export async function PUT(
       .eq('id', id)
       .eq('organization_id', organizationId)
       .select()
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
 

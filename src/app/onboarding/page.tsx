@@ -8,6 +8,7 @@ import { Label } from '@/components/label';
 import { useAuth } from '@/hooks/use-auth';
 import { createClient } from '@/lib/supabase/client';
 import { showSuccess, showError } from '@/lib/toast';
+import { logger } from '@/lib/logger';
 import { Check, ChevronRight, ChevronLeft, Sparkles, Users } from 'lucide-react';
 import { getDisplayName } from '../../../config/branding';
 import { BrandingText } from '@/components/branding-text';
@@ -83,7 +84,7 @@ export default function OnboardingPage() {
   const fetchOrganization = async () => {
     try {
       const supabase = createClient();
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('organization_members')
         .select(`
           organization_id,
@@ -95,18 +96,21 @@ export default function OnboardingPage() {
         `)
         .eq('user_id', user?.id)
         .limit(1)
-        .single();
+        .maybeSingle();
 
-      if (data && data.organizations) {
+      // Se não houver erro e houver dados
+      if (!error && data && data.organizations) {
         const org = Array.isArray(data.organizations) ? data.organizations[0] : data.organizations;
-        if (org) {
+        if (org && org.id) {
           setOrganizationData(org);
-          setOrgName(org.name);
-          setOrgSlug(org.slug);
+          setOrgName(org.name || '');
+          setOrgSlug(org.slug || '');
         }
       }
+      // Se não houver organização, não fazer nada (vai criar no handleUpdateOrganization)
     } catch (error) {
       console.error('Error fetching organization:', error);
+      // Não mostrar erro, apenas logar - é normal não ter organização ainda
     }
   };
 
@@ -142,26 +146,114 @@ export default function OnboardingPage() {
   };
 
   const handleUpdateOrganization = async () => {
+    if (!orgName || !orgSlug) {
+      showError('Preencha o nome e o slug da organização');
+      return;
+    }
+
     setLoading(true);
     try {
       const supabase = createClient();
-      const { error } = await supabase
-        .from('organizations')
-        .update({
-          name: orgName,
-          slug: orgSlug,
-        })
-        .eq('id', organizationData.id);
+      
+      // Se não há organização, criar uma nova
+      if (!organizationData || !organizationData.id) {
+        // Primeiro, tentar criar via API
+        let newOrgId: string | null = null;
+        
+        try {
+          const response = await fetch('/api/organization/create', {
+            method: 'POST',
+          });
 
-      if (error) {
-        showError('Erro ao atualizar organização: ' + error.message);
+          if (response.ok) {
+            const result = await response.json();
+            newOrgId = result.organization_id || result.id || null;
+          }
+        } catch (apiError) {
+          logger.warn('Erro ao criar organização via API, tentando criar diretamente', {
+            error: apiError instanceof Error ? apiError.message : String(apiError),
+          });
+        }
+
+        // Se a API não retornou ID, criar diretamente
+        if (!newOrgId) {
+          const { data: newOrg, error: createError } = await supabase
+            .from('organizations')
+            .insert({
+              name: orgName,
+              slug: orgSlug,
+            })
+            .select()
+            .single();
+
+          if (createError || !newOrg) {
+            throw new Error(createError?.message || 'Erro ao criar organização');
+          }
+
+          newOrgId = newOrg.id;
+
+          // Adicionar usuário como owner
+          const { error: memberError } = await supabase
+            .from('organization_members')
+            .insert({
+              organization_id: newOrgId,
+              user_id: user?.id,
+              role: 'owner',
+            });
+
+          if (memberError) {
+            logger.error('Erro ao adicionar membro', memberError as Error);
+            // Não falhar se já existir
+          }
+        } else {
+          // Se a API criou, atualizar nome e slug
+          const { error: updateError } = await supabase
+            .from('organizations')
+            .update({
+              name: orgName,
+              slug: orgSlug,
+            })
+            .eq('id', newOrgId);
+
+          if (updateError) {
+            logger.warn('Erro ao atualizar organização criada via API', {
+              error: updateError.message || String(updateError),
+            });
+            // Não falhar, a organização já existe
+          }
+        }
+
+        if (!newOrgId) {
+          throw new Error('Não foi possível criar a organização');
+        }
+
+        showSuccess('Organização criada com sucesso!');
       } else {
+        // Atualizar organização existente
+        if (!organizationData.id) {
+          throw new Error('ID da organização inválido');
+        }
+
+        const { error } = await supabase
+          .from('organizations')
+          .update({
+            name: orgName,
+            slug: orgSlug,
+          })
+          .eq('id', organizationData.id);
+
+        if (error) {
+          throw new Error(error.message);
+        }
+
         showSuccess('Organização atualizada!');
-        saveProgress();
-        handleFinish();
       }
-    } catch {
-      showError('Erro ao atualizar organização');
+
+      saveProgress();
+      handleFinish();
+    } catch (error: any) {
+      logger.error('Erro ao salvar organização', error instanceof Error ? error : new Error(String(error)));
+      showError('Erro ao salvar organização: ' + (error.message || 'Erro desconhecido'));
     } finally {
       setLoading(false);
     }
@@ -184,8 +276,8 @@ export default function OnboardingPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900">
-      <div className="container mx-auto px-4 py-12">
+    <div className="min-h-screen bg-white dark:bg-slate-950">
+      <div className="container mx-auto px-4 py-12 max-w-4xl">
         {/* Progress Steps */}
         <div className="max-w-3xl mx-auto mb-12">
           <div className="flex justify-between items-center">
@@ -231,7 +323,7 @@ export default function OnboardingPage() {
 
         {/* Content */}
         <div className="max-w-2xl mx-auto">
-          <div className="bg-white dark:bg-slate-900 rounded-lg shadow-xl p-8">
+          <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 p-8">
             {/* Step 1: Welcome */}
             {currentStep === 1 && (
               <div className="text-center">

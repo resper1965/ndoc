@@ -212,7 +212,16 @@ async function generateLLMResponse(
       .single();
 
     if (data?.api_key_encrypted) {
-      apiKey = data.api_key_encrypted;
+      // Descriptografar API key antes de usar
+      try {
+        const { decryptApiKey } = await import('@/lib/encryption/api-keys');
+        apiKey = decryptApiKey(data.api_key_encrypted);
+      } catch (error) {
+        const { logger } = await import('@/lib/logger');
+        logger.error('Erro ao descriptografar API key', error);
+        // Fallback para variável de ambiente se descriptografia falhar
+        apiKey = process.env.OPENAI_API_KEY || null;
+      }
     }
   }
 

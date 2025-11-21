@@ -2,17 +2,33 @@
 
 /**
  * MDX Editor with Preview
- * 
+ *
  * Componente que combina editor e preview em split-view
  * com toggle para alternar entre modos
  */
 
 import { useState } from 'react';
-import { MDXEditor } from './mdx-editor';
+import dynamic from 'next/dynamic';
 import { MDXPreview } from './mdx-preview';
 import { Button } from './button';
 import { Eye, Code, Split } from 'lucide-react';
 import { AIActions } from './ai-actions';
+
+// Lazy load MDXEditor para reduzir bundle size inicial
+// CodeMirror é pesado (~300 kB) e só é necessário na página de edição
+const MDXEditor = dynamic(
+  () => import('./mdx-editor').then((mod) => ({ default: mod.MDXEditor })),
+  {
+    loading: () => (
+      <div className="flex items-center justify-center h-full">
+        <div className="text-slate-500 dark:text-slate-400">
+          Carregando editor...
+        </div>
+      </div>
+    ),
+    ssr: false, // CodeMirror requer browser APIs
+  }
+);
 
 type ViewMode = 'editor' | 'preview' | 'split';
 
@@ -40,7 +56,9 @@ export function MDXEditorWithPreview({
   const [viewMode, setViewMode] = useState<ViewMode>('split');
 
   return (
-    <div className={`flex flex-col border rounded-lg overflow-hidden ${className}`}>
+    <div
+      className={`flex flex-col border rounded-lg overflow-hidden ${className}`}
+    >
       {/* Toolbar */}
       <div className="flex items-center justify-between p-2 bg-slate-50 dark:bg-slate-800 border-b">
         <div className="flex items-center gap-2">
@@ -61,7 +79,9 @@ export function MDXEditorWithPreview({
             variant="none"
             size="sm"
             onClick={() => setViewMode('editor')}
-            className={viewMode === 'editor' ? 'bg-slate-200 dark:bg-slate-700' : ''}
+            className={
+              viewMode === 'editor' ? 'bg-slate-200 dark:bg-slate-700' : ''
+            }
             title="Apenas Editor"
           >
             <Code className="h-4 w-4" />
@@ -70,7 +90,9 @@ export function MDXEditorWithPreview({
             variant="none"
             size="sm"
             onClick={() => setViewMode('split')}
-            className={viewMode === 'split' ? 'bg-slate-200 dark:bg-slate-700' : ''}
+            className={
+              viewMode === 'split' ? 'bg-slate-200 dark:bg-slate-700' : ''
+            }
             title="Editor e Preview"
           >
             <Split className="h-4 w-4" />
@@ -79,7 +101,9 @@ export function MDXEditorWithPreview({
             variant="none"
             size="sm"
             onClick={() => setViewMode('preview')}
-            className={viewMode === 'preview' ? 'bg-slate-200 dark:bg-slate-700' : ''}
+            className={
+              viewMode === 'preview' ? 'bg-slate-200 dark:bg-slate-700' : ''
+            }
             title="Apenas Preview"
           >
             <Eye className="h-4 w-4" />
@@ -127,4 +151,3 @@ export function MDXEditorWithPreview({
     </div>
   );
 }
-

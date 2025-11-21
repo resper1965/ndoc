@@ -6,7 +6,7 @@
 import { chunkDocument, type DocumentChunk } from './chunk-document';
 import { generateEmbeddings } from './generate-embeddings';
 import { storeEmbeddings } from './store-embeddings';
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/server';
 import { logger } from '@/lib/logger';
 
 export interface ProcessDocumentOptions {
@@ -42,8 +42,9 @@ export async function processDocument(
 
   try {
     // 1. Buscar documento
+    // Usar service role para bypass RLS durante processamento
     await updateProgress?.(10, 'Buscando documento');
-    const supabase = await createClient();
+    const supabase = createAdminClient();
     
     const { data: document, error: docError } = await supabase
       .from('documents')
@@ -59,7 +60,7 @@ export async function processDocument(
 
     // 2. Chunking
     await updateProgress?.(20, 'Dividindo documento em chunks');
-    const chunks = chunkDocument(document.content, {
+    const chunks = await chunkDocument(document.content, {
       strategy: chunkingStrategy,
       chunkSize,
       chunkOverlap,
@@ -135,12 +136,13 @@ export async function processDocument(
 
 /**
  * Armazena chunks no banco de dados
+ * Usa service role para bypass RLS
  */
 async function storeChunks(
   documentId: string,
   chunks: DocumentChunk[]
 ): Promise<void> {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   // Remover chunks antigos se existirem
   const { error: deleteError } = await supabase
@@ -161,23 +163,7 @@ async function storeChunks(
     metadata: chunk.metadata || {},
   }));
 
-  // Usar service_role para bypass RLS
-  const { createClient: createSupabaseClient } = await import('@supabase/supabase-js');
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-  if (!supabaseUrl || !supabaseServiceKey) {
-    throw new Error('Variáveis de ambiente do Supabase não configuradas');
-  }
-
-  const serviceSupabase = createSupabaseClient(supabaseUrl, supabaseServiceKey, {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
-    },
-  });
-
-  const { error: insertError } = await serviceSupabase
+  const { error: insertError } = await supabase
     .from('document_chunks')
     .insert(chunksToInsert);
 
@@ -194,9 +180,10 @@ async function storeChunks(
 
 /**
  * Marca documento como vetorizado
+ * Usa service role para bypass RLS
  */
 async function markDocumentAsVectorized(documentId: string): Promise<void> {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   const { error } = await supabase
     .from('documents')
@@ -214,6 +201,7 @@ async function markDocumentAsVectorized(documentId: string): Promise<void> {
 
 /**
  * Atualiza status do job de processamento
+ * Usa service role para bypass RLS
  */
 async function updateProcessingJob(
   documentId: string,
@@ -222,49 +210,41 @@ async function updateProcessingJob(
   stage?: string,
   progress?: number
 ): Promise<void> {
-  const { createClient: createSupabaseClient } = await import('@supabase/supabase-js');
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  try {
+    const supabase = createAdminClient();
 
-  if (!supabaseUrl || !supabaseServiceKey) {
-    return; // Não crítico, apenas log
-  }
+    const updateData: Record<string, any> = {
+      status,
+      updated_at: new Date().toISOString(),
+    };
 
-  const serviceSupabase = createSupabaseClient(supabaseUrl, supabaseServiceKey, {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
-    },
-  });
+    if (errorMessage) {
+      updateData.error_message = errorMessage;
+    }
 
-  const updateData: Record<string, any> = {
-    status,
-    updated_at: new Date().toISOString(),
-  };
+    if (stage) {
+      updateData.stage = stage;
+    }
 
-  if (errorMessage) {
-    updateData.error_message = errorMessage;
-  }
+    if (progress !== undefined) {
+      updateData.progress_percentage = progress;
+    }
 
-  if (stage) {
-    updateData.stage = stage;
-  }
+    if (status === 'completed') {
+      updateData.completed_at = new Date().toISOString();
+    }
 
-  if (progress !== undefined) {
-    updateData.progress_percentage = progress;
-  }
+    const { error } = await supabase
+      .from('document_processing_jobs')
+      .update(updateData)
+      .eq('document_id', documentId);
 
-  if (status === 'completed') {
-    updateData.completed_at = new Date().toISOString();
-  }
-
-  const { error } = await serviceSupabase
-    .from('document_processing_jobs')
-    .update(updateData)
-    .eq('document_id', documentId);
-
-  if (error) {
-    logger.warn('Erro ao atualizar job de processamento (não crítico)', { error });
+    if (error) {
+      logger.warn('Erro ao atualizar job de processamento (não crítico)', { error });
+    }
+  } catch (error) {
+    // Não crítico, apenas log
+    logger.warn('Erro ao criar cliente admin para atualizar job (não crítico)', { error });
   }
 }
 

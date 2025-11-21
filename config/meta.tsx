@@ -10,6 +10,7 @@ export const meta = {
   description: displayDescription,
   authors: [{ name: clientBranding.name || producerBranding.name }],
   keywords: [
+    'n.docs',
     'ndocs',
     'ness',
     'documentação',

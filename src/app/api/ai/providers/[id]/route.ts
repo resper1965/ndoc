@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { getUserOrganization } from '@/lib/supabase/utils';
 import { logger } from '@/lib/logger';
 import { z } from 'zod';
+import { encryptApiKey, validateApiKeyFormat } from '@/lib/encryption/api-keys';
 
 const providerSchema = z.object({
   provider: z.enum(['openai', 'anthropic']),
@@ -45,13 +46,34 @@ export async function PUT(
     }
 
     // Se API key não foi fornecida, não atualizar
-    const updateData: any = {
+    const updateData: {
+      provider: string;
+      model: string;
+      api_key_encrypted?: string;
+    } = {
       provider: validation.data.provider,
       model: validation.data.model,
     };
 
     if (validation.data.api_key) {
-      updateData.api_key = validation.data.api_key;
+      // Validar formato da API key
+      if (!validateApiKeyFormat(validation.data.api_key, validation.data.provider)) {
+        return NextResponse.json(
+          { error: 'Formato de API key inválido para o provedor selecionado' },
+          { status: 400 }
+        );
+      }
+
+      // Criptografar API key antes de salvar
+      try {
+        updateData.api_key_encrypted = encryptApiKey(validation.data.api_key);
+      } catch (error) {
+        logger.error('Erro ao criptografar API key', error);
+        return NextResponse.json(
+          { error: 'Erro ao processar API key' },
+          { status: 500 }
+        );
+      }
     }
 
     const { data, error } = await supabase
@@ -60,7 +82,7 @@ export async function PUT(
       .eq('id', id)
       .eq('organization_id', organizationId)
       .select('id, provider, model, organization_id')
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
 

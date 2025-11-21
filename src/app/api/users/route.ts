@@ -14,6 +14,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { createClient as createAdminClient } from '@supabase/supabase-js';
 import { isSuperadmin, getUserPermissions } from '@/lib/supabase/permissions';
 import { logger } from '@/lib/logger';
 import { checkRateLimit, getRateLimitIdentifier } from '@/lib/rate-limit';
@@ -130,7 +131,17 @@ export async function GET(request: NextRequest) {
     // Buscar informações dos usuários do auth em batch (uma única query)
     // Filtrar apenas os user_ids que precisamos
     const userIds = members.map((m) => m.user_id);
-    const { data: authUsers } = await supabase.auth.admin.listUsers();
+    const adminClient = createAdminClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false,
+        },
+      }
+    );
+    const { data: authUsers } = await adminClient.auth.admin.listUsers();
 
     // Criar mapa para lookup O(1) em vez de O(n*m)
     const userMap = new Map(
@@ -232,8 +243,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Apenas superadmin pode criar usuários' }, { status: 403 });
     }
 
-    // Criar usuário no Supabase Auth
-    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+    // Criar usuário no Supabase Auth usando Admin API
+    const adminClient = createAdminClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false,
+        },
+      }
+    );
+
+    const { data: authData, error: authError } = await adminClient.auth.admin.createUser({
       email,
       password,
       user_metadata: {
@@ -257,7 +279,7 @@ export async function POST(request: NextRequest) {
 
     if (memberError) {
       // Se falhar ao adicionar à organização, deletar o usuário criado
-      await supabase.auth.admin.deleteUser(authData.user.id);
+      await adminClient.auth.admin.deleteUser(authData.user.id);
       return NextResponse.json({ error: 'Erro ao adicionar usuário à organização', details: memberError.message }, { status: 500 });
     }
 
@@ -350,7 +372,17 @@ export async function PUT(request: NextRequest) {
 
     // Atualizar nome (apenas superadmin)
     if (name && isSuper) {
-      const { error: updateError } = await supabase.auth.admin.updateUserById(userId, {
+      const adminClient = createAdminClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!,
+        {
+          auth: {
+            autoRefreshToken: false,
+            persistSession: false,
+          },
+        }
+      );
+      const { error: updateError } = await adminClient.auth.admin.updateUserById(userId, {
         user_metadata: { name },
       });
 
@@ -420,7 +452,17 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Deletar usuário (CASCADE deleta organization_members automaticamente)
-    const { error: deleteError } = await supabase.auth.admin.deleteUser(userId);
+    const adminClient = createAdminClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false,
+        },
+      }
+    );
+    const { error: deleteError } = await adminClient.auth.admin.deleteUser(userId);
 
     if (deleteError) {
       return NextResponse.json({ error: 'Erro ao deletar usuário', details: deleteError.message }, { status: 500 });

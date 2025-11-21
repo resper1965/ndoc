@@ -7,6 +7,7 @@
 
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
+import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 
 export async function createClient() {
   const cookieStore = await cookies();
@@ -33,5 +34,31 @@ export async function createClient() {
       },
     }
   );
+}
+
+/**
+ * Cria cliente Supabase com service_role para operações administrativas
+ * Bypassa Row Level Security (RLS) - use com cuidado!
+ * 
+ * @returns Cliente Supabase com permissões administrativas
+ * @throws Error se variáveis de ambiente não estiverem configuradas
+ */
+export function createAdminClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl || !supabaseServiceKey) {
+    throw new Error(
+      'Variáveis de ambiente do Supabase não configuradas. ' +
+      'NEXT_PUBLIC_SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY são necessárias.'
+    );
+  }
+
+  return createSupabaseClient(supabaseUrl, supabaseServiceKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  });
 }
 
