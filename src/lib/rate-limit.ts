@@ -1,6 +1,6 @@
 /**
  * Rate Limiting
- * 
+ *
  * Sistema de rate limiting para APIs usando Upstash Redis
  * Fallback para memória local em desenvolvimento
  */
@@ -14,13 +14,39 @@ export const rateLimitConfig = {
   'api/ingest:GET': { limit: 100, window: '1 m' }, // 100 req/min
   'api/ingest:POST': { limit: 20, window: '1 m' }, // 20 req/min
   'api/ingest:DELETE': { limit: 10, window: '1 m' }, // 10 req/min
+  'api/ingest/upload:POST': { limit: 10, window: '1 m' }, // 10 uploads/min
   'api/users:GET': { limit: 30, window: '1 m' }, // 30 req/min
   'api/users:POST': { limit: 5, window: '1 m' }, // 5 req/min
   'api/users:PUT': { limit: 10, window: '1 m' }, // 10 req/min
   'api/users:DELETE': { limit: 5, window: '1 m' }, // 5 req/min
-  // Auth endpoints
+  // Auth & Config endpoints (security sensitive)
   'api/auth:login': { limit: 5, window: '15 m' }, // 5 tentativas a cada 15 min
   'api/auth:signup': { limit: 3, window: '1 h' }, // 3 tentativas por hora
+  'api/config/credentials:PUT': { limit: 3, window: '15 m' }, // 3 mudanças de senha a cada 15 min
+  'api/config/credentials:GET': { limit: 30, window: '1 m' }, // 30 req/min
+  // Organization endpoints
+  'api/organization/create:POST': { limit: 2, window: '1 h' }, // 2 orgs por hora
+  // AI endpoints (expensive operations)
+  'api/ai/generate:POST': { limit: 10, window: '1 h' }, // 10 gerações por hora
+  'api/ai/improve:POST': { limit: 20, window: '1 h' }, // 20 melhorias por hora
+  'api/ai/providers:GET': { limit: 50, window: '1 m' }, // 50 req/min
+  'api/ai/providers:POST': { limit: 5, window: '1 m' }, // 5 req/min
+  'api/ai/providers:PUT': { limit: 10, window: '1 m' }, // 10 req/min
+  'api/ai/providers:DELETE': { limit: 5, window: '1 m' }, // 5 req/min
+  'api/ai/themes:GET': { limit: 50, window: '1 m' }, // 50 req/min
+  'api/ai/themes:POST': { limit: 5, window: '1 m' }, // 5 req/min
+  'api/ai/themes:PUT': { limit: 10, window: '1 m' }, // 10 req/min
+  'api/ai/themes:DELETE': { limit: 5, window: '1 m' }, // 5 req/min
+  // Processing endpoints
+  'api/process/document:POST': { limit: 20, window: '1 m' }, // 20 processamentos/min
+  // Search & RAG endpoints
+  'api/search/semantic:POST': { limit: 30, window: '1 m' }, // 30 buscas/min
+  'api/rag/query:POST': { limit: 20, window: '1 m' }, // 20 queries/min
+  // Template endpoints
+  'api/templates:GET': { limit: 100, window: '1 m' }, // 100 req/min
+  'api/templates:POST': { limit: 10, window: '1 m' }, // 10 req/min
+  'api/templates:PUT': { limit: 10, window: '1 m' }, // 10 req/min
+  'api/templates:DELETE': { limit: 5, window: '1 m' }, // 5 req/min
 } as const;
 
 // Inicializar Redis (Upstash) - OBRIGATÓRIO em produção
@@ -52,13 +78,17 @@ try {
       analytics: true,
     });
   } else if (!isProduction) {
-    console.warn('⚠️  Rate limiting: Redis não configurado, usando fallback em memória (apenas desenvolvimento)');
+    console.warn(
+      '⚠️  Rate limiting: Redis não configurado, usando fallback em memória (apenas desenvolvimento)'
+    );
   }
 } catch (error) {
   if (isProduction) {
     throw new Error('FATAL: Falha ao conectar ao Redis em produção: ' + error);
   }
-  console.warn('Rate limiting: Erro ao conectar ao Redis, usando fallback em memória');
+  console.warn(
+    'Rate limiting: Erro ao conectar ao Redis, usando fallback em memória'
+  );
 }
 
 // Fallback em memória para desenvolvimento
@@ -85,7 +115,12 @@ async function checkRateLimitMemory(
   identifier: string,
   limit: number,
   window: string
-): Promise<{ success: boolean; limit: number; remaining: number; reset: number }> {
+): Promise<{
+  success: boolean;
+  limit: number;
+  remaining: number;
+  reset: number;
+}> {
   const now = Date.now();
   const windowMs = parseWindow(window);
   const key = identifier;
@@ -141,7 +176,12 @@ export async function checkRateLimit(
   endpoint: string,
   method: string,
   identifier: string
-): Promise<{ success: boolean; limit: number; remaining: number; reset: number }> {
+): Promise<{
+  success: boolean;
+  limit: number;
+  remaining: number;
+  reset: number;
+}> {
   const key = `${endpoint}:${method}`;
   const config = rateLimitConfig[key as keyof typeof rateLimitConfig];
 
@@ -172,7 +212,11 @@ export async function checkRateLimit(
   }
 
   // Fallback para memória
-  return checkRateLimitMemory(`${identifier}:${key}`, config.limit, config.window);
+  return checkRateLimitMemory(
+    `${identifier}:${key}`,
+    config.limit,
+    config.window
+  );
 }
 
 /**
@@ -182,9 +226,8 @@ export function getRateLimitIdentifier(request: Request): string {
   // Usar IP do cliente ou user ID se autenticado
   const forwarded = request.headers.get('x-forwarded-for');
   const ip = forwarded ? forwarded.split(',')[0] : 'unknown';
-  
+
   // Em produção, preferir user ID se disponível
   // Por enquanto, usar IP
   return ip || 'unknown';
 }
-
