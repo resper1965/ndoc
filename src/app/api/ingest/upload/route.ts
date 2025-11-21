@@ -4,6 +4,16 @@ import { convertDocument } from '@/lib/processing/convert-document';
 import { applyTemplate } from '@/lib/processing/apply-template';
 import { logger } from '@/lib/logger';
 import { getUserOrganization } from '@/lib/supabase/utils';
+import { addDocumentProcessingJob } from '@/lib/queue/document-queue';
+import { initializeDocumentWorker } from '@/lib/queue/job-processor';
+import { validateFileType } from '@/lib/validation/file-type-validator';
+import { validateConvertedContent } from '@/lib/validation/content-validator';
+import {
+  checkDuplicateDocument,
+  calculateFileHash,
+  calculateContentHash,
+} from '@/lib/validation/duplicate-validator';
+import { sanitizeContent } from '@/lib/security/sanitize-content';
 
 export const runtime = 'nodejs'; // Necessário para processamento de arquivos
 export const maxDuration = 60; // 60 segundos para conversão
@@ -21,20 +31,93 @@ export async function POST(request: NextRequest) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
+      logger.error('Erro de autenticação no upload', authError);
       return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
     }
 
-    // Obter organização do usuário
-    const organizationId = await getUserOrganization();
+    // Obter organização do usuário ou criar automaticamente
+    let organizationId: string | null = null;
+    try {
+      organizationId = await getUserOrganization();
+    } catch (orgError) {
+      logger.error('Erro ao buscar organização do usuário', orgError);
+      // Continuar para tentar criar organização
+    }
+
     if (!organizationId) {
-      return NextResponse.json(
-        { error: 'Usuário não pertence a uma organização' },
-        { status: 403 }
-      );
+      // Tentar criar organização automaticamente usando RPC
+      try {
+        const { data: rpcData, error: rpcError } = await supabase.rpc(
+          'handle_new_user',
+          {
+            user_id: user.id,
+            user_email: user.email || '',
+            user_metadata: user.user_metadata || {},
+          }
+        );
+
+        if (!rpcError && rpcData) {
+          organizationId = rpcData.organization_id || rpcData.id;
+        } else {
+          // Se RPC falhar, criar organização manualmente
+          const orgName = user.email?.split('@')[0] || 'Minha Organização';
+          const orgSlug = orgName.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+
+          const { data: newOrg, error: createError } = await supabase
+            .from('organizations')
+            .insert({
+              name: orgName,
+              slug: orgSlug,
+            })
+            .select()
+            .single();
+
+          if (!createError && newOrg) {
+            // Adicionar usuário como owner
+            const { error: memberError } = await supabase
+              .from('organization_members')
+              .insert({
+                organization_id: newOrg.id,
+                user_id: user.id,
+                role: 'owner',
+              });
+
+            if (!memberError) {
+              organizationId = newOrg.id;
+            }
+          }
+        }
+      } catch (error) {
+        logger.warn('Erro ao criar organização automaticamente', {
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+
+      // Se ainda não tiver organização, retornar erro
+      if (!organizationId) {
+        return NextResponse.json(
+          {
+            error:
+              'Usuário não pertence a uma organização. Por favor, complete o onboarding primeiro.',
+            redirectTo: '/onboarding',
+          },
+          { status: 403 }
+        );
+      }
     }
 
     // Obter arquivo do FormData
-    const formData = await request.formData();
+    let formData: FormData;
+    try {
+      formData = await request.formData();
+    } catch (formError) {
+      logger.error('Erro ao processar FormData', formError);
+      return NextResponse.json(
+        { error: 'Erro ao processar dados do formulário' },
+        { status: 400 }
+      );
+    }
+
     const file = formData.get('file') as File;
     const templateId = formData.get('templateId') as string | null;
     const documentType = formData.get('documentType') as
@@ -63,6 +146,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validar tipo real do arquivo (prevenir arquivos maliciosos com extensão falsa)
+    const fileValidation = await validateFileType(file, { strict: true });
+    if (!fileValidation.valid) {
+      logger.warn('Tentativa de upload de arquivo inválido', {
+        filename: file.name,
+        detectedMimeType: fileValidation.detectedMimeType,
+        expectedMimeType: fileValidation.expectedMimeType,
+        error: fileValidation.error,
+      });
+      return NextResponse.json(
+        { error: fileValidation.error || 'Tipo de arquivo inválido' },
+        { status: 400 }
+      );
+    }
+
     logger.info('Iniciando conversão de documento', {
       filename: file.name,
       size: file.size,
@@ -70,20 +168,115 @@ export async function POST(request: NextRequest) {
     });
 
     // Converter documento para Markdown
-    const conversionResult = await convertDocument(file, {
-      extractMetadata: true,
-      preserveFormatting: true,
-      templateId: templateId || undefined,
+    let conversionResult;
+    try {
+      conversionResult = await convertDocument(file, {
+        extractMetadata: true,
+        preserveFormatting: true,
+        templateId: templateId || undefined,
+      });
+    } catch (conversionError) {
+      logger.error('Erro ao converter documento', conversionError);
+      return NextResponse.json(
+        {
+          error: 'Erro ao converter documento',
+          details:
+            conversionError instanceof Error
+              ? conversionError.message
+              : 'Erro desconhecido',
+        },
+        { status: 500 }
+      );
+    }
+
+    // Validar conteúdo convertido
+    const contentValidation = validateConvertedContent(
+      conversionResult.content,
+      {
+        minLength: 10,
+        requireText: true,
+      }
+    );
+
+    if (!contentValidation.valid) {
+      logger.warn('Conteúdo convertido inválido', {
+        filename: file.name,
+        contentLength: conversionResult.content.length,
+        error: contentValidation.error,
+      });
+      return NextResponse.json(
+        { error: contentValidation.error || 'Conteúdo convertido inválido' },
+        { status: 400 }
+      );
+    }
+
+    // Logar avisos se houver
+    if (contentValidation.warnings && contentValidation.warnings.length > 0) {
+      logger.warn('Avisos na validação de conteúdo', {
+        filename: file.name,
+        warnings: contentValidation.warnings,
+      });
+    }
+
+    // Calcular hashes para verificação de duplicatas
+    const fileBuffer = Buffer.from(await file.arrayBuffer());
+    const fileHash = calculateFileHash(fileBuffer);
+    const contentHash = calculateContentHash(conversionResult.content);
+
+    // Verificar duplicatas antes de criar documento
+    const duplicateCheck = await checkDuplicateDocument({
+      organizationId,
+      filename: file.name,
+      fileHash,
+      contentHash,
     });
+
+    if (duplicateCheck.isDuplicate) {
+      logger.warn('Tentativa de upload de documento duplicado', {
+        filename: file.name,
+        existingDocumentId: duplicateCheck.existingDocumentId,
+        matchType: duplicateCheck.matchType,
+      });
+      return NextResponse.json(
+        {
+          error: duplicateCheck.message || 'Documento duplicado',
+          duplicate: true,
+          existingDocumentId: duplicateCheck.existingDocumentId,
+          matchType: duplicateCheck.matchType,
+        },
+        { status: 409 } // 409 Conflict
+      );
+    }
 
     // Aplicar template se especificado
     let finalContent = conversionResult.content;
     if (templateId) {
-      finalContent = await applyTemplate(conversionResult.content, templateId, {
-        document_type: documentType || 'other',
-        ...conversionResult.metadata,
-      });
+      try {
+        finalContent = await applyTemplate(
+          conversionResult.content,
+          templateId,
+          {
+            document_type: documentType || 'other',
+            ...conversionResult.metadata,
+          },
+          organizationId || undefined
+        );
+      } catch (templateError) {
+        logger.warn('Erro ao aplicar template, usando conteúdo original', {
+          error:
+            templateError instanceof Error
+              ? templateError.message
+              : String(templateError),
+        });
+        // Continuar com conteúdo original se template falhar
+      }
     }
+
+    // Sanitizar conteúdo antes de armazenar (prevenir XSS)
+    finalContent = sanitizeContent(finalContent, {
+      allowHTML: true, // Permitir HTML válido no Markdown
+      strict: false, // Não remover todo HTML, apenas elementos perigosos
+    });
 
     // Gerar path se não fornecido
     const documentPath =
@@ -107,6 +300,7 @@ export async function POST(request: NextRequest) {
         organization_id: organizationId,
         path: documentPath,
         title,
+        filename: file.name, // Armazenar nome do arquivo original
         description: conversionResult.metadata.description || '',
         content: finalContent,
         frontmatter: conversionResult.metadata,
@@ -114,6 +308,8 @@ export async function POST(request: NextRequest) {
         template_id: templateId || null,
         status: 'draft',
         created_by: user.id,
+        file_hash: fileHash, // Armazenar hash do arquivo
+        content_hash: contentHash, // Armazenar hash do conteúdo convertido
       })
       .select()
       .single();
@@ -150,30 +346,61 @@ export async function POST(request: NextRequest) {
       path: documentPath,
     });
 
-    // Iniciar processamento de vetorização em background (não bloquear resposta)
-    // SECURITY: Get session token to authenticate background request
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-
-    if (session?.access_token) {
-      fetch(
-        `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/process/document/${document.id}`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${session.access_token}`,
-          },
-        }
-      ).catch((error) => {
-        logger.warn(
-          'Erro ao iniciar processamento de vetorização (não crítico)',
-          error
-        );
+    // Inicializar worker se ainda não estiver rodando
+    // Em produção, o worker deve rodar em processo separado ou via Vercel Cron
+    try {
+      initializeDocumentWorker();
+    } catch (error) {
+      logger.warn('Worker já inicializado ou erro ao inicializar', {
+        error: error instanceof Error ? error.message : String(error),
       });
-    } else {
-      logger.warn('No session token available for background processing');
+    }
+
+    // Adicionar job de processamento à fila (persistente)
+    try {
+      const jobId = await addDocumentProcessingJob({
+        documentId: document.id,
+        organizationId,
+        chunkingStrategy: 'paragraph',
+        chunkSize: 500,
+        chunkOverlap: 50,
+      });
+
+      logger.info('Job de processamento adicionado à fila', {
+        jobId,
+        documentId: document.id,
+        organizationId,
+      });
+    } catch (error) {
+      logger.error('Erro ao adicionar job à fila', error);
+      // Não falhar o upload se a fila não estiver disponível
+      // O processamento pode ser iniciado manualmente depois
+
+      // Fallback: Iniciar processamento de vetorização em background (não bloquear resposta)
+      // SECURITY: Get session token to authenticate background request
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (session?.access_token) {
+        fetch(
+          `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/process/document/${document.id}`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${session.access_token}`,
+            },
+          }
+        ).catch((fetchError) => {
+          logger.warn(
+            'Erro ao iniciar processamento de vetorização (não crítico)',
+            fetchError
+          );
+        });
+      } else {
+        logger.warn('No session token available for background processing');
+      }
     }
 
     return NextResponse.json({

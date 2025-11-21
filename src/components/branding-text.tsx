@@ -32,19 +32,23 @@ export function BrandingText({
     displayName = appBranding.name;
   }
   
-  // Separar o nome do ponto
+  // Separar o nome do ponto para "n.docs"
+  // Exemplo: "n.docs" -> "n" + "." (azul) + "docs"
   const parts = displayName.split('.');
-  const baseName = parts[0];
-  const hasDot = parts.length > 1 || displayName.endsWith('.');
+  const beforeDot = parts[0];
+  const afterDot = parts.slice(1).join('.');
 
   return (
     <span 
-      className={`font-heading font-medium text-gray-900 dark:text-white ${className}`}
-      style={{ fontFamily: 'Montserrat, sans-serif' }}
+      className={`font-medium text-gray-900 dark:text-white ${className}`}
+      style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 500 }}
     >
-      {baseName}
-      {hasDot && (
-        <span style={{ color: '#00ade8' }}>.</span>
+      {beforeDot}
+      {afterDot && (
+        <>
+          <span style={{ color: '#00ade8' }}>.</span>
+          {afterDot}
+        </>
       )}
     </span>
   );

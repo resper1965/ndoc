@@ -3,6 +3,8 @@
  */
 
 import { getDefaultTemplate } from '../templates/default-templates';
+import { getTemplateFromDatabase, getTemplateByType, type Template } from '../templates/get-template';
+import { logger } from '@/lib/logger';
 
 export interface TemplateVariables {
   [key: string]: string | number | boolean | null | undefined;
@@ -14,21 +16,61 @@ export interface TemplateVariables {
 export async function applyTemplate(
   content: string,
   templateId: string | null,
-  metadata: Record<string, any> = {}
+  metadata: Record<string, any> = {},
+  organizationId?: string
 ): Promise<string> {
   // Se não houver template, retornar conteúdo original
   if (!templateId) {
     return content;
   }
 
-  // TODO: Buscar template do banco de dados
-  // Por enquanto, usar templates padrão
-  const template = getDefaultTemplate(
-    metadata.document_type as 'policy' | 'procedure' | 'manual'
-  );
+  let template: Template | null = null;
 
+  // Tentar buscar template do banco de dados primeiro
+  try {
+    template = await getTemplateFromDatabase(templateId, organizationId);
+  } catch (error) {
+    logger.warn('Erro ao buscar template do banco, usando fallback', {
+      error: error instanceof Error ? error.message : String(error),
+      templateId,
+    });
+  }
+
+  // Se não encontrou no banco, tentar buscar por tipo
+  if (!template && metadata.document_type) {
+    try {
+      template = await getTemplateByType(
+        metadata.document_type as 'policy' | 'procedure' | 'manual',
+        organizationId
+      );
+    } catch (error) {
+      logger.warn('Erro ao buscar template por tipo, usando fallback', {
+        error: error instanceof Error ? error.message : String(error),
+        documentType: metadata.document_type,
+      });
+    }
+  }
+
+  // Fallback: usar templates padrão
   if (!template) {
-    return content;
+    const defaultTemplate = getDefaultTemplate(
+      metadata.document_type as 'policy' | 'procedure' | 'manual'
+    );
+
+    if (!defaultTemplate) {
+      return content;
+    }
+
+    // Converter formato padrão para formato Template
+    template = {
+      id: 'default',
+      name: defaultTemplate.name,
+      type: defaultTemplate.type,
+      description: defaultTemplate.description,
+      templateContent: defaultTemplate.templateContent,
+      metadataSchema: defaultTemplate.metadataSchema,
+      isDefault: true,
+    };
   }
 
   // Extrair metadados do conteúdo original

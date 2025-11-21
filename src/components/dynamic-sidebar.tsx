@@ -29,8 +29,8 @@ export function DynamicSidebar() {
         }
         const data = await response.json();
         setSections(data.sections || []);
-      } catch (error) {
-        console.error('Erro ao carregar sidebar:', error);
+      } catch {
+        // Erro silencioso - sidebar será recarregado quando necessário
         setSections([]);
       } finally {
         setLoading(false);
@@ -46,7 +46,9 @@ export function DynamicSidebar() {
       fetch('/api/sidebar/generate')
         .then(res => res.json())
         .then(data => setSections(data.sections || []))
-        .catch(err => console.error('Erro ao recarregar sidebar:', err));
+        .catch(() => {
+          // Erro silencioso - sidebar será recarregado quando necessário
+        });
     };
 
     window.addEventListener('sidebar-reload', handleReload);

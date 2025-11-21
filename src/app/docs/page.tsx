@@ -1,10 +1,8 @@
 import { MDXRenderer } from '@/components/mdx-renderer';
-import Breadcrumb from '@/components/bread-crumb';
 import { getIndexDocument, getAllDocuments } from '@/lib/supabase/documents';
 import Link from 'next/link';
 import { Button } from '@/components/button';
 import { FileText, Upload as UploadIcon, Sparkles } from 'lucide-react';
-import { DocumentActions } from '@/components/document-actions';
 
 export const dynamic = 'force-dynamic';
 export const dynamicParams = false;
@@ -21,7 +19,6 @@ export default async function DocsPage() {
     if (allDocs.length === 0) {
       return (
         <div className="min-w-0 max-w-4xl mx-auto">
-          <Breadcrumb path="/docs" />
           <article className="prose prose-slate dark:prose-invert max-w-none">
             <div className="text-center py-16 px-4">
               <div className="max-w-2xl mx-auto">
@@ -84,7 +81,6 @@ export default async function DocsPage() {
     if (allDocs.length > 0) {
       return (
         <div className="min-w-0 max-w-4xl mx-auto">
-          <Breadcrumb path="/docs" />
           <article className="prose prose-slate dark:prose-invert max-w-none">
             <div className="text-center py-16">
               <h1 className="text-3xl font-bold mb-4">Seus Documentos</h1>
@@ -130,14 +126,6 @@ export default async function DocsPage() {
 
   return (
     <div className="min-w-0 max-w-4xl">
-      <div className="flex items-center justify-between mb-4">
-        <Breadcrumb path="/docs" />
-        <DocumentActions
-          documentPath={doc.path || 'index'}
-          documentContent={mdxContent}
-          documentTitle={doc.title}
-        />
-      </div>
       <article className="prose prose-slate dark:prose-invert max-w-none">
         <h1>{doc.title}</h1>
         {doc.description && <p className="lead">{doc.description}</p>}

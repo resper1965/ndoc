@@ -162,7 +162,7 @@ export const components = {
   th: ({ className, ...props }: React.HTMLAttributes<HTMLTableCellElement>) => (
     <th
       className={clsx(
-        'border px-4 py-2 text-left font-bold [&[align=center]]:text-center [&[align=right]]:text-right',
+        'border px-4 py-2 text-left font-bold text-sm [&[align=center]]:text-center [&[align=right]]:text-right break-words',
         className
       )}
       {...props}
@@ -171,7 +171,7 @@ export const components = {
   td: ({ className, ...props }: React.HTMLAttributes<HTMLTableCellElement>) => (
     <td
       className={clsx(
-        'border px-4 py-2 text-left [&[align=center]]:text-center [&[align=right]]:text-right',
+        'border px-4 py-2 text-left text-sm [&[align=center]]:text-center [&[align=right]]:text-right break-words',
         className
       )}
       {...props}

@@ -8,7 +8,7 @@ const Header: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
   return (
     <header
       className={cn(
-        'sticky top-0 z-1 flex items-center justify-between xs:min-h-auto md:min-h-16 border-b px-3 bg-defaultBase/60 backdrop-blur',
+        'sticky top-0 z-1 flex items-center justify-between h-16 border-b px-3 bg-defaultBase/60 backdrop-blur',
         className
       )}
       {...props}

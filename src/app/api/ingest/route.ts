@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
         .from('organizations')
         .select('id')
         .limit(1)
-        .single();
+        .maybeSingle();
       
       if (!firstOrg) {
         return NextResponse.json(
@@ -128,7 +128,7 @@ export async function POST(request: NextRequest) {
       .select('id')
       .eq('organization_id', organizationId)
       .eq('path', path.replace(/\.mdx$/, ''))
-      .single();
+      .maybeSingle();
 
     // Verificar limites apenas para criação de novos documentos
     if (!existingDoc && !isSuper) {
@@ -172,7 +172,7 @@ export async function POST(request: NextRequest) {
         .from('documents')
         .select('content, frontmatter')
         .eq('id', existingDoc.id)
-        .single();
+        .maybeSingle();
 
       if (currentDoc) {
         await supabase.from('document_versions').insert({
@@ -217,7 +217,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: 'Documento criado com sucesso', id: newDoc.id }, { status: 201 });
     }
   } catch (error) {
-    console.error('Error in POST /api/ingest:', error);
+    logger.error('Error in POST /api/ingest', error);
     return NextResponse.json(
       { error: 'Erro interno do servidor', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
@@ -280,7 +280,7 @@ export async function DELETE(request: NextRequest) {
       .select('id')
       .eq('organization_id', organizationId)
       .eq('path', cleanPath)
-      .single();
+      .maybeSingle();
 
     if (!document) {
       return NextResponse.json({ error: 'Documento não encontrado' }, { status: 404 });
@@ -458,7 +458,7 @@ export async function GET(request: NextRequest) {
         query = query.eq('status', 'published');
       }
 
-      const { data: document, error } = await query.single();
+      const { data: document, error } = await query.maybeSingle();
 
       if (error || !document) {
         return NextResponse.json({ error: 'Documento não encontrado' }, { status: 404 });
@@ -497,7 +497,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('Error in GET /api/ingest:', error);
+    logger.error('Error in GET /api/ingest', error);
     return NextResponse.json(
       { error: 'Erro interno do servidor', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }

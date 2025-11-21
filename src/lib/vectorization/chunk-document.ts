@@ -4,6 +4,7 @@
  */
 
 import { estimateTokens } from './token-estimator';
+import { semanticChunkDocument } from './semantic-chunking';
 
 export interface DocumentChunk {
   id: string;
@@ -23,10 +24,10 @@ export interface ChunkingOptions {
 /**
  * Divide um documento em chunks
  */
-export function chunkDocument(
+export async function chunkDocument(
   content: string,
   options: ChunkingOptions = {}
-): DocumentChunk[] {
+): Promise<DocumentChunk[]> {
   const {
     chunkSize = 500,
     chunkOverlap = 50,
@@ -44,8 +45,15 @@ export function chunkDocument(
     return chunkBySentences(content, chunkSize, chunkOverlap, preserveHeaders);
   }
 
-  // Dividir semanticamente (futuro - requer IA)
-  // Por enquanto, usar parágrafos
+  // Dividir semanticamente
+  if (strategy === 'semantic') {
+    return await semanticChunkDocument(content, {
+      chunkSize,
+      chunkOverlap,
+    });
+  }
+
+  // Padrão: dividir por parágrafos
   return chunkByParagraphs(content, chunkSize, chunkOverlap, preserveHeaders);
 }
 

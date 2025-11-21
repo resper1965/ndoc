@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
+import { logger } from '@/lib/logger';
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
@@ -62,7 +63,7 @@ export async function middleware(req: NextRequest) {
     if (!supabaseUrl || !supabaseAnonKey) {
       // Continuar sem Supabase se variáveis não estiverem disponíveis
       // Rotas que requerem autenticação
-      const protectedRoutes = ['/config', '/docs', '/admin'];
+      const protectedRoutes = ['/config', '/docs', '/admin', '/app'];
       const isProtectedRoute = protectedRoutes.some((route) => pathname.startsWith(route));
 
       // Se é rota protegida, redirecionar para login
@@ -112,11 +113,11 @@ export async function middleware(req: NextRequest) {
       user = authUser;
     } catch (error) {
       // Se houver erro ao buscar usuário, continuar sem autenticação
-      console.error('Middleware: Erro ao buscar usuário:', error);
+      logger.error('Middleware: Erro ao buscar usuário', error);
     }
 
     // Rotas que requerem autenticação
-    const protectedRoutes = ['/config', '/docs', '/admin'];
+    const protectedRoutes = ['/config', '/docs', '/admin', '/app'];
     const isProtectedRoute = protectedRoutes.some((route) => pathname.startsWith(route));
 
     // Se é rota protegida e usuário não está autenticado, redirecionar para login
@@ -133,7 +134,7 @@ export async function middleware(req: NextRequest) {
     return supabaseResponse;
   } catch (error) {
     // Em caso de erro no middleware, logar e continuar
-    console.error('Middleware error:', error);
+    logger.error('Middleware error', error);
     return NextResponse.next();
   }
 }

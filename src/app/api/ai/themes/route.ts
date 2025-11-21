@@ -25,20 +25,53 @@ export async function GET() {
     const organizationId = await getUserOrganization();
     if (!organizationId) {
       return NextResponse.json(
-        { error: 'Usuário não pertence a nenhuma organização' },
+        { 
+          error: 'Usuário não pertence a nenhuma organização',
+          redirectTo: '/onboarding'
+        },
         { status: 403 }
       );
     }
 
-    const { data: themes, error } = await supabase
+    // Buscar temas da organização
+    const { data: orgThemes, error: orgError } = await supabase
       .from('ai_themes')
       .select('*')
       .eq('organization_id', organizationId)
       .order('name');
 
-    if (error) throw error;
+    if (orgError) throw orgError;
 
-    return NextResponse.json({ themes: themes || [] });
+    // Se não houver temas, retornar temas padrão
+    if (!orgThemes || orgThemes.length === 0) {
+      const defaultThemes = [
+        {
+          id: 'default-technical',
+          name: 'Documentação Técnica',
+          description: 'Para documentação de APIs, código e sistemas técnicos',
+          system_prompt: 'Você é um especialista em documentação técnica. Crie documentação clara, precisa e bem estruturada.',
+          organization_id: organizationId,
+        },
+        {
+          id: 'default-guide',
+          name: 'Guia de Usuário',
+          description: 'Para guias passo a passo e tutoriais',
+          system_prompt: 'Você é um especialista em criar guias de usuário. Crie conteúdo didático e fácil de seguir.',
+          organization_id: organizationId,
+        },
+        {
+          id: 'default-policy',
+          name: 'Política/Procedimento',
+          description: 'Para políticas, procedimentos e documentação organizacional',
+          system_prompt: 'Você é um especialista em documentação organizacional. Crie políticas e procedimentos claros e profissionais.',
+          organization_id: organizationId,
+        },
+      ];
+
+      return NextResponse.json({ themes: defaultThemes });
+    }
+
+    return NextResponse.json({ themes: orgThemes || [] });
   } catch (error) {
     logger.error('Error fetching AI themes', error);
     return NextResponse.json(
@@ -63,7 +96,10 @@ export async function POST(request: NextRequest) {
     const organizationId = await getUserOrganization();
     if (!organizationId) {
       return NextResponse.json(
-        { error: 'Usuário não pertence a nenhuma organização' },
+        { 
+          error: 'Usuário não pertence a nenhuma organização',
+          redirectTo: '/onboarding'
+        },
         { status: 403 }
       );
     }

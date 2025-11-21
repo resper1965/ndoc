@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
         .select('*')
         .eq('id', theme_id)
         .eq('organization_id', organizationId)
-        .single();
+        .maybeSingle();
 
       if (!themeError && theme) {
         systemPrompt = theme.system_prompt;
@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
       .select('*')
       .eq('organization_id', organizationId)
       .limit(1)
-      .single();
+      .maybeSingle();
 
     if (providerError || !provider) {
       return NextResponse.json(

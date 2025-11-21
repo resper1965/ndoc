@@ -1,13 +1,19 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Button } from './button';
 import { Input } from './input';
 import { Label } from './label';
-import { Plus, Edit, Trash2, FileText, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Plus, Edit, Trash2, FileText, AlertCircle, CheckCircle2, Search, X } from 'lucide-react';
 import { showSuccess, showError, showWarning } from '@/lib/toast';
 import { logger } from '@/lib/logger';
 import { useConfirmDialog } from './confirm-dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from './select';
 import {
   Dialog,
   DialogContent,
@@ -38,6 +44,8 @@ export function TemplateManagementSection() {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterType, setFilterType] = useState<'' | 'policy' | 'procedure' | 'manual'>('');
   const [formData, setFormData] = useState({
     name: '',
     type: 'policy' as 'policy' | 'procedure' | 'manual',
@@ -193,6 +201,20 @@ export function TemplateManagementSection() {
     }
   };
 
+  // Filtrar templates
+  const filteredTemplates = useMemo(() => {
+    return templates.filter((template) => {
+      const matchesSearch =
+        !searchQuery ||
+        template.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (template.description || '').toLowerCase().includes(searchQuery.toLowerCase());
+      
+      const matchesType = !filterType || template.type === filterType;
+
+      return matchesSearch && matchesType;
+    });
+  }, [templates, searchQuery, filterType]);
+
   if (loading) {
     return (
       <div className="text-center py-8">
@@ -209,7 +231,7 @@ export function TemplateManagementSection() {
         <div className="flex justify-between items-center">
           <div>
             <h3 className="text-lg font-heading font-semibold">
-              Templates ({templates.length})
+              Templates ({filteredTemplates.length} de {templates.length})
             </h3>
             <p className="text-sm text-slate-600 dark:text-slate-400">
               Gerencie templates para diferentes tipos de documentos
@@ -221,20 +243,74 @@ export function TemplateManagementSection() {
           </Button>
         </div>
 
-        {templates.length === 0 ? (
+        {/* Busca e Filtros */}
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <Input
+              type="text"
+              placeholder="Buscar templates..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 pr-10"
+            />
+            {searchQuery && (
+              <Button
+                variant="none"
+                size="sm"
+                onClick={() => setSearchQuery('')}
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+          <div className="w-full sm:w-48">
+            <Select
+              value={filterType}
+              onSelect={(value) => setFilterType((value as any) || '')}
+            >
+              <SelectValue placeholder="Todos os tipos" />
+              <SelectContent>
+                <SelectItem value="">Todos os tipos</SelectItem>
+                <SelectItem value="policy">Política</SelectItem>
+                <SelectItem value="procedure">Procedimento</SelectItem>
+                <SelectItem value="manual">Manual</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        {filteredTemplates.length === 0 ? (
           <div className="text-center py-12 bg-slate-50 dark:bg-slate-900 rounded-lg">
             <FileText className="h-12 w-12 mx-auto text-slate-400 dark:text-slate-600 mb-4" />
             <p className="text-slate-600 dark:text-slate-400 mb-4">
-              Nenhum template encontrado
+              {templates.length === 0
+                ? 'Nenhum template encontrado'
+                : 'Nenhum template corresponde aos filtros'}
             </p>
-            <Button variant="primary" onClick={handleCreate}>
-              <Plus className="h-4 w-4 mr-2" />
-              Criar Primeiro Template
-            </Button>
+            {templates.length === 0 && (
+              <Button variant="primary" onClick={handleCreate}>
+                <Plus className="h-4 w-4 mr-2" />
+                Criar Primeiro Template
+              </Button>
+            )}
+            {(searchQuery || filterType) && templates.length > 0 && (
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setSearchQuery('');
+                  setFilterType('');
+                }}
+              >
+                <X className="h-4 w-4 mr-2" />
+                Limpar Filtros
+              </Button>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {templates.map((template) => (
+            {filteredTemplates.map((template) => (
               <div
                 key={template.id}
                 className="border border-slate-200 dark:border-slate-800 rounded-lg p-4 hover:shadow-md transition-shadow"

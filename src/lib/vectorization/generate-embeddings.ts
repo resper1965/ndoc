@@ -6,6 +6,7 @@
 import { logger } from '@/lib/logger';
 import { createClient } from '@/lib/supabase/server';
 import { getUserOrganization } from '@/lib/supabase/utils';
+import { decryptApiKey } from '@/lib/encryption/api-keys';
 import type { DocumentChunk } from './chunk-document';
 
 export interface EmbeddingResult {
@@ -20,6 +21,7 @@ export interface GenerateEmbeddingsOptions {
   model?: string;
   batchSize?: number;
   maxRetries?: number;
+  maxConcurrentBatches?: number; // Número máximo de batches processados em paralelo
 }
 
 /**
@@ -34,6 +36,7 @@ export async function generateEmbeddings(
     model = 'text-embedding-3-small',
     batchSize = 100, // OpenAI permite até 2048 por request
     maxRetries = 3,
+    maxConcurrentBatches = 3, // Processar até 3 batches em paralelo
   } = options;
 
   if (chunks.length === 0) {
@@ -46,28 +49,93 @@ export async function generateEmbeddings(
     throw new Error('OpenAI API key não configurada');
   }
 
-  const results: EmbeddingResult[] = [];
-
-  // Processar em batches para evitar rate limits
+  // Dividir chunks em batches
+  const batches: DocumentChunk[][] = [];
   for (let i = 0; i < chunks.length; i += batchSize) {
-    const batch = chunks.slice(i, i + batchSize);
-    
-    try {
-      const batchResults = await generateBatchEmbeddings(
-        batch,
-        apiKey,
-        model,
-        maxRetries
-      );
-      results.push(...batchResults);
-    } catch (error) {
-      logger.error('Erro ao gerar embeddings em batch', {
-        batchStart: i,
-        batchSize: batch.length,
-        error: error instanceof Error ? error.message : 'Unknown error',
-      });
-      throw error;
+    batches.push(chunks.slice(i, i + batchSize));
+  }
+
+  // Se houver apenas 1 batch ou maxConcurrentBatches = 1, processar sequencialmente
+  if (batches.length === 1 || maxConcurrentBatches <= 1) {
+    const results: EmbeddingResult[] = [];
+    for (const batch of batches) {
+      try {
+        const batchResults = await generateBatchEmbeddings(
+          batch,
+          apiKey,
+          model,
+          maxRetries
+        );
+        results.push(...batchResults);
+      } catch (error) {
+        logger.error('Erro ao gerar embeddings em batch', {
+          batchSize: batch.length,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        });
+        throw error;
+      }
     }
+    return results;
+  }
+
+  // Processar batches em paralelo com limite de concorrência
+  const results: EmbeddingResult[] = [];
+  const errors: Error[] = [];
+
+  // Processar batches em grupos paralelos
+  for (let i = 0; i < batches.length; i += maxConcurrentBatches) {
+    const batchGroup = batches.slice(i, i + maxConcurrentBatches);
+    
+    // Processar grupo de batches em paralelo
+    const batchPromises = batchGroup.map(async (batch, batchIndex) => {
+      try {
+        const batchResults = await generateBatchEmbeddings(
+          batch,
+          apiKey,
+          model,
+          maxRetries
+        );
+        return { success: true, results: batchResults, batchIndex: i + batchIndex };
+      } catch (error) {
+        logger.error('Erro ao gerar embeddings em batch paralelo', {
+          batchIndex: i + batchIndex,
+          batchSize: batch.length,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        });
+        return { 
+          success: false, 
+          error: error instanceof Error ? error : new Error(String(error)),
+          batchIndex: i + batchIndex 
+        };
+      }
+    });
+
+    // Aguardar todos os batches do grupo
+    const batchResults = await Promise.all(batchPromises);
+
+    // Processar resultados
+    for (const result of batchResults) {
+      if (result.success && result.results) {
+        results.push(...result.results);
+      } else if (!result.success && result.error) {
+        errors.push(result.error);
+      }
+    }
+
+    // Se houver erros e não for o último grupo, continuar processando
+    // mas registrar os erros
+    if (errors.length > 0 && i + maxConcurrentBatches < batches.length) {
+      logger.warn('Erros em batches paralelos, continuando processamento', {
+        errorsCount: errors.length,
+        batchesProcessed: i + maxConcurrentBatches,
+        totalBatches: batches.length,
+      });
+    }
+  }
+
+  // Se houver erros, lançar o primeiro erro
+  if (errors.length > 0) {
+    throw errors[0];
   }
 
   return results;
@@ -174,9 +242,20 @@ async function getOpenAIKey(organizationId?: string): Promise<string | null> {
       return process.env.OPENAI_API_KEY || null;
     }
 
-    // TODO: Descriptografar api_key_encrypted
-    // Por enquanto, assumir que está em texto plano (não recomendado para produção)
-    return data.api_key_encrypted || process.env.OPENAI_API_KEY || null;
+    // Descriptografar API key antes de usar
+    if (data.api_key_encrypted) {
+      try {
+        const decryptedKey = decryptApiKey(data.api_key_encrypted);
+        return decryptedKey;
+      } catch (error) {
+        logger.error('Erro ao descriptografar API key da organização', error);
+        // Fallback para global se descriptografia falhar
+        return process.env.OPENAI_API_KEY || null;
+      }
+    }
+
+    // Fallback para global se não houver chave configurada
+    return process.env.OPENAI_API_KEY || null;
   } catch (error) {
     logger.error('Erro ao buscar API key da organização', error);
     return process.env.OPENAI_API_KEY || null;

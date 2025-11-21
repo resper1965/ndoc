@@ -39,7 +39,7 @@ export async function GET(
       .from('document_templates')
       .select('*')
       .eq('id', id)
-      .single();
+      .maybeSingle();
 
     if (error || !template) {
       return NextResponse.json(
@@ -157,13 +157,20 @@ export async function PUT(
       })
       .eq('id', id)
       .select()
-      .single();
+      .maybeSingle();
 
     if (updateError) {
       logger.error('Erro ao atualizar template', updateError);
       return NextResponse.json(
         { error: 'Erro ao atualizar template', details: updateError.message },
         { status: 500 }
+      );
+    }
+
+    if (!updatedTemplate) {
+      return NextResponse.json(
+        { error: 'Template não encontrado' },
+        { status: 404 }
       );
     }
 

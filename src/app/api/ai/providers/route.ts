@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { getUserOrganization } from '@/lib/supabase/utils';
 import { logger } from '@/lib/logger';
 import { z } from 'zod';
+import { encryptApiKey, validateApiKeyFormat } from '@/lib/encryption/api-keys';
 
 const providerSchema = z.object({
   provider: z.enum(['openai', 'anthropic']),
@@ -25,14 +26,17 @@ export async function GET() {
     const organizationId = await getUserOrganization();
     if (!organizationId) {
       return NextResponse.json(
-        { error: 'Usuário não pertence a nenhuma organização' },
+        { 
+          error: 'Usuário não pertence a nenhuma organização',
+          redirectTo: '/onboarding'
+        },
         { status: 403 }
       );
     }
 
     const { data: providers, error } = await supabase
       .from('ai_provider_config')
-      .select('id, provider, model, organization_id, api_key')
+      .select('id, provider, model, organization_id, api_key_encrypted')
       .eq('organization_id', organizationId)
       .order('provider');
 
@@ -69,15 +73,40 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
     }
 
-    const organizationId = await getUserOrganization();
+    let organizationId: string | null = null;
+    try {
+      organizationId = await getUserOrganization();
+    } catch (orgError) {
+      logger.error('Erro ao buscar organização do usuário', orgError);
+      return NextResponse.json(
+        { 
+          error: 'Erro ao buscar organização do usuário',
+          redirectTo: '/onboarding'
+        },
+        { status: 500 }
+      );
+    }
+    
     if (!organizationId) {
       return NextResponse.json(
-        { error: 'Usuário não pertence a nenhuma organização' },
+        { 
+          error: 'Usuário não pertence a nenhuma organização',
+          redirectTo: '/onboarding'
+        },
         { status: 403 }
       );
     }
 
-    const body = await request.json();
+    let body: any;
+    try {
+      body = await request.json();
+    } catch (jsonError) {
+      logger.error('Erro ao processar JSON do request', jsonError);
+      return NextResponse.json(
+        { error: 'Erro ao processar dados da requisição' },
+        { status: 400 }
+      );
+    }
     const validation = providerSchema.safeParse(body);
 
     if (!validation.success) {
@@ -87,10 +116,36 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const { provider, api_key, model } = validation.data;
+
+    // Validar formato da API key
+    if (api_key && !validateApiKeyFormat(api_key, provider)) {
+      return NextResponse.json(
+        { error: 'Formato de API key inválido para o provedor selecionado' },
+        { status: 400 }
+      );
+    }
+
+    // Criptografar API key antes de salvar
+    let encryptedKey: string | undefined;
+    if (api_key) {
+      try {
+        encryptedKey = encryptApiKey(api_key);
+      } catch (error) {
+        logger.error('Erro ao criptografar API key', error);
+        return NextResponse.json(
+          { error: 'Erro ao processar API key' },
+          { status: 500 }
+        );
+      }
+    }
+
     const { data, error } = await supabase
       .from('ai_provider_config')
       .insert({
-        ...validation.data,
+        provider,
+        model,
+        api_key_encrypted: encryptedKey,
         organization_id: organizationId,
       })
       .select('id, provider, model, organization_id')

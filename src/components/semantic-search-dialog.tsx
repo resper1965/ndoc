@@ -7,9 +7,17 @@ import {
   DialogContent,
 } from '@/components/dialog';
 import { Input } from '@/components/input';
+import { Button } from '@/components/button';
+import { Label } from '@/components/label';
 import SearchButton from '@/components/search-button';
-import { Search, FileText, Sparkles, Loader2 } from 'lucide-react';
+import { Search, FileText, Sparkles, Loader2, Filter, X } from 'lucide-react';
 import Link from 'next/link';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from '@/components/select';
 
 export interface SemanticSearchDialogProps {
   onResultClick?: (documentPath: string, chunkId?: string) => void;
@@ -40,6 +48,12 @@ export const SemanticSearchDialog = React.forwardRef<
   const [searching, setSearching] = useState(false);
   const [results, setResults] = useState<SearchResult[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState({
+    documentType: '' as '' | 'policy' | 'procedure' | 'manual' | 'other',
+    matchThreshold: 0.7,
+    matchCount: 10,
+  });
 
   React.useImperativeHandle(ref, () => ({
     close: () => setOpen(false),
@@ -67,16 +81,27 @@ export const SemanticSearchDialog = React.forwardRef<
     setError(null);
 
     try {
+      const requestBody: {
+        query: string;
+        matchCount: number;
+        matchThreshold: number;
+        documentType?: string;
+      } = {
+        query: searchQuery,
+        matchCount: filters.matchCount,
+        matchThreshold: filters.matchThreshold,
+      };
+
+      if (filters.documentType) {
+        requestBody.documentType = filters.documentType;
+      }
+
       const response = await fetch('/api/search/semantic', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          query: searchQuery,
-          matchCount: 10,
-          matchThreshold: 0.7,
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       if (!response.ok) {
@@ -92,7 +117,7 @@ export const SemanticSearchDialog = React.forwardRef<
     } finally {
       setSearching(false);
     }
-  }, []);
+  }, [filters]);
 
   // Debounce search
   const debouncedSearch = useMemo(
@@ -149,6 +174,44 @@ export const SemanticSearchDialog = React.forwardRef<
     }
   };
 
+  const sanitizeHtml = (html: string): string => {
+    // Sanitização básica: remover tags e atributos perigosos
+    // Permitir apenas tags <mark> com atributo class
+    return html
+      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+      .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
+      .replace(/on\w+="[^"]*"/gi, '')
+      .replace(/on\w+='[^']*'/gi, '')
+      .replace(/javascript:/gi, '')
+      .replace(/<mark\s+class="[^"]*">/gi, '<mark class="bg-yellow-200 dark:bg-yellow-900">')
+      .replace(/<mark>/gi, '<mark class="bg-yellow-200 dark:bg-yellow-900">');
+  };
+
+  const highlightSnippet = (text: string, query: string, maxLength: number = 200) => {
+    if (!query.trim()) return text.substring(0, maxLength);
+    
+    const queryLower = query.toLowerCase();
+    const textLower = text.toLowerCase();
+    const index = textLower.indexOf(queryLower);
+    
+    if (index === -1) {
+      return text.substring(0, maxLength) + (text.length > maxLength ? '...' : '');
+    }
+    
+    const start = Math.max(0, index - 50);
+    const end = Math.min(text.length, index + query.length + 50);
+    let snippet = text.substring(start, end);
+    
+    if (start > 0) snippet = '...' + snippet;
+    if (end < text.length) snippet = snippet + '...';
+    
+    // Destacar termos da busca
+    const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+    snippet = snippet.replace(regex, '<mark class="bg-yellow-200 dark:bg-yellow-900">$1</mark>');
+    
+    return snippet;
+  };
+
   return (
     <Dialog open={open} setOpen={setOpen}>
       <DialogTrigger>
@@ -167,10 +230,97 @@ export const SemanticSearchDialog = React.forwardRef<
             placeholder="Busque por significado, não apenas palavras..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="pl-10"
+            className="pl-10 pr-10"
             autoFocus
           />
+          <Button
+            variant="none"
+            size="sm"
+            onClick={() => setShowFilters(!showFilters)}
+            className="absolute right-2 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0"
+            title="Filtros"
+          >
+            <Filter className={`h-4 w-4 ${showFilters ? 'text-primary' : 'text-slate-400'}`} />
+          </Button>
         </div>
+
+        {showFilters && (
+          <div className="mb-4 p-4 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 space-y-3">
+            <div className="flex items-center justify-between mb-2">
+              <Label className="text-sm font-medium">Filtros de Busca</Label>
+              <Button
+                variant="none"
+                size="sm"
+                onClick={() => setShowFilters(false)}
+                className="h-6 w-6 p-0"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div>
+                <Label htmlFor="filter-type" className="text-xs">Tipo de Documento</Label>
+                <Select
+                  value={filters.documentType}
+                  onSelect={(value) => {
+                    const val = Array.isArray(value) ? value[0] : value;
+                    setFilters({ 
+                      ...filters, 
+                      documentType: (val || '') as '' | 'policy' | 'procedure' | 'manual' | 'other'
+                    });
+                  }}
+                >
+                  <SelectValue placeholder="Todos" />
+                  <SelectContent>
+                    <SelectItem value="">Todos</SelectItem>
+                    <SelectItem value="policy">Política</SelectItem>
+                    <SelectItem value="procedure">Procedimento</SelectItem>
+                    <SelectItem value="manual">Manual</SelectItem>
+                    <SelectItem value="other">Outro</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="filter-threshold" className="text-xs">
+                  Similaridade Mínima: {(filters.matchThreshold * 100).toFixed(0)}%
+                </Label>
+                <input
+                  id="filter-threshold"
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.05"
+                  value={filters.matchThreshold}
+                  onChange={(e) =>
+                    setFilters({ ...filters, matchThreshold: parseFloat(e.target.value) })
+                  }
+                  className="w-full mt-1"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="filter-count" className="text-xs">Máximo de Resultados</Label>
+                <Select
+                  value={filters.matchCount.toString()}
+                  onSelect={(value) => {
+                    const val = Array.isArray(value) ? value[0] : value;
+                    setFilters({ ...filters, matchCount: parseInt(val || '10', 10) });
+                  }}
+                >
+                  <SelectValue />
+                  <SelectContent>
+                    <SelectItem value="5">5</SelectItem>
+                    <SelectItem value="10">10</SelectItem>
+                    <SelectItem value="20">20</SelectItem>
+                    <SelectItem value="50">50</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+        )}
 
         {error && (
           <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3 mb-4">
@@ -234,9 +384,12 @@ export const SemanticSearchDialog = React.forwardRef<
                       </p>
                     </div>
                   </div>
-                  <p className="text-sm text-slate-700 dark:text-slate-300 line-clamp-3">
-                    {result.content}
-                  </p>
+                  <p
+                    className="text-sm text-slate-700 dark:text-slate-300 line-clamp-3"
+                    dangerouslySetInnerHTML={{
+                      __html: sanitizeHtml(highlightSnippet(result.content, query)),
+                    }}
+                  />
                 </div>
               ))}
             </div>
