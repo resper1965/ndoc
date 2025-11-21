@@ -25,7 +25,11 @@ import Header from '@/components/header';
 import { ModeToggle } from '@/components/mode-toggle';
 import { Button } from '@/components/button';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { clientBranding, getDisplayName, getDisplayLogo } from '../../../config/branding';
+import {
+  clientBranding,
+  getDisplayName,
+  getDisplayLogo,
+} from '../../../config/branding';
 import { BrandingText } from '@/components/branding-text';
 import { DocsActions } from '@/components/docs-actions';
 
@@ -46,28 +50,28 @@ export default function DocsLayout({
       >
         <Sidebar>
           <SidebarHeader>
-              <SidebarHeaderLogo
-                logo={
-                  getDisplayLogo() ? (
-                    <Image
-                      alt="logo"
-                      className={'h-auto w-aut dark:invert'}
-                      width={100}
-                      height={100}
-                      src={getDisplayLogo()!}
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                      }}
-                    />
-                  ) : (
-                    <div className="w-10 h-10 rounded-full bg-primary-500 flex items-center justify-center">
-                      <span className="text-lg font-bold text-white">
-                        {getDisplayName().charAt(0).toUpperCase()}
-                      </span>
-                    </div>
-                  )
-                }
-              />
+            <SidebarHeaderLogo
+              logo={
+                getDisplayLogo() ? (
+                  <Image
+                    alt="logo"
+                    className={'h-auto w-aut dark:invert'}
+                    width={100}
+                    height={100}
+                    src={getDisplayLogo()!}
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                    }}
+                  />
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-primary-500 flex items-center justify-center">
+                    <span className="text-lg font-bold text-white">
+                      {getDisplayName().charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                )
+              }
+            />
 
             <Link href={'/'} className="flex flex-1 gap-3">
               <SidebarHeaderTitle className="font-heading">
@@ -80,26 +84,26 @@ export default function DocsLayout({
           </SidebarContent>
 
           <SidebarFooter>
-                 <UserAvatar>
-                   {getDisplayLogo() ? (
-                     <Image
-                       alt="logo"
-                       src={getDisplayLogo()!}
-                       width={100}
-                       height={100}
-                     />
-                   ) : (
-                     <div className="w-10 h-10 rounded-full bg-primary-500 flex items-center justify-center">
-                       <span className="text-sm font-bold text-white">
-                         {getDisplayName().charAt(0).toUpperCase()}
-                       </span>
-                     </div>
-                   )}
-                 </UserAvatar>
+            <UserAvatar>
+              {getDisplayLogo() ? (
+                <Image
+                  alt="logo"
+                  src={getDisplayLogo()!}
+                  width={100}
+                  height={100}
+                />
+              ) : (
+                <div className="w-10 h-10 rounded-full bg-primary-500 flex items-center justify-center">
+                  <span className="text-sm font-bold text-white">
+                    {getDisplayName().charAt(0).toUpperCase()}
+                  </span>
+                </div>
+              )}
+            </UserAvatar>
             <div className="flex flex-col">
               <BrandingText className="text-sm" />
               <span className="text-xs text-gray-500 dark:text-gray-400">
-                {clientBranding.tagline || 'Documentação'}
+                {clientBranding.tagline || 'Gestão de Documentos'}
               </span>
             </div>
           </SidebarFooter>
@@ -110,7 +114,7 @@ export default function DocsLayout({
           <Header className="justify-between py-2">
             <div className="flex items-center gap-4">
               <SidebarTrigger />
-              <h1 className="text-xl font-bold">Documentação</h1>
+              <h1 className="text-xl font-bold">Meus Documentos</h1>
             </div>
             <div className="flex gap-2 items-center pr-0 lg:pr-8">
               <DocsActions />
