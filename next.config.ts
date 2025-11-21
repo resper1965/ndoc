@@ -3,15 +3,27 @@
 
 const nextConfig = {
   // pageExtensions: ['js', 'jsx', 'ts', 'tsx', 'md', 'mdx'],
-  webpack: (config: { cache: boolean }) => {
+  webpack: (config: any) => {
     // Habilitar cache para melhor performance de build
     config.cache = true;
+
+    // Ignorar avisos de módulos opcionais não encontrados
+    // docx-parser é usado apenas se disponível (import dinâmico com fallback)
+    const originalIgnoreWarnings = config.ignoreWarnings || [];
+    config.ignoreWarnings = [
+      ...originalIgnoreWarnings,
+      {
+        module: /docx-parser/,
+        message: /Module not found/,
+      },
+    ];
+
     return config;
   },
   images: {
     remotePatterns: [
       {
-        protocol: 'https' as 'https',
+        protocol: 'https' as const,
         hostname: 'avatars.githubusercontent.com',
       },
     ],

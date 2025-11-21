@@ -195,11 +195,13 @@ async function convertDOCToMarkdown(
   // para futura instalação se necessário
   try {
     // Tentar importar biblioteca dinamicamente (se disponível)
+    // Usar função wrapper para evitar avisos de build sobre módulo não encontrado
     const docxParserModule = await (async () => {
       try {
-        // Usar import dinâmico - pode não estar disponível
+        // Usar import dinâmico com catch para evitar erros se não estiver instalado
         // @ts-expect-error - docx-parser pode não estar instalado
-        return await import('docx-parser').catch(() => null);
+        const parserModule = await import('docx-parser').catch(() => null);
+        return parserModule;
       } catch {
         return null;
       }
