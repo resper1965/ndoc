@@ -1,0 +1,7 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fundo #00ade8 -->
+  <rect width="32" height="32" rx="6" fill="#00ade8"/>
+  <!-- Ícone monocromático branco - letra "n" estilizada -->
+  <path d="M9 8V24H11V17C11 15.5 11.5 14.5 13 14.5C14.5 14.5 15 15.5 15 17V24H17V17C17 14 15.5 12 13 12C11.5 12 10.5 12.5 10 13.5V8H9Z" fill="white" fill-rule="evenodd"/>
+</svg>
+
