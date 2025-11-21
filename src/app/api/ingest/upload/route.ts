@@ -21,10 +21,7 @@ export async function POST(request: NextRequest) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Não autenticado' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
     }
 
     // Obter organização do usuário
@@ -59,7 +56,9 @@ export async function POST(request: NextRequest) {
     const maxSize = 50 * 1024 * 1024;
     if (file.size > maxSize) {
       return NextResponse.json(
-        { error: `Arquivo muito grande. Tamanho máximo: ${(maxSize / 1024 / 1024).toFixed(0)}MB` },
+        {
+          error: `Arquivo muito grande. Tamanho máximo: ${(maxSize / 1024 / 1024).toFixed(0)}MB`,
+        },
         { status: 400 }
       );
     }
@@ -80,14 +79,10 @@ export async function POST(request: NextRequest) {
     // Aplicar template se especificado
     let finalContent = conversionResult.content;
     if (templateId) {
-      finalContent = await applyTemplate(
-        conversionResult.content,
-        templateId,
-        {
-          document_type: documentType || 'other',
-          ...conversionResult.metadata,
-        }
-      );
+      finalContent = await applyTemplate(conversionResult.content, templateId, {
+        document_type: documentType || 'other',
+        ...conversionResult.metadata,
+      });
     }
 
     // Gerar path se não fornecido
@@ -156,14 +151,30 @@ export async function POST(request: NextRequest) {
     });
 
     // Iniciar processamento de vetorização em background (não bloquear resposta)
-    fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/process/document/${document.id}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    }).catch((error) => {
-      logger.warn('Erro ao iniciar processamento de vetorização (não crítico)', error);
-    });
+    // SECURITY: Get session token to authenticate background request
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (session?.access_token) {
+      fetch(
+        `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/process/document/${document.id}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        }
+      ).catch((error) => {
+        logger.warn(
+          'Erro ao iniciar processamento de vetorização (não crítico)',
+          error
+        );
+      });
+    } else {
+      logger.warn('No session token available for background processing');
+    }
 
     return NextResponse.json({
       success: true,
@@ -183,11 +194,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         error: 'Erro ao processar arquivo',
-        details:
-          error instanceof Error ? error.message : 'Erro desconhecido',
+        details: error instanceof Error ? error.message : 'Erro desconhecido',
       },
       { status: 500 }
     );
   }
 }
-

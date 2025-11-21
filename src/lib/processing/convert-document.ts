@@ -87,7 +87,7 @@ async function convertPDFToMarkdown(
 ): Promise<ConversionResult> {
   const pdfParse = await import('pdf-parse');
   const data = await (pdfParse as any).default(buffer);
-  
+
   // Extrair texto e metadados
   const content = data.text;
   const metadata: Record<string, any> = {
@@ -95,7 +95,7 @@ async function convertPDFToMarkdown(
     pages: data.numpages,
     info: data.info || {},
   };
-  
+
   return {
     content,
     metadata,
@@ -110,7 +110,7 @@ async function convertDOCXToMarkdown(
   const mammoth = await import('mammoth');
   // Mammoth converte para HTML, depois converter para Markdown
   const htmlResult = await mammoth.convertToHtml({ buffer });
-  
+
   // Converter HTML para Markdown usando turndown
   const turndownModule = await import('turndown');
   const TurndownService = (turndownModule as any).default || turndownModule;
@@ -119,12 +119,12 @@ async function convertDOCXToMarkdown(
     codeBlockStyle: 'fenced',
   });
   const markdown = turndownService.turndown(htmlResult.value);
-  
+
   const metadata: Record<string, any> = {
     originalFormat: 'docx',
     messages: htmlResult.messages || [],
   };
-  
+
   return {
     content: markdown,
     metadata,
@@ -140,7 +140,7 @@ async function convertDOCToMarkdown(
   // Por enquanto, tentar extrair texto básico
   // TODO: Implementar com textract ou similar quando disponível
   const text = buffer.toString('utf-8', 0, Math.min(buffer.length, 10000));
-  
+
   // Extração básica de texto (limitado)
   return {
     content: `> **Nota**: Conversão de arquivos .DOC (Word antigo) tem suporte limitado.\n> Considere converter para .DOCX para melhor resultado.\n\n${text}`,
@@ -156,14 +156,14 @@ async function convertRTFToMarkdown(
   // RTF requer parser especializado
   // Por enquanto, extrair texto básico removendo tags RTF
   let text = buffer.toString('utf-8');
-  
+
   // Remover tags RTF básicas
   text = text
     .replace(/\\[a-z]+\d*\s?/gi, ' ')
     .replace(/\{[^}]*\}/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
-  
+
   return {
     content: text,
     metadata: { originalFormat: 'rtf', warning: 'Conversão básica' },
@@ -215,18 +215,60 @@ async function convertHTMLToMarkdown(
   _options: ConversionOptions
 ): Promise<ConversionResult> {
   const TurndownService = (await import('turndown')).default;
+  const DOMPurify = (await import('isomorphic-dompurify')).default;
+
   const turndownService = new TurndownService({
     headingStyle: 'atx',
     codeBlockStyle: 'fenced',
   });
-  
+
   const html = buffer.toString('utf-8');
-  const markdown = turndownService.turndown(html);
-  
+
+  // SECURITY: Sanitize HTML to prevent XSS attacks before conversion
+  const cleanHtml = DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: [
+      'h1',
+      'h2',
+      'h3',
+      'h4',
+      'h5',
+      'h6',
+      'p',
+      'br',
+      'hr',
+      'strong',
+      'em',
+      'u',
+      's',
+      'mark',
+      'ul',
+      'ol',
+      'li',
+      'a',
+      'img',
+      'table',
+      'thead',
+      'tbody',
+      'tr',
+      'th',
+      'td',
+      'code',
+      'pre',
+      'blockquote',
+      'div',
+      'span',
+    ],
+    ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'class'],
+    ALLOW_DATA_ATTR: false,
+  });
+
+  const markdown = turndownService.turndown(cleanHtml);
+
   const metadata: Record<string, any> = {
     originalFormat: 'html',
+    sanitized: true,
   };
-  
+
   return {
     content: markdown,
     metadata,
@@ -253,7 +295,7 @@ async function convertXMLToMarkdown(
   _options: ConversionOptions
 ): Promise<ConversionResult> {
   const xml = buffer.toString('utf-8');
-  
+
   // Converter XML para formato legível em Markdown
   // Formatação básica - pode ser melhorada
   const formatted = xml
@@ -263,9 +305,9 @@ async function convertXMLToMarkdown(
     .map((line) => line.trim())
     .filter((line) => line.length > 0)
     .join('\n');
-  
+
   const content = `\`\`\`xml\n${formatted}\n\`\`\``;
-  
+
   return {
     content,
     metadata: { originalFormat: 'xml' },
@@ -279,11 +321,11 @@ async function convertCSVToMarkdown(
 ): Promise<ConversionResult> {
   const csvParser = await import('csv-parser');
   const { Readable } = await import('stream');
-  
+
   return new Promise((resolve, reject) => {
     const rows: string[][] = [];
     const stream = Readable.from(buffer.toString('utf-8'));
-    
+
     stream
       .pipe(csvParser.default())
       .on('data', (row: Record<string, string>) => {
@@ -297,18 +339,18 @@ async function convertCSVToMarkdown(
             originalType: 'csv',
           });
         }
-        
+
         // Converter para tabela Markdown
         const headers = rows[0];
         const markdownRows = rows.slice(1);
-        
+
         let markdown = '| ' + headers.join(' | ') + ' |\n';
         markdown += '| ' + headers.map(() => '---').join(' | ') + ' |\n';
-        
+
         for (const row of markdownRows) {
           markdown += '| ' + row.join(' | ') + ' |\n';
         }
-        
+
         resolve({
           content: markdown,
           metadata: { originalFormat: 'csv', rows: rows.length },
@@ -325,36 +367,40 @@ async function convertXLSXToMarkdown(
 ): Promise<ConversionResult> {
   const XLSX = await import('xlsx');
   const workbook = XLSX.read(buffer, { type: 'buffer' });
-  
+
   let markdown = '';
   const metadata: Record<string, any> = {
     originalFormat: 'xlsx',
     sheetNames: workbook.SheetNames,
   };
-  
+
   // Converter cada planilha
   for (const sheetName of workbook.SheetNames) {
     const worksheet = workbook.Sheets[sheetName];
-    const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as any[][];
-    
+    const jsonData = XLSX.utils.sheet_to_json(worksheet, {
+      header: 1,
+    }) as any[][];
+
     if (jsonData.length === 0) continue;
-    
+
     markdown += `## ${sheetName}\n\n`;
-    
+
     // Converter para tabela Markdown
     const headers = jsonData[0] || [];
     const rows = jsonData.slice(1);
-    
-    markdown += '| ' + headers.map((h: any) => String(h || '')).join(' | ') + ' |\n';
+
+    markdown +=
+      '| ' + headers.map((h: any) => String(h || '')).join(' | ') + ' |\n';
     markdown += '| ' + headers.map(() => '---').join(' | ') + ' |\n';
-    
+
     for (const row of rows) {
-      markdown += '| ' + row.map((cell: any) => String(cell || '')).join(' | ') + ' |\n';
+      markdown +=
+        '| ' + row.map((cell: any) => String(cell || '')).join(' | ') + ' |\n';
     }
-    
+
     markdown += '\n';
   }
-  
+
   return {
     content: markdown.trim(),
     metadata,
@@ -372,25 +418,25 @@ async function convertPPTXToMarkdown(
     const PptxParser = (pptxParser as any).default || pptxParser;
     const parser = new PptxParser();
     const presentation = await parser.parse(buffer);
-    
+
     let markdown = '';
     const metadata: Record<string, any> = {
       originalFormat: 'pptx',
       slides: presentation.slides?.length || 0,
     };
-    
+
     // Converter cada slide
     if (presentation.slides) {
       for (let i = 0; i < presentation.slides.length; i++) {
         const slide = presentation.slides[i];
         markdown += `## Slide ${i + 1}\n\n`;
-        
+
         if (slide.text) {
           markdown += slide.text + '\n\n';
         }
       }
     }
-    
+
     return {
       content: markdown.trim(),
       metadata,
@@ -406,4 +452,3 @@ async function convertPPTXToMarkdown(
   }
 }
 /* eslint-enable @typescript-eslint/no-unused-vars */
-
