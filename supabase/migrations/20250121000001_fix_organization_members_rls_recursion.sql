@@ -14,9 +14,12 @@
 -- Solution: Use SECURITY DEFINER function that bypasses RLS
 -- =====================================================
 
--- Drop the problematic policies
+-- Drop ALL existing policies on organization_members to avoid conflicts
 DROP POLICY IF EXISTS "Users can view organization members" ON organization_members;
 DROP POLICY IF EXISTS "Admins can manage organization members" ON organization_members;
+DROP POLICY IF EXISTS "Users can insert organization members" ON organization_members;
+DROP POLICY IF EXISTS "Admins can update organization members" ON organization_members;
+DROP POLICY IF EXISTS "Admins can delete organization members" ON organization_members;
 
 -- Create helper function to check user role without RLS recursion
 -- This function uses SECURITY DEFINER to bypass RLS
