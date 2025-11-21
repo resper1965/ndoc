@@ -46,6 +46,32 @@ export async function PUT(request: NextRequest) {
 
     // Atualizar senha se fornecida
     if (newPassword && currentPassword) {
+      // SECURITY: Verify current password before allowing change
+      if (!user.email) {
+        return NextResponse.json(
+          { error: 'Usuário não possui email' },
+          { status: 400 }
+        );
+      }
+
+      // Verify current password by attempting to sign in
+      const { error: verifyError } = await supabase.auth.signInWithPassword({
+        email: user.email,
+        password: currentPassword,
+      });
+
+      if (verifyError) {
+        logger.warn('Failed password verification attempt', {
+          userId: user.id,
+          email: user.email,
+        });
+        return NextResponse.json(
+          { error: 'Senha atual incorreta' },
+          { status: 401 }
+        );
+      }
+
+      // Current password verified, proceed with update
       const { error: updateError } = await supabase.auth.updateUser({
         password: newPassword,
       });
@@ -56,6 +82,14 @@ export async function PUT(request: NextRequest) {
           { status: 400 }
         );
       }
+
+      logger.info('Password updated successfully', { userId: user.id });
+    } else if (newPassword && !currentPassword) {
+      // Reject password change without current password
+      return NextResponse.json(
+        { error: 'Senha atual é obrigatória para alterar a senha' },
+        { status: 400 }
+      );
     }
 
     // Atualizar metadata do usuário (username)
@@ -66,7 +100,10 @@ export async function PUT(request: NextRequest) {
 
       if (metadataError) {
         return NextResponse.json(
-          { error: 'Erro ao atualizar username', details: metadataError.message },
+          {
+            error: 'Erro ao atualizar username',
+            details: metadataError.message,
+          },
           { status: 400 }
         );
       }
@@ -84,4 +121,3 @@ export async function PUT(request: NextRequest) {
     );
   }
 }
-

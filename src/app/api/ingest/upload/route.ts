@@ -8,7 +8,11 @@ import { addDocumentProcessingJob } from '@/lib/queue/document-queue';
 import { initializeDocumentWorker } from '@/lib/queue/job-processor';
 import { validateFileType } from '@/lib/validation/file-type-validator';
 import { validateConvertedContent } from '@/lib/validation/content-validator';
-import { checkDuplicateDocument, calculateFileHash, calculateContentHash } from '@/lib/validation/duplicate-validator';
+import {
+  checkDuplicateDocument,
+  calculateFileHash,
+  calculateContentHash,
+} from '@/lib/validation/duplicate-validator';
 import { sanitizeContent } from '@/lib/security/sanitize-content';
 
 export const runtime = 'nodejs'; // Necessário para processamento de arquivos
@@ -28,10 +32,7 @@ export async function POST(request: NextRequest) {
 
     if (authError || !user) {
       logger.error('Erro de autenticação no upload', authError);
-      return NextResponse.json(
-        { error: 'Não autenticado' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
     }
 
     // Obter organização do usuário ou criar automaticamente
@@ -42,15 +43,18 @@ export async function POST(request: NextRequest) {
       logger.error('Erro ao buscar organização do usuário', orgError);
       // Continuar para tentar criar organização
     }
-    
+
     if (!organizationId) {
       // Tentar criar organização automaticamente usando RPC
       try {
-        const { data: rpcData, error: rpcError } = await supabase.rpc('handle_new_user', {
-          user_id: user.id,
-          user_email: user.email || '',
-          user_metadata: user.user_metadata || {},
-        });
+        const { data: rpcData, error: rpcError } = await supabase.rpc(
+          'handle_new_user',
+          {
+            user_id: user.id,
+            user_email: user.email || '',
+            user_metadata: user.user_metadata || {},
+          }
+        );
 
         if (!rpcError && rpcData) {
           organizationId = rpcData.organization_id || rpcData.id;
@@ -58,7 +62,7 @@ export async function POST(request: NextRequest) {
           // Se RPC falhar, criar organização manualmente
           const orgName = user.email?.split('@')[0] || 'Minha Organização';
           const orgSlug = orgName.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-          
+
           const { data: newOrg, error: createError } = await supabase
             .from('organizations')
             .insert({
@@ -92,9 +96,10 @@ export async function POST(request: NextRequest) {
       // Se ainda não tiver organização, retornar erro
       if (!organizationId) {
         return NextResponse.json(
-          { 
-            error: 'Usuário não pertence a uma organização. Por favor, complete o onboarding primeiro.',
-            redirectTo: '/onboarding'
+          {
+            error:
+              'Usuário não pertence a uma organização. Por favor, complete o onboarding primeiro.',
+            redirectTo: '/onboarding',
           },
           { status: 403 }
         );
@@ -112,7 +117,7 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-    
+
     const file = formData.get('file') as File;
     const templateId = formData.get('templateId') as string | null;
     const documentType = formData.get('documentType') as
@@ -134,7 +139,9 @@ export async function POST(request: NextRequest) {
     const maxSize = 50 * 1024 * 1024;
     if (file.size > maxSize) {
       return NextResponse.json(
-        { error: `Arquivo muito grande. Tamanho máximo: ${(maxSize / 1024 / 1024).toFixed(0)}MB` },
+        {
+          error: `Arquivo muito grande. Tamanho máximo: ${(maxSize / 1024 / 1024).toFixed(0)}MB`,
+        },
         { status: 400 }
       );
     }
@@ -171,16 +178,25 @@ export async function POST(request: NextRequest) {
     } catch (conversionError) {
       logger.error('Erro ao converter documento', conversionError);
       return NextResponse.json(
-        { error: 'Erro ao converter documento', details: conversionError instanceof Error ? conversionError.message : 'Erro desconhecido' },
+        {
+          error: 'Erro ao converter documento',
+          details:
+            conversionError instanceof Error
+              ? conversionError.message
+              : 'Erro desconhecido',
+        },
         { status: 500 }
       );
     }
 
     // Validar conteúdo convertido
-    const contentValidation = validateConvertedContent(conversionResult.content, {
-      minLength: 10,
-      requireText: true,
-    });
+    const contentValidation = validateConvertedContent(
+      conversionResult.content,
+      {
+        minLength: 10,
+        requireText: true,
+      }
+    );
 
     if (!contentValidation.valid) {
       logger.warn('Conteúdo convertido inválido', {
@@ -247,7 +263,10 @@ export async function POST(request: NextRequest) {
         );
       } catch (templateError) {
         logger.warn('Erro ao aplicar template, usando conteúdo original', {
-          error: templateError instanceof Error ? templateError.message : String(templateError),
+          error:
+            templateError instanceof Error
+              ? templateError.message
+              : String(templateError),
         });
         // Continuar com conteúdo original se template falhar
       }
@@ -356,6 +375,32 @@ export async function POST(request: NextRequest) {
       logger.error('Erro ao adicionar job à fila', error);
       // Não falhar o upload se a fila não estiver disponível
       // O processamento pode ser iniciado manualmente depois
+
+      // Fallback: Iniciar processamento de vetorização em background (não bloquear resposta)
+      // SECURITY: Get session token to authenticate background request
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (session?.access_token) {
+        fetch(
+          `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/process/document/${document.id}`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${session.access_token}`,
+            },
+          }
+        ).catch((fetchError) => {
+          logger.warn(
+            'Erro ao iniciar processamento de vetorização (não crítico)',
+            fetchError
+          );
+        });
+      } else {
+        logger.warn('No session token available for background processing');
+      }
     }
 
     return NextResponse.json({
@@ -376,11 +421,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         error: 'Erro ao processar arquivo',
-        details:
-          error instanceof Error ? error.message : 'Erro desconhecido',
+        details: error instanceof Error ? error.message : 'Erro desconhecido',
       },
       { status: 500 }
     );
   }
 }
-
